@@ -1,0 +1,5 @@
+.env
+.venv/
+.git/
+.pytest_cache/
+evals/
