@@ -1,0 +1,34 @@
+[project]
+name = "recipe-search"
+version = "0.1.0"
+description = "Exa-backed natural-language web search API"
+readme = "README.md"
+authors = [
+    { name = "Arunabh", email = "arunabhghosh98@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=0.116.0",
+    "fastapi>=0.139.0",
+    "httpx>=0.28.1",
+    "pydantic-settings>=2.14.2",
+    "uvicorn[standard]>=0.49.0",
+]
+
+[project.scripts]
+recipe-search = "recipe_search:main"
+
+[build-system]
+requires = ["uv_build>=0.9.18,<0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

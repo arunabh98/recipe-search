@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simmer: tell me what you've got, I'll tell you what to cook</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍲</text></svg>">
+<style>
+  :root {
+    --bg: #FAF5EC;
+    --bg-raised: #FFFDF8;
+    --ink: #33261E;
+    --ink-soft: #6E5D51;
+    --ink-faint: #9C8B7E;
+    --line: #EADFCE;
+    --accent: #C2552B;
+    --accent-deep: #A34320;
+    --accent-soft: #F7E3D7;
+    --sage: #6F7F5C;
+    --sage-soft: #EDF0E4;
+    --amber: #B07C1F;
+    --amber-soft: #F6ECD4;
+    --shadow: 0 1px 2px rgba(70, 45, 25, .05), 0 8px 28px rgba(70, 45, 25, .08);
+    --shadow-lift: 0 2px 4px rgba(70, 45, 25, .06), 0 14px 40px rgba(70, 45, 25, .13);
+    --radius: 18px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1E1713;
+      --bg-raised: #2A211B;
+      --ink: #F2E7DC;
+      --ink-soft: #C4B2A3;
+      --ink-faint: #8F7D6F;
+      --line: #3D3128;
+      --accent: #E07A4B;
+      --accent-deep: #EE9066;
+      --accent-soft: #40261A;
+      --sage: #9FB183;
+      --sage-soft: #28301F;
+      --amber: #D9A648;
+      --amber-soft: #3A2E15;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.35);
+      --shadow-lift: 0 2px 4px rgba(0,0,0,.35), 0 14px 40px rgba(0,0,0,.45);
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  .serif { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; }
+
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px 96px; }
+
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 26px 0 0;
+  }
+  .wordmark {
+    font-family: "Iowan Old Style", Palatino, Georgia, serif;
+    font-size: 22px; font-weight: 700; letter-spacing: -.02em;
+    display: flex; align-items: center; gap: 9px;
+  }
+  .wordmark .flame { font-size: 19px; }
+  .byline { font-size: 13px; color: var(--ink-faint); }
+
+  /* ---------- hero ---------- */
+  .hero { padding: 74px 0 10px; text-align: center; }
+  .hero h1 {
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    font-size: clamp(34px, 6vw, 52px);
+    line-height: 1.12; font-weight: 700; letter-spacing: -.02em;
+  }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .hero p.sub {
+    margin: 18px auto 0; max-width: 520px;
+    font-size: 17px; color: var(--ink-soft);
+  }
+
+  /* ---------- ask bar ---------- */
+  .askbar {
+    margin: 34px auto 0; max-width: 640px;
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    box-shadow: var(--shadow);
+    display: flex; align-items: flex-end; gap: 8px;
+    padding: 9px 9px 9px 22px;
+    transition: box-shadow .25s ease, transform .25s ease;
+  }
+  .askbar:focus-within { box-shadow: var(--shadow-lift); transform: translateY(-1px); }
+  .askbar textarea {
+    flex: 1; border: 0; outline: 0; background: transparent;
+    font: inherit; font-size: 16.5px; color: var(--ink);
+    min-width: 0; resize: none; line-height: 1.45;
+    max-height: 132px; overflow-y: auto; padding: 9px 0;
+  }
+  .askbar textarea::placeholder { color: var(--ink-faint); }
+  .askbar button {
+    border: 0; cursor: pointer;
+    background: var(--accent); color: #FFF8F2;
+    font: inherit; font-weight: 600; font-size: 15px;
+    padding: 12px 22px; border-radius: 999px;
+    transition: background .2s ease, transform .15s ease;
+    white-space: nowrap;
+  }
+  .askbar button:hover { background: var(--accent-deep); transform: scale(1.02); }
+  .askbar button:disabled { opacity: .55; cursor: default; transform: none; }
+
+  .chips { margin: 22px auto 0; max-width: 640px; display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; }
+  .chips .lead { width: 100%; font-size: 12.5px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-faint); margin-bottom: 2px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--bg-raised);
+    color: var(--ink-soft); border-radius: 999px;
+    padding: 7px 15px; font-size: 13.5px; cursor: pointer;
+    transition: all .18s ease;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+
+  /* ---------- loading ---------- */
+  .cooking { margin: 56px auto 0; max-width: 480px; display: none; }
+  .cooking.on { display: block; }
+  .pan {
+    text-align: center; font-size: 46px; line-height: 1;
+    animation: simmer 2.2s ease-in-out infinite;
+  }
+  @keyframes simmer {
+    0%, 100% { transform: rotate(-4deg) translateY(0); }
+    50% { transform: rotate(4deg) translateY(-4px); }
+  }
+  .steps { margin-top: 26px; display: grid; gap: 13px; }
+  .step {
+    display: flex; align-items: baseline; gap: 12px;
+    color: var(--ink-faint); font-size: 15px;
+    transition: color .4s ease;
+  }
+  .step .dot {
+    width: 22px; flex: none; text-align: center;
+    font-size: 13px;
+  }
+  .step.now { color: var(--ink); font-weight: 550; }
+  .step.now .dot::after { content: "●"; color: var(--accent); animation: blink 1.1s ease-in-out infinite; }
+  .step.done { color: var(--ink-soft); }
+  .step.done .dot::after { content: "✓"; color: var(--sage); font-weight: 700; }
+  .step.wait .dot::after { content: "○"; opacity: .45; }
+  @keyframes blink { 50% { opacity: .25; } }
+  .patience {
+    margin-top: 26px; text-align: center;
+    font-size: 13.5px; color: var(--ink-faint); font-style: italic;
+  }
+
+  /* ---------- result ---------- */
+  .result { display: none; margin-top: 54px; }
+  .result.on { display: block; }
+  .reveal { opacity: 0; transform: translateY(14px); animation: rise .6s ease forwards; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+
+  .eyebrow {
+    font-size: 12.5px; font-weight: 650; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::after { content: ""; height: 1px; flex: 1; background: var(--line); }
+
+  .dish-card {
+    margin-top: 14px; background: var(--bg-raised);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 34px 34px 30px;
+  }
+  .dish-card h2 {
+    font-family: "Iowan Old Style", Palatino, Georgia, serif;
+    font-size: clamp(27px, 4.6vw, 38px); line-height: 1.15; letter-spacing: -.015em;
+  }
+  .headline { margin-top: 12px; font-size: 17px; color: var(--accent); font-style: italic; font-family: Georgia, serif; }
+  .why { margin-top: 16px; color: var(--ink-soft); font-size: 16px; }
+
+  .section { margin-top: 34px; }
+  .missing { margin-top: 14px; display: grid; gap: 10px; }
+  .miss {
+    display: flex; gap: 14px; align-items: baseline;
+    background: var(--bg-raised); border: 1px solid var(--line);
+    border-radius: 14px; padding: 13px 16px;
+  }
+  .badge {
+    flex: none; font-size: 11px; font-weight: 700; letter-spacing: .07em;
+    text-transform: uppercase; border-radius: 999px; padding: 3px 10px;
+  }
+  .badge.essential { background: var(--amber-soft); color: var(--amber); }
+  .badge.nice { background: var(--sage-soft); color: var(--sage); }
+  .miss .ing { font-weight: 600; }
+  .miss .note { color: var(--ink-soft); font-size: 14.5px; }
+  .allset { color: var(--ink-soft); font-style: italic; margin-top: 12px; }
+
+  .source-card {
+    margin-top: 14px; display: block; text-decoration: none; color: inherit;
+    background: linear-gradient(135deg, var(--accent-soft), var(--bg-raised) 55%);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 22px 24px; box-shadow: var(--shadow);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .source-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lift); }
+  .source-card .site { font-size: 13px; color: var(--ink-faint); display: flex; align-items: center; gap: 8px; }
+  .source-card .site img { width: 16px; height: 16px; border-radius: 4px; }
+  .source-card .name {
+    margin-top: 6px; font-weight: 650; font-size: 18.5px;
+    font-family: "Iowan Old Style", Palatino, Georgia, serif;
+  }
+  .source-card .go { margin-top: 10px; font-size: 14.5px; font-weight: 600; color: var(--accent); }
+  .howto { margin-top: 16px; color: var(--ink-soft); font-size: 15.5px; }
+
+  .alts { margin-top: 14px; display: grid; gap: 11px; }
+  .alt {
+    display: block; text-decoration: none; color: inherit;
+    background: var(--bg-raised); border: 1px solid var(--line);
+    border-radius: 14px; padding: 16px 18px;
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+  .alt:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+  .alt .name { font-weight: 600; font-size: 15.5px; }
+  .alt .site { color: var(--ink-faint); font-size: 13px; margin-left: 8px; font-weight: 400; }
+  .alt .reason { margin-top: 4px; color: var(--ink-soft); font-size: 14.5px; }
+
+  details.considered { margin-top: 40px; border-top: 1px dashed var(--line); padding-top: 18px; }
+  details.considered summary {
+    cursor: pointer; color: var(--ink-faint); font-size: 14px;
+    list-style: none; display: flex; align-items: center; gap: 8px;
+  }
+  details.considered summary::before { content: "▸"; transition: transform .2s ease; }
+  details.considered[open] summary::before { transform: rotate(90deg); }
+  .cand-list { margin-top: 16px; display: grid; gap: 9px; }
+  .cand {
+    display: grid; grid-template-columns: 34px 92px 1fr; gap: 12px; align-items: baseline;
+    font-size: 14px; padding: 10px 12px; border-radius: 12px;
+    background: var(--bg-raised); border: 1px solid var(--line);
+  }
+  .cand.ignored { opacity: .55; }
+  .cand .rank { color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+  .cand .pill {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+    border-radius: 999px; padding: 2px 8px; text-align: center;
+  }
+  .pill.best { background: var(--accent-soft); color: var(--accent); }
+  .pill.backup { background: var(--sage-soft); color: var(--sage); }
+  .pill.ignore { background: var(--line); color: var(--ink-faint); }
+  .cand .body a { color: inherit; text-decoration: none; font-weight: 600; }
+  .cand .body a:hover { color: var(--accent); }
+  .cand .meta { color: var(--ink-faint); font-size: 12.5px; margin-left: 6px; }
+  .cand .why { display: block; color: var(--ink-soft); font-size: 13px; margin-top: 2px; }
+
+  .again { margin-top: 44px; text-align: center; }
+  .again button {
+    border: 1px solid var(--line); background: var(--bg-raised); color: var(--ink-soft);
+    font: inherit; font-size: 14.5px; padding: 10px 22px; border-radius: 999px; cursor: pointer;
+    transition: all .18s ease;
+  }
+  .again button:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ---------- empty / error ---------- */
+  .notice {
+    display: none; margin: 54px auto 0; max-width: 520px; text-align: center;
+    background: var(--bg-raised); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 34px 30px; box-shadow: var(--shadow);
+  }
+  .notice.on { display: block; }
+  .notice .face { font-size: 38px; }
+  .notice h3 { font-family: Georgia, serif; margin-top: 12px; font-size: 21px; }
+  .notice p { margin-top: 8px; color: var(--ink-soft); font-size: 15px; }
+
+  footer { margin-top: 90px; text-align: center; font-size: 12.5px; color: var(--ink-faint); }
+  footer .dot { margin: 0 8px; }
+
+  @media (max-width: 560px) {
+    .askbar { border-radius: 22px; flex-direction: column; padding: 14px; gap: 12px; }
+    .askbar textarea { width: 100%; }
+    .askbar button { width: 100%; }
+    .dish-card { padding: 26px 22px; }
+    .cand { grid-template-columns: 26px 1fr; }
+    .cand .pill { grid-column: 2; justify-self: start; }
+    .cand .body { grid-column: 1 / -1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="wordmark"><span class="flame">🍲</span> Simmer</div>
+    <div class="byline">your cooking sous-chef</div>
+  </header>
+
+  <section class="hero" id="hero">
+    <h1>Tell me what you've got.<br>I'll tell you <em>what to cook</em>.</h1>
+    <p class="sub">Describe your ingredients, cravings, or constraints in your own words. I'll scout trusted recipes across the web, judge every one, and hand you a real plan.</p>
+
+    <form class="askbar" id="askForm">
+      <textarea id="queryInput" rows="1" autocomplete="off" maxlength="500"
+             placeholder="I have eggs, salsa, tortillas, and cheese. Something quick…"
+             aria-label="What do you want to cook?"></textarea>
+      <button type="submit" id="askBtn">Find my dish</button>
+    </form>
+
+    <div class="chips" id="chips">
+      <div class="lead">or try one of these</div>
+      <button class="chip" type="button">Eggs, salsa, tortillas, cheese, something quick</button>
+      <button class="chip" type="button">Something with chicken and eggs? Indian-ish</button>
+      <button class="chip" type="button">Chicken thighs, but no onions or garlic</button>
+      <button class="chip" type="button">Nut allergy. Quick Thai-style noodles?</button>
+      <button class="chip" type="button">Quiero algo rápido con huevos y tortillas</button>
+    </div>
+  </section>
+
+  <section class="cooking" id="cooking" aria-live="polite">
+    <div class="pan">🍲</div>
+    <div class="steps" id="steps">
+      <div class="step wait"><span class="dot"></span><span>Reading your request</span></div>
+      <div class="step wait"><span class="dot"></span><span>Planning where to look</span></div>
+      <div class="step wait"><span class="dot"></span><span>Searching trusted recipe sites</span></div>
+      <div class="step wait"><span class="dot"></span><span>Judging every candidate: ingredients, timing, trust</span></div>
+      <div class="step wait"><span class="dot"></span><span>Writing your recommendation</span></div>
+    </div>
+    <p class="patience" id="patience">Good decisions take a moment. Usually under a minute.</p>
+  </section>
+
+  <section class="result" id="result" aria-live="polite"></section>
+
+  <section class="notice" id="notice">
+    <div class="face" id="noticeFace">🥲</div>
+    <h3 id="noticeTitle"></h3>
+    <p id="noticeBody"></p>
+  </section>
+
+  <footer>
+    every recommendation links to its original recipe
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var form = document.getElementById("askForm");
+  var input = document.getElementById("queryInput");
+  var btn = document.getElementById("askBtn");
+  var chips = document.getElementById("chips");
+  var cooking = document.getElementById("cooking");
+  var stepsEl = document.getElementById("steps");
+  var patience = document.getElementById("patience");
+  var result = document.getElementById("result");
+  var notice = document.getElementById("notice");
+  var hero = document.getElementById("hero");
+
+  var stepTimer = null;
+  var patienceTimer = null;
+  var controller = null;
+
+  var PATIENCE_LINES = [
+    "Good decisions take a moment. Usually under a minute.",
+    "Reading actual recipe pages, not just titles…",
+    "Spam and content farms get shown the door.",
+    "Almost there, matching everything to your exact words…"
+  ];
+
+  // ------- helpers -------
+  function el(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined && text !== null) node.textContent = text;
+    return node;
+  }
+
+  function faviconFor(domain) {
+    var img = document.createElement("img");
+    img.src = "https://www.google.com/s2/favicons?domain=" + encodeURIComponent(domain) + "&sz=64";
+    img.alt = "";
+    img.onerror = function () { img.remove(); };
+    return img;
+  }
+
+  function setStep(index) {
+    var steps = stepsEl.children;
+    for (var i = 0; i < steps.length; i++) {
+      steps[i].className = "step " + (i < index ? "done" : i === index ? "now" : "wait");
+    }
+  }
+
+  function startLoading() {
+    hero.classList.add("compact");
+    result.className = "result";
+    result.innerHTML = "";
+    notice.className = "notice";
+    cooking.classList.add("on");
+    btn.disabled = true;
+    btn.textContent = "Cooking…";
+    setTimeout(function () {
+      cooking.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 60);
+
+    var schedule = [0, 4, 9, 18, 42]; // seconds at which each step becomes current
+    var started = Date.now();
+    setStep(0);
+    stepTimer = setInterval(function () {
+      var elapsed = (Date.now() - started) / 1000;
+      var current = 0;
+      for (var i = 0; i < schedule.length; i++) if (elapsed >= schedule[i]) current = i;
+      setStep(current);
+    }, 1000);
+
+    var line = 0;
+    patience.textContent = PATIENCE_LINES[0];
+    patienceTimer = setInterval(function () {
+      line = (line + 1) % PATIENCE_LINES.length;
+      patience.textContent = PATIENCE_LINES[line];
+    }, 14000);
+  }
+
+  function stopLoading() {
+    clearInterval(stepTimer);
+    clearInterval(patienceTimer);
+    cooking.classList.remove("on");
+    btn.disabled = false;
+    btn.textContent = "Find my dish";
+  }
+
+  function showNotice(face, title, body) {
+    document.getElementById("noticeFace").textContent = face;
+    document.getElementById("noticeTitle").textContent = title;
+    document.getElementById("noticeBody").textContent = body;
+    notice.className = "notice on";
+    notice.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  // ------- rendering -------
+  function sourceCard(source) {
+    var a = el("a", "source-card");
+    a.href = source.url; a.target = "_blank"; a.rel = "noopener";
+    var site = el("div", "site");
+    site.appendChild(faviconFor(source.source));
+    site.appendChild(document.createTextNode(source.source));
+    a.appendChild(site);
+    a.appendChild(el("div", "name", source.dish_name || source.title || source.source));
+    a.appendChild(el("div", "go", "Open the recipe →"));
+    return a;
+  }
+
+  function renderResult(data, query) {
+    var rec = data.recommendation;
+    result.innerHTML = "";
+
+    if (!rec) {
+      showNotice("🧐", "I couldn't find anything worth your stove.",
+        "Every page I found for that request looked unusable or untrustworthy, and I won't guess. " +
+        "Try naming an ingredient or two, or tell me the mood you're in.");
+      return;
+    }
+
+    var delay = 0;
+    function reveal(node) {
+      node.classList.add("reveal");
+      node.style.animationDelay = (delay += 0.12) + "s";
+      result.appendChild(node);
+    }
+
+    // --- the dish ---
+    var eyebrow = el("div", "eyebrow", "Tonight's answer");
+    reveal(eyebrow);
+    var card = el("div", "dish-card");
+    card.appendChild(el("h2", "serif", rec.dish_name));
+    card.appendChild(el("p", "headline", rec.headline));
+    card.appendChild(el("p", "why", rec.why_it_fits));
+    reveal(card);
+
+    // --- missing items ---
+    var missSection = el("div", "section");
+    missSection.appendChild(el("div", "eyebrow", "Before you start"));
+    if (rec.missing_items.length === 0) {
+      missSection.appendChild(el("p", "allset", "You already have everything this needs. Go."));
+    } else {
+      var grid = el("div", "missing");
+      rec.missing_items.forEach(function (item) {
+        var row = el("div", "miss");
+        row.appendChild(el("span",
+          "badge " + (item.importance === "essential" ? "essential" : "nice"),
+          item.importance === "essential" ? "essential" : "nice to have"));
+        var body = el("div");
+        body.appendChild(el("span", "ing", item.ingredient));
+        if (item.note) body.appendChild(el("div", "note", item.note));
+        row.appendChild(body);
+        grid.appendChild(row);
+      });
+      missSection.appendChild(grid);
+    }
+    reveal(missSection);
+
+    // --- primary sources ---
+    var srcSection = el("div", "section");
+    srcSection.appendChild(el("div", "eyebrow",
+      rec.primary_sources.length > 1 ? "Cook from these" : "Cook from this"));
+    rec.primary_sources.forEach(function (s) { srcSection.appendChild(sourceCard(s)); });
+    srcSection.appendChild(el("p", "howto", rec.how_to_use_sources));
+    reveal(srcSection);
+
+    // --- alternatives ---
+    if (rec.alternatives.length > 0) {
+      var altSection = el("div", "section");
+      altSection.appendChild(el("div", "eyebrow", "If you'd rather"));
+      var list = el("div", "alts");
+      rec.alternatives.forEach(function (alt) {
+        var a = el("a", "alt");
+        a.href = alt.recipe.url; a.target = "_blank"; a.rel = "noopener";
+        var name = el("div", "name", alt.recipe.dish_name || alt.recipe.title || alt.recipe.source);
+        name.appendChild(el("span", "site", alt.recipe.source));
+        a.appendChild(name);
+        a.appendChild(el("div", "reason", alt.reason));
+        list.appendChild(a);
+      });
+      altSection.appendChild(list);
+      reveal(altSection);
+    }
+
+    // --- everything considered ---
+    if (data.candidates.length > 0) {
+      var det = document.createElement("details");
+      det.className = "considered reveal";
+      det.style.animationDelay = (delay += 0.12) + "s";
+      var summary = el("summary", null,
+        "See everything I considered (" + data.candidates.length + " recipes)");
+      det.appendChild(summary);
+      var candList = el("div", "cand-list");
+      data.candidates.forEach(function (c, i) {
+        var row = el("div", "cand" + (c.role === "ignore" ? " ignored" : ""));
+        row.appendChild(el("span", "rank", String(i + 1)));
+        var pillClass = c.role === "best_base_recipe" ? "best" : c.role === "backup" ? "backup" : "ignore";
+        var pillText = c.role === "best_base_recipe" ? "top pick" : c.role;
+        row.appendChild(el("span", "pill " + pillClass, pillText));
+        var body = el("div", "body");
+        var link = el("a", null, c.dish_name || c.title || c.source);
+        link.href = c.url; link.target = "_blank"; link.rel = "noopener";
+        body.appendChild(link);
+        body.appendChild(el("span", "meta", c.source + " · fit " + c.fit_score.toFixed(2)));
+        body.appendChild(el("span", "why", c.why_it_matches));
+        row.appendChild(body);
+        candList.appendChild(row);
+      });
+      det.appendChild(candList);
+      result.appendChild(det);
+    }
+
+    // --- ask again ---
+    var again = el("div", "again reveal");
+    again.style.animationDelay = (delay += 0.12) + "s";
+    var againBtn = el("button", null, "Ask about something else");
+    againBtn.addEventListener("click", function () {
+      result.className = "result";
+      notice.className = "notice";
+      input.value = "";
+      autoGrow();
+      input.focus();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    again.appendChild(againBtn);
+    result.appendChild(again);
+
+    result.className = "result on";
+    result.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // ------- submit -------
+  function ask(query) {
+    query = (query || "").trim();
+    if (!query) { input.focus(); return; }
+    input.value = query;
+    autoGrow();
+    startLoading();
+
+    controller = new AbortController();
+    var timeout = setTimeout(function () { controller.abort(); }, 240000);
+
+    fetch("/recipes/recommend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: query, num_results: 8 }),
+      signal: controller.signal
+    })
+      .then(function (resp) {
+        return resp.json().then(function (body) { return { ok: resp.ok, status: resp.status, body: body }; });
+      })
+      .then(function (r) {
+        stopLoading();
+        if (!r.ok) {
+          var body = r.body || {};
+          var detail = typeof body.detail === "string" ? body.detail : null;
+          if (body.code === "off_topic") {
+            showNotice("🥕", "I only do dinner.",
+              detail || "Tell me what's in your kitchen and I'll find you something great to cook.");
+          } else if (body.code === "budget") {
+            showNotice("🌙", "The kitchen is resting.",
+              detail || "Today's demo budget is fully used. Come back tomorrow.");
+          } else if (body.code === "rate_limit") {
+            showNotice("🫖", "You've had a good run.",
+              detail || "Give it a little while, then try again.");
+          } else {
+            showNotice("🫠", "That didn't quite work.",
+              (detail || "That request didn't look right. Try rephrasing it.") + " (HTTP " + r.status + ")");
+          }
+          return;
+        }
+        renderResult(r.body, query);
+      })
+      .catch(function (err) {
+        stopLoading();
+        showNotice("🔌", "I couldn't reach the kitchen.",
+          err.name === "AbortError"
+            ? "That took far longer than it should. Give it another go."
+            : "The Simmer server isn't answering. Make sure it's running, then try again.");
+      })
+      .finally(function () { clearTimeout(timeout); });
+  }
+
+  function autoGrow() {
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 132) + "px";
+  }
+  input.addEventListener("input", autoGrow);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(input.value); }
+  });
+
+  form.addEventListener("submit", function (e) { e.preventDefault(); ask(input.value); });
+  chips.addEventListener("click", function (e) {
+    if (e.target.classList.contains("chip")) ask(e.target.textContent);
+  });
+})();
+</script>
+</body>
+</html>

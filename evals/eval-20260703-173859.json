@@ -1,0 +1,1372 @@
+[
+  {
+    "number": 1,
+    "query": "I have eggs, salsa, tortillas, and cheese. I want something quick.",
+    "attempts": [
+      {
+        "feedback": null,
+        "queries": [
+          "Here is a quick and easy huevos rancheros recipe using eggs, salsa, tortillas, and cheese:",
+          "Here is a fast breakfast tacos recipe with scrambled eggs, cheese, salsa, and tortillas:",
+          "Here is a simple quick migas recipe made with eggs, tortillas, salsa, and cheese:"
+        ]
+      }
+    ],
+    "retried": false,
+    "pool_sizes": [
+      12
+    ],
+    "url_integrity_ok": true,
+    "rec_checks": {
+      "sources_from_usable_pool": true,
+      "no_index_leak_in_prose": true,
+      "primary_count_ok": true,
+      "no_primary_alt_overlap": true
+    },
+    "elapsed_s": 60.6,
+    "error": null,
+    "recommendation": {
+      "dish_name": "Breakfast Tacos",
+      "headline": "Breakfast tacos are your fastest win here\u2014everything you've got is exactly what they need.",
+      "why_it_fits": "You've got eggs, cheese, salsa, and tortillas, which is the whole build for breakfast tacos with nothing extra required. The Feel Good Foodie breakfast taco page comes together in under 20 minutes, so it hits your \"quick\" ask cleanly. No special shopping, no from-scratch salsa\u2014just scramble, fill, and go.",
+      "missing_items": [
+        {
+          "ingredient": "butter or oil",
+          "importance": "essential",
+          "note": "Just enough to scramble the eggs; whatever fat you have works."
+        },
+        {
+          "ingredient": "avocado",
+          "importance": "nice_to_have",
+          "note": "Nice for creaminess but totally skippable."
+        }
+      ],
+      "primary_sources": [
+        {
+          "title": "Breakfast Tacos Ready in 20! - Feel Good Foodie",
+          "url": "https://feelgoodfoodie.net/recipe/breakfast-tacos/",
+          "source": "feelgoodfoodie.net",
+          "dish_name": "Breakfast Tacos"
+        }
+      ],
+      "how_to_use_sources": "Follow the Feel Good Foodie breakfast taco page as your base\u2014it's built around exactly your four ingredients and stays under 20 minutes. If you'd rather go even faster, the Olivia's Kitchen easy breakfast tacos page runs the same play in about 10.",
+      "alternatives": [
+        {
+          "recipe": {
+            "title": "Easy Breakfast Tacos - Olivia's Kitchen",
+            "url": "https://oliviaskitchen.com/breakfast-tacos/",
+            "source": "oliviaskitchen.com",
+            "dish_name": "Easy Breakfast Tacos"
+          },
+          "reason": "Pick this Olivia's Kitchen page when you want the same tacos in roughly 10 minutes."
+        },
+        {
+          "recipe": {
+            "title": "Migas | America's Test Kitchen",
+            "url": "https://www.americastestkitchen.com/recipes/10073-migas",
+            "source": "americastestkitchen.com",
+            "dish_name": "Migas"
+          },
+          "reason": "Go with the America's Test Kitchen migas page if you'd rather crisp your tortillas into the scramble instead of wrapping them."
+        },
+        {
+          "recipe": {
+            "title": "Easy Huevos Rancheros",
+            "url": "https://www.allrecipes.com/recipe/57947/authentic-huevos-rancheros/",
+            "source": "allrecipes.com",
+            "dish_name": "Easy Huevos Rancheros"
+          },
+          "reason": "Choose the Allrecipes huevos rancheros page if you want fried eggs on tortillas and happen to have beans on hand."
+        }
+      ]
+    },
+    "candidates": [
+      {
+        "title": "Breakfast Tacos Ready in 20! - Feel Good Foodie",
+        "url": "https://feelgoodfoodie.net/recipe/breakfast-tacos/",
+        "source": "feelgoodfoodie.net",
+        "dish_name": "Breakfast Tacos",
+        "fit_score": 0.93,
+        "why_it_matches": "Under-20-minute tacos using exactly your eggs, cheese, salsa and tortillas with only optional add-ins.",
+        "matched_ingredients": [
+          "eggs",
+          "cheese",
+          "salsa",
+          "tortillas"
+        ],
+        "possibly_missing": [
+          "avocado",
+          "black beans",
+          "milk"
+        ],
+        "role": "best_base_recipe"
+      },
+      {
+        "title": "Migas | America's Test Kitchen",
+        "url": "https://www.americastestkitchen.com/recipes/10073-migas",
+        "source": "americastestkitchen.com",
+        "dish_name": "Migas",
+        "fit_score": 0.82,
+        "why_it_matches": "Uses your actual corn tortillas (cut into strips and fried), eggs, cheese and salsa for a true quick migas scramble.",
+        "matched_ingredients": [
+          "eggs",
+          "tortillas",
+          "cheese",
+          "salsa"
+        ],
+        "possibly_missing": [
+          "onion",
+          "red bell pepper",
+          "jalape\u00f1os",
+          "cilantro"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Easy Breakfast Tacos - Olivia's Kitchen",
+        "url": "https://oliviaskitchen.com/breakfast-tacos/",
+        "source": "oliviaskitchen.com",
+        "dish_name": "Easy Breakfast Tacos",
+        "fit_score": 0.78,
+        "why_it_matches": "10-minute tacos with scrambled eggs, cheese, salsa and tortillas, hitting all four of your ingredients quickly.",
+        "matched_ingredients": [
+          "eggs",
+          "salsa",
+          "tortillas",
+          "cheese"
+        ],
+        "possibly_missing": [
+          "avocado",
+          "pickled red onions",
+          "cilantro",
+          "hot sauce"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Breakfast Tacos Recipe - Love and Lemons",
+        "url": "https://www.loveandlemons.com/breakfast-tacos/",
+        "source": "loveandlemons.com",
+        "dish_name": "Breakfast Tacos with Pico de Gallo",
+        "fit_score": 0.76,
+        "why_it_matches": "Quick scrambled-egg tacos with cheese and salsa/pico folded in, using your tortillas.",
+        "matched_ingredients": [
+          "eggs",
+          "cheese",
+          "tortillas",
+          "salsa"
+        ],
+        "possibly_missing": [
+          "pico de gallo",
+          "avocado",
+          "cilantro",
+          "hot sauce"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Migas with Tortilla Chips - My Texas Kitchen",
+        "url": "https://mytxkitchen.com/migas-with-tortilla-chips/",
+        "source": "mytxkitchen.com",
+        "dish_name": "Migas with Tortilla Chips",
+        "fit_score": 0.74,
+        "why_it_matches": "A fast single-serving scramble of eggs, salsa and cheese\u2014swap your tortillas (torn and crisped) for the chips it calls for.",
+        "matched_ingredients": [
+          "eggs",
+          "salsa",
+          "cheese",
+          "tortillas"
+        ],
+        "possibly_missing": [
+          "tortilla chips",
+          "half and half"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Tex-Mex Migas - Cookie and Kate",
+        "url": "https://cookieandkate.com/migas-recipe/",
+        "source": "cookieandkate.com",
+        "dish_name": "Tex-Mex Migas",
+        "fit_score": 0.72,
+        "why_it_matches": "Cheesy scrambled eggs with tortilla (chips), salsa served alongside; needs saut\u00e9ed peppers and onion for the full version.",
+        "matched_ingredients": [
+          "eggs",
+          "cheese",
+          "salsa",
+          "tortillas"
+        ],
+        "possibly_missing": [
+          "tortilla chips",
+          "onion",
+          "bell pepper",
+          "jalape\u00f1o"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Favorite Breakfast Tacos Recipe - Cookie and Kate",
+        "url": "https://cookieandkate.com/favorite-breakfast-tacos-recipe/",
+        "source": "cookieandkate.com",
+        "dish_name": "Favorite Breakfast Tacos",
+        "fit_score": 0.72,
+        "why_it_matches": "Scrambled-egg tacos with cheese and salsa on your tortillas, though it centers on a batch of saut\u00e9ed vegetables.",
+        "matched_ingredients": [
+          "eggs",
+          "tortillas",
+          "cheese",
+          "salsa"
+        ],
+        "possibly_missing": [
+          "mixed vegetables",
+          "green onion",
+          "sour cream"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "The Best (and Easiest!) Migas Recipe | Gimme Some Oven",
+        "url": "https://www.gimmesomeoven.com/migas-tex-mex-style/",
+        "source": "gimmesomeoven.com",
+        "dish_name": "Tex-Mex Migas",
+        "fit_score": 0.68,
+        "why_it_matches": "Scrambled eggs with cheese, salsa and tortilla (chips); onion and jalape\u00f1o are optional if you're in a hurry.",
+        "matched_ingredients": [
+          "eggs",
+          "cheese",
+          "salsa",
+          "tortillas"
+        ],
+        "possibly_missing": [
+          "tortilla chips",
+          "onion",
+          "jalape\u00f1o",
+          "garlic"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Easy Huevos Rancheros",
+        "url": "https://www.allrecipes.com/recipe/57947/authentic-huevos-rancheros/",
+        "source": "allrecipes.com",
+        "dish_name": "Easy Huevos Rancheros",
+        "fit_score": 0.62,
+        "why_it_matches": "15-minute fried eggs on tortillas with cheddar and salsa, but it also leans on refried beans and bacon.",
+        "matched_ingredients": [
+          "eggs",
+          "tortillas",
+          "cheese",
+          "salsa"
+        ],
+        "possibly_missing": [
+          "refried beans",
+          "bacon"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Huevos Rancheros - Rick Bayless",
+        "url": "https://www.rickbayless.com/recipe/huevos-rancheros/",
+        "source": "rickbayless.com",
+        "dish_name": "Huevos Rancheros",
+        "fit_score": 0.6,
+        "why_it_matches": "Fried eggs on tortillas topped with salsa and crumbled cheese, though it points to a separate roasted tomato salsa rather than jarred salsa.",
+        "matched_ingredients": [
+          "eggs",
+          "tortillas",
+          "cheese",
+          "salsa"
+        ],
+        "possibly_missing": [
+          "queso fresco",
+          "cilantro"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Huevos Rancheros Recipe",
+        "url": "https://www.simplyrecipes.com/recipes/huevos_rancheros/",
+        "source": "simplyrecipes.com",
+        "dish_name": "Huevos Rancheros",
+        "fit_score": 0.58,
+        "why_it_matches": "Classic 20-minute eggs-on-tortillas dish, but it builds a salsa from scratch and doesn't rely on your jar salsa or cheese.",
+        "matched_ingredients": [
+          "eggs",
+          "tortillas"
+        ],
+        "possibly_missing": [
+          "canned tomatoes",
+          "onion",
+          "green chiles",
+          "cilantro"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Quick and Easy Huevos Rancheros Recipe",
+        "url": "https://www.seriouseats.com/quick-and-easy-huevos-rancheros-recipe",
+        "source": "seriouseats.com",
+        "dish_name": "Quick and Easy Huevos Rancheros",
+        "fit_score": 0.5,
+        "why_it_matches": "Crisp fried eggs on tortillas with cheese, but the salsa is an involved from-scratch ancho-chipotle sauce.",
+        "matched_ingredients": [
+          "eggs",
+          "tortillas",
+          "cheese"
+        ],
+        "possibly_missing": [
+          "ancho chiles",
+          "chipotle in adobo",
+          "canned tomatoes",
+          "onion",
+          "cotija"
+        ],
+        "role": "backup"
+      }
+    ]
+  },
+  {
+    "number": 2,
+    "query": "Something with chicken and eggs? Indian-ish.",
+    "attempts": [
+      {
+        "feedback": null,
+        "queries": [
+          "Here is a delicious Indian chicken and egg curry recipe:",
+          "Here is an authentic Indian-style anda chicken curry recipe with eggs:",
+          "Here is a flavorful Indian chicken keema with boiled eggs recipe:"
+        ]
+      }
+    ],
+    "retried": false,
+    "pool_sizes": [
+      12
+    ],
+    "url_integrity_ok": true,
+    "rec_checks": {
+      "sources_from_usable_pool": true,
+      "no_index_leak_in_prose": true,
+      "primary_count_ok": true,
+      "no_primary_alt_overlap": true
+    },
+    "elapsed_s": 47.8,
+    "error": null,
+    "recommendation": {
+      "dish_name": "Chicken Dak Bungalow",
+      "headline": "Tonight's the night for Chicken Dak Bungalow \u2014 a Bengali curry where chicken and fried hard-boiled eggs share the same pot.",
+      "why_it_fits": "You wanted chicken and eggs with an Indian bent, and the Authentic Bengali-Style Chicken Dak Bungalow on spicypunch.com is built around exactly that: chicken simmered in a spiced gravy alongside fried boiled eggs and potatoes. It's a genuine regional dish rather than a generic curry, so it delivers real character. If you'd rather keep it simpler and quicker, one of the tomato-based egg-and-chicken curries below is an easy pivot.",
+      "missing_items": [
+        {
+          "ingredient": "potatoes",
+          "importance": "nice_to_have",
+          "note": "Traditional here and they stretch the dish, but you can skip them without harm."
+        },
+        {
+          "ingredient": "ginger-garlic paste",
+          "importance": "essential",
+          "note": "Grate fresh ginger and garlic together if you don't have the paste."
+        },
+        {
+          "ingredient": "turmeric",
+          "importance": "essential",
+          "note": "Core to the color and flavor; no real substitute."
+        },
+        {
+          "ingredient": "garam masala",
+          "importance": "essential",
+          "note": "A pre-mixed blend works fine."
+        },
+        {
+          "ingredient": "mustard oil",
+          "importance": "nice_to_have",
+          "note": "Gives the authentic Bengali pungency, but any neutral oil will do."
+        },
+        {
+          "ingredient": "yogurt",
+          "importance": "nice_to_have",
+          "note": "Adds body to the gravy; you can leave it out or use a splash of cream."
+        }
+      ],
+      "primary_sources": [
+        {
+          "title": "Authentic Bengali-Style Chicken Dak Bungalow Recipe",
+          "url": "https://www.spicypunch.com/chicken-dak-bungalow-recipe-dak-bungalow-chicken-recipe/",
+          "source": "spicypunch.com",
+          "dish_name": "Chicken Dak Bungalow"
+        }
+      ],
+      "how_to_use_sources": "Follow the Chicken Dak Bungalow page on spicypunch.com start to finish \u2014 it covers frying the boiled eggs, browning the potatoes, and building the spiced gravy. If you want a richer, tomato-forward gravy instead, borrow the sauce approach from the Egg and Chicken Curry on bongong.com.",
+      "alternatives": [
+        {
+          "recipe": {
+            "title": "Egg and Chicken Curry",
+            "url": "http://bongong.com/recipe/egg-and-chicken-curry",
+            "source": "bongong.com",
+            "dish_name": "Egg and Chicken Curry"
+          },
+          "reason": "Pick the Egg and Chicken Curry on bongong.com if you want a North Indian tomato-based gravy."
+        },
+        {
+          "recipe": {
+            "title": "Chicken Egg Curry",
+            "url": "https://itstasty.net/chicken-egg-curry/",
+            "source": "itstasty.net",
+            "dish_name": "Chicken Egg Curry"
+          },
+          "reason": "Go with the Chicken Egg Curry on itstasty.net for a classic onion-tomato gravy with bone-in thighs."
+        },
+        {
+          "recipe": {
+            "title": "Chicken Curry with Potato & Egg \u2014 UMAMIMAMI",
+            "url": "https://umamimami.net/recipes/chicken-curry-with-potato-amp-egg",
+            "source": "umamimami.net",
+            "dish_name": "Chicken Curry with Potato & Egg"
+          },
+          "reason": "Choose the Chicken Curry with Potato & Egg on umamimami.net when you want something quick and easy using curry powder tonight."
+        }
+      ]
+    },
+    "candidates": [
+      {
+        "title": "Authentic Bengali-Style Chicken Dak Bungalow Recipe",
+        "url": "https://www.spicypunch.com/chicken-dak-bungalow-recipe-dak-bungalow-chicken-recipe/",
+        "source": "spicypunch.com",
+        "dish_name": "Chicken Dak Bungalow",
+        "fit_score": 0.9,
+        "why_it_matches": "An authentic Bengali-style chicken curry with fried hard-boiled eggs and potatoes, hitting both chicken and eggs in a clearly Indian dish.",
+        "matched_ingredients": [
+          "chicken",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "potatoes",
+          "yogurt",
+          "mustard oil",
+          "ginger-garlic paste",
+          "turmeric",
+          "garam masala"
+        ],
+        "role": "best_base_recipe"
+      },
+      {
+        "title": "Egg and Chicken Curry",
+        "url": "http://bongong.com/recipe/egg-and-chicken-curry",
+        "source": "bongong.com",
+        "dish_name": "Egg and Chicken Curry",
+        "fit_score": 0.85,
+        "why_it_matches": "A North Indian tomato-based curry using both chicken and boiled eggs, exactly matching the request.",
+        "matched_ingredients": [
+          "chicken",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "ginger garlic paste",
+          "tomato puree",
+          "ghee",
+          "garam masala",
+          "kashmiri chili powder"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Chicken Egg Curry",
+        "url": "https://itstasty.net/chicken-egg-curry/",
+        "source": "itstasty.net",
+        "dish_name": "Chicken Egg Curry",
+        "fit_score": 0.82,
+        "why_it_matches": "Bone-in chicken thighs simmered with hard-boiled eggs in a classic Indian onion-tomato gravy, matching both ingredients well.",
+        "matched_ingredients": [
+          "chicken",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "onions",
+          "tomatoes",
+          "garlic paste",
+          "ginger paste",
+          "garam masala"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Chicken Curry with Potato & Egg \u2014 UMAMIMAMI",
+        "url": "https://umamimami.net/recipes/chicken-curry-with-potato-amp-egg",
+        "source": "umamimami.net",
+        "dish_name": "Chicken Curry with Potato & Egg",
+        "fit_score": 0.78,
+        "why_it_matches": "A simple curry-powder chicken with boiled eggs and potatoes, easy to cook tonight and covering both ingredients.",
+        "matched_ingredients": [
+          "chicken",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "onion",
+          "potatoes",
+          "curry powder",
+          "turmeric",
+          "tomato paste"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Recipe: Chicken Keema and Egg \u2013 Recipestable",
+        "url": "https://www.recipestable.com/recipe-chicken-keema-and-egg.html",
+        "source": "recipestable.com",
+        "dish_name": "Chicken Keema and Egg",
+        "fit_score": 0.68,
+        "why_it_matches": "A 30-minute chicken mince dish with hard-boiled eggs, though it oddly mixes in Thai curry paste rather than staying fully Indian.",
+        "matched_ingredients": [
+          "chicken",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "onion",
+          "tomatoes",
+          "ginger",
+          "garlic",
+          "curry leaves",
+          "thai red curry paste"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Chicken and Egg Curry - Mr. Cook",
+        "url": "https://www.mrcook.app/en/recipes/01907be0-4a3f-73be-833f-84f733d1defa",
+        "source": "mrcook.app",
+        "dish_name": "Chicken and Egg Curry (coconut milk)",
+        "fit_score": 0.6,
+        "why_it_matches": "A creamy coconut-milk chicken and egg curry that fits the request, but it is AI-generated and unreviewed so use judgment.",
+        "matched_ingredients": [
+          "chicken",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "onions",
+          "tomatoes",
+          "yogurt",
+          "coconut milk",
+          "ginger-garlic paste"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Egg Curry Recipe (Dhaba Style) - Swasthi's Recipes",
+        "url": "https://www.indianhealthyrecipes.com/punjabi-egg-curry-anda-curry-dhaba-style/",
+        "source": "indianhealthyrecipes.com",
+        "dish_name": "Dhaba Style Egg Curry",
+        "fit_score": 0.35,
+        "why_it_matches": "A well-regarded Punjabi egg curry, but it contains no chicken so it only half-meets the request.",
+        "matched_ingredients": [
+          "eggs"
+        ],
+        "possibly_missing": [
+          "chicken",
+          "onions",
+          "tomatoes",
+          "ginger garlic paste"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Egg Curry Recipe (Restaurant Style Anda Masala)",
+        "url": "https://www.tarladalal.com/egg-curry-recipe-42114r",
+        "source": "tarladalal.com",
+        "dish_name": "Restaurant Style Egg Curry (Anda Masala)",
+        "fit_score": 0.33,
+        "why_it_matches": "A classic Indian egg masala but with no chicken, so it only partly fits.",
+        "matched_ingredients": [
+          "eggs"
+        ],
+        "possibly_missing": [
+          "chicken",
+          "onions",
+          "tomato paste",
+          "ginger-garlic paste",
+          "whole spices"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Egg Masala Recipe (Anda Curry)",
+        "url": "https://theyummydelights.com/egg-masala-curry-recipe/",
+        "source": "theyummydelights.com",
+        "dish_name": "Egg Masala (Anda Curry)",
+        "fit_score": 0.33,
+        "why_it_matches": "A quick North Indian egg curry, but it has no chicken so it only half-satisfies the request.",
+        "matched_ingredients": [
+          "eggs"
+        ],
+        "possibly_missing": [
+          "chicken",
+          "onions",
+          "tomato puree",
+          "ginger",
+          "garlic"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Chicken keema recipe (Chicken mince recipe) - Swasthi's Recipes",
+        "url": "https://www.indianhealthyrecipes.com/chicken-keema-recipe/",
+        "source": "indianhealthyrecipes.com",
+        "dish_name": "Chicken Keema",
+        "fit_score": 0.32,
+        "why_it_matches": "A simple Indian minced chicken recipe with no eggs, so it misses half the request.",
+        "matched_ingredients": [
+          "chicken"
+        ],
+        "possibly_missing": [
+          "eggs",
+          "onions",
+          "tomatoes",
+          "ginger garlic paste",
+          "garam masala"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Chicken Keema Recipe - Whiskaffair",
+        "url": "https://www.whiskaffair.com/karahi-chicken-keema-recipe/",
+        "source": "whiskaffair.com",
+        "dish_name": "Karahi Chicken Keema",
+        "fit_score": 0.3,
+        "why_it_matches": "A spicy Indian chicken mince dish but with no eggs, so it misses half the request.",
+        "matched_ingredients": [
+          "chicken"
+        ],
+        "possibly_missing": [
+          "eggs",
+          "onions",
+          "tomatoes",
+          "yogurt",
+          "ginger garlic paste"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Anda Keema Recipe  - Yummy Traditional",
+        "url": "https://www.yummytraditional.com/2023/04/anda-keema-recipe.html",
+        "source": "yummytraditional.com",
+        "dish_name": "Anda Keema (Egg Keema Karahi)",
+        "fit_score": 0.3,
+        "why_it_matches": "An egg and mince karahi, but it uses beef/mutton mince rather than chicken, so it doesn't match well.",
+        "matched_ingredients": [
+          "eggs"
+        ],
+        "possibly_missing": [
+          "chicken",
+          "onion",
+          "yogurt",
+          "tomato puree",
+          "ginger garlic paste"
+        ],
+        "role": "ignore"
+      }
+    ]
+  },
+  {
+    "number": 3,
+    "query": "I have tofu, spinach, rice, and soy sauce. No oven.",
+    "attempts": [
+      {
+        "feedback": null,
+        "queries": [
+          "Here is a great stovetop recipe using tofu, spinach, rice, and soy sauce:",
+          "Here is an easy tofu and spinach stir-fry served over rice:",
+          "Here is a quick pan-fried tofu rice bowl with spinach and soy sauce:"
+        ]
+      }
+    ],
+    "retried": false,
+    "pool_sizes": [
+      12
+    ],
+    "url_integrity_ok": true,
+    "rec_checks": {
+      "sources_from_usable_pool": true,
+      "no_index_leak_in_prose": true,
+      "primary_count_ok": true,
+      "no_primary_alt_overlap": true
+    },
+    "elapsed_s": 46.8,
+    "error": null,
+    "recommendation": {
+      "dish_name": "Spinach and Tofu Rice Bowls",
+      "headline": "Tonight you're a skillet away from cozy spinach and tofu rice bowls, entirely stovetop, no oven needed.",
+      "why_it_fits": "You've got everything at the core of this: pan-seared tofu, wilted spinach, soy sauce, all spooned over rice. The Spinach and Tofu Rice Bowls page on This Wife Cooks builds the whole thing on the stovetop, so your no-oven constraint isn't an issue at all. It uses all four of your ingredients as the backbone.",
+      "missing_items": [
+        {
+          "ingredient": "Neutral or sesame oil",
+          "importance": "essential",
+          "note": "You need a little oil to sear the tofu; any cooking oil works if you don't have sesame."
+        },
+        {
+          "ingredient": "Garlic and ginger",
+          "importance": "nice_to_have",
+          "note": "They deepen the flavor, but the dish still works with just soy sauce if you're out."
+        },
+        {
+          "ingredient": "Rice vinegar",
+          "importance": "nice_to_have",
+          "note": "Adds brightness; a squeeze of lemon or a splash of any vinegar covers it, or skip it."
+        },
+        {
+          "ingredient": "Scallions",
+          "importance": "nice_to_have",
+          "note": "Nice fresh finish on top, but purely optional."
+        }
+      ],
+      "primary_sources": [
+        {
+          "title": "Spinach and Tofu Rice Bowls | Vegetarian Dinner Recipe",
+          "url": "https://thiswifecooks.com/spinach-and-tofu-rice-bowls/",
+          "source": "thiswifecooks.com",
+          "dish_name": "Spinach and Tofu Rice Bowls"
+        }
+      ],
+      "how_to_use_sources": "Follow the Spinach and Tofu Rice Bowls page on This Wife Cooks for the full method\u2014it handles the tofu searing, spinach, and rice assembly start to finish. If you want a glossier, more coating sauce, peek at the Spinach and Tofu Stir-Fry on EatWithMia for its cornstarch-thickened soy sauce idea and borrow that thickening trick.",
+      "alternatives": [
+        {
+          "recipe": {
+            "title": "Spinach and Tofu Stir-Fry with Soy Sauce \u2013 EatWithMia.Com",
+            "url": "https://eatwithmia.com/spinach-and-tofu-stir-fry-with-soy-sauce/",
+            "source": "eatwithmia.com",
+            "dish_name": "Spinach and Tofu Stir-Fry with Soy Sauce"
+          },
+          "reason": "Better if you want a saucier, stir-fried result with a thickened soy glaze."
+        },
+        {
+          "recipe": {
+            "title": "Spinach & Tofu Rice Stir-Fry",
+            "url": "https://familycooksclub.com/spinach-tofu-rice-stir-fry/",
+            "source": "familycooksclub.com",
+            "dish_name": "Spinach & Tofu Rice Stir-Fry"
+          },
+          "reason": "Reach for this one-pan Family Cooks Club stir-fry if you're using already-cooked leftover rice."
+        },
+        {
+          "recipe": {
+            "title": "Spinach and Tofu Stir Fry - The Stingy Vegan",
+            "url": "https://thestingyvegan.com/spinach-and-tofu-stir-fry/",
+            "source": "thestingyvegan.com",
+            "dish_name": "Spinach and Tofu Stir Fry"
+          },
+          "reason": "Pick The Stingy Vegan's 15-minute version when you want the fastest possible weeknight turnaround."
+        }
+      ]
+    },
+    "candidates": [
+      {
+        "title": "Spinach and Tofu Rice Bowls | Vegetarian Dinner Recipe",
+        "url": "https://thiswifecooks.com/spinach-and-tofu-rice-bowls/",
+        "source": "thiswifecooks.com",
+        "dish_name": "Spinach and Tofu Rice Bowls",
+        "fit_score": 0.95,
+        "why_it_matches": "Uses all four of your ingredients\u2014pan-seared tofu, soy sauce, wilted spinach over white rice\u2014cooked entirely on the stovetop.",
+        "matched_ingredients": [
+          "tofu",
+          "spinach",
+          "rice",
+          "soy sauce"
+        ],
+        "possibly_missing": [
+          "sesame oil",
+          "rice vinegar",
+          "garlic",
+          "ginger",
+          "scallions"
+        ],
+        "role": "best_base_recipe"
+      },
+      {
+        "title": "Spinach and Tofu Stir-Fry with Soy Sauce \u2013 EatWithMia.Com",
+        "url": "https://eatwithmia.com/spinach-and-tofu-stir-fry-with-soy-sauce/",
+        "source": "eatwithmia.com",
+        "dish_name": "Spinach and Tofu Stir-Fry with Soy Sauce",
+        "fit_score": 0.85,
+        "why_it_matches": "Stovetop tofu-and-spinach stir-fry built on soy sauce and served over rice, matching all your ingredients.",
+        "matched_ingredients": [
+          "tofu",
+          "spinach",
+          "rice",
+          "soy sauce"
+        ],
+        "possibly_missing": [
+          "rice vinegar",
+          "sesame oil",
+          "garlic",
+          "ginger",
+          "cornstarch"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Spinach & Tofu Rice Stir-Fry",
+        "url": "https://familycooksclub.com/spinach-tofu-rice-stir-fry/",
+        "source": "familycooksclub.com",
+        "dish_name": "Spinach & Tofu Rice Stir-Fry",
+        "fit_score": 0.83,
+        "why_it_matches": "One-pan weeknight stir-fry that combines tofu, spinach, cooked rice, and soy sauce exactly as you have on hand.",
+        "matched_ingredients": [
+          "tofu",
+          "spinach",
+          "rice",
+          "soy sauce"
+        ],
+        "possibly_missing": [
+          "rice vinegar",
+          "sesame oil",
+          "maple syrup",
+          "garlic",
+          "ginger"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Spinach Tofu Rice Stir-Fry - My Tried Recipes",
+        "url": "https://mytriedrecipes.com/spinach-tofu-rice-stir-fry/",
+        "source": "mytriedrecipes.com",
+        "dish_name": "Spinach Tofu Rice Stir-Fry",
+        "fit_score": 0.82,
+        "why_it_matches": "A stovetop stir-fry that folds cooked rice, tofu, and spinach into a soy-based sauce, hitting every ingredient you have.",
+        "matched_ingredients": [
+          "tofu",
+          "spinach",
+          "rice",
+          "soy sauce"
+        ],
+        "possibly_missing": [
+          "maple syrup",
+          "rice vinegar",
+          "sesame oil",
+          "cornstarch",
+          "garlic",
+          "ginger"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Spinach and Tofu Stir Fry - Easy Vegan Recipe - This Wife Cooks\u2122",
+        "url": "https://thiswifecooks.com/spinach-and-tofu-stir-fry-easy-vegan-recipe/",
+        "source": "thiswifecooks.com",
+        "dish_name": "Spinach and Tofu Stir Fry",
+        "fit_score": 0.78,
+        "why_it_matches": "Quick under-20-minute skillet stir-fry with tofu, spinach, and soy sauce that pairs naturally with your rice.",
+        "matched_ingredients": [
+          "tofu",
+          "spinach",
+          "soy sauce"
+        ],
+        "possibly_missing": [
+          "onion",
+          "garlic",
+          "ginger",
+          "sesame seeds"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Spinach and Tofu Stir Fry - The Stingy Vegan",
+        "url": "https://thestingyvegan.com/spinach-and-tofu-stir-fry/",
+        "source": "thestingyvegan.com",
+        "dish_name": "Spinach and Tofu Stir Fry",
+        "fit_score": 0.77,
+        "why_it_matches": "A 15-minute stovetop tofu-spinach stir-fry in a soy sauce that the author serves over rice.",
+        "matched_ingredients": [
+          "tofu",
+          "spinach",
+          "soy sauce"
+        ],
+        "possibly_missing": [
+          "vegetable stock",
+          "maple syrup",
+          "rice vinegar",
+          "sesame oil",
+          "chili crisp",
+          "cornstarch",
+          "garlic",
+          "ginger"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Easy Stir Fried Tofu with Spinach: Irresistible, Delicious",
+        "url": "https://www.feastfeather.com/easy-stir-fried-tofu-with-spinach-a-bold-boost-of-flavor/",
+        "source": "feastfeather.com",
+        "dish_name": "Stir Fried Tofu with Spinach",
+        "fit_score": 0.72,
+        "why_it_matches": "Under-20-minute skillet tofu-spinach dish in a soy sauce; add your rice for a full meal.",
+        "matched_ingredients": [
+          "tofu",
+          "spinach",
+          "soy sauce"
+        ],
+        "possibly_missing": [
+          "sesame oil",
+          "rice vinegar",
+          "brown sugar",
+          "garlic",
+          "ginger",
+          "green onions"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Simple Spinach Tofu With Turmeric Rice - Colorful Recipes",
+        "url": "https://colorfulrecipes.com/simple-spinach-tofu-with-turmeric-rice/",
+        "source": "colorfulrecipes.com",
+        "dish_name": "Simple Spinach Tofu with Turmeric Rice",
+        "fit_score": 0.6,
+        "why_it_matches": "Stovetop tofu and spinach served over turmeric rice, matching most ingredients though it uses lemon instead of soy sauce.",
+        "matched_ingredients": [
+          "tofu",
+          "spinach",
+          "rice"
+        ],
+        "possibly_missing": [
+          "vegetable broth",
+          "turmeric",
+          "ginger",
+          "lemon juice",
+          "sesame seeds"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Spiced Spinach Tofu Stir fry 1 Pot 15 Minutes - Vegan Richa",
+        "url": "https://www.veganricha.com/spiced-spinach-tofu-stir-fry/",
+        "source": "veganricha.com",
+        "dish_name": "Spiced Spinach Tofu Stir-Fry (palak-style)",
+        "fit_score": 0.55,
+        "why_it_matches": "A quick 1-pot Indian-spiced tofu-spinach curry you can spoon over your rice, though it skips soy sauce and leans on many spices.",
+        "matched_ingredients": [
+          "tofu",
+          "spinach",
+          "rice"
+        ],
+        "possibly_missing": [
+          "garam masala",
+          "cumin",
+          "coriander",
+          "tomato paste",
+          "vegan yogurt"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Pan-Seared Salt and Pepper Tofu Rice Bowl Recipe - Viet World Kitchen",
+        "url": "https://www.vietworldkitchen.com/blog/2015/02/pan-seared-tofu-rice-bowl-recipe.html",
+        "source": "vietworldkitchen.com",
+        "dish_name": "Pan-Seared Salt and Pepper Tofu Rice Bowl",
+        "fit_score": 0.55,
+        "why_it_matches": "Simple stovetop tofu-and-rice bowl seasoned with soy sauce, but it includes no spinach.",
+        "matched_ingredients": [
+          "tofu",
+          "rice",
+          "soy sauce"
+        ],
+        "possibly_missing": [],
+        "role": "backup"
+      },
+      {
+        "title": "Super-Green Tofu Curry with Spinach & Brown Rice | Healthy & Delicious",
+        "url": "https://eatwithjack.com/super-green-tofu-curry-with-spinach-and-brown-rice-recipe/",
+        "source": "eatwithjack.com",
+        "dish_name": "Super-Green Tofu Curry with Spinach & Brown Rice",
+        "fit_score": 0.5,
+        "why_it_matches": "Blended spinach curry over rice with fried tofu, but it needs a blender, whole spices, and no soy sauce.",
+        "matched_ingredients": [
+          "tofu",
+          "spinach",
+          "rice"
+        ],
+        "possibly_missing": [
+          "coriander seeds",
+          "cumin seeds",
+          "cardamom",
+          "onion",
+          "garlic",
+          "fresh coriander"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Pan Seared Tofu Bowls - Skinnytaste",
+        "url": "https://www.skinnytaste.com/pan-seared-tofu-bowls/",
+        "source": "skinnytaste.com",
+        "dish_name": "Pan Seared Tofu Bowls with Edamame Rice",
+        "fit_score": 0.4,
+        "why_it_matches": "Stovetop seared tofu over rice with soy marinade, but it relies on broccoli and edamame and has no spinach.",
+        "matched_ingredients": [
+          "tofu",
+          "rice",
+          "soy sauce"
+        ],
+        "possibly_missing": [
+          "rice vinegar",
+          "sesame oil",
+          "broccoli",
+          "edamame",
+          "chili crisp",
+          "scallions"
+        ],
+        "role": "backup"
+      }
+    ]
+  },
+  {
+    "number": 4,
+    "query": "Use up yogurt and chickpeas. Vegetarian dinner.",
+    "attempts": [
+      {
+        "feedback": null,
+        "queries": [
+          "Here is a vegetarian dinner recipe using chickpeas and yogurt:",
+          "This easy chickpea curry with yogurt makes a great meatless dinner:",
+          "Try this healthy chickpea recipe with a creamy yogurt sauce for dinner:"
+        ]
+      }
+    ],
+    "retried": false,
+    "pool_sizes": [
+      12
+    ],
+    "url_integrity_ok": true,
+    "rec_checks": {
+      "sources_from_usable_pool": true,
+      "no_index_leak_in_prose": true,
+      "primary_count_ok": true,
+      "no_primary_alt_overlap": true
+    },
+    "elapsed_s": 42.4,
+    "error": null,
+    "recommendation": {
+      "dish_name": "Greek Yogurt Chickpea Curry",
+      "headline": "Tonight's the night for a creamy Greek yogurt chickpea curry \u2014 one pot, half an hour, and it puts both your yogurt and chickpeas to work.",
+      "why_it_fits": "You want to use up yogurt and chickpeas in a vegetarian dinner, and this curry is built around exactly that \u2014 a full cup of Greek yogurt stirred in for creaminess plus a can of chickpeas as the star. It's a 30-minute one-pot meal, so cleanup stays easy on a weeknight. The Plant Based School page keeps everything meatless from the start, so you don't have to make any swaps.",
+      "missing_items": [
+        {
+          "ingredient": "onion, garlic, and ginger",
+          "importance": "essential",
+          "note": "The aromatic base; if you're short on fresh ginger, a pinch of ground works."
+        },
+        {
+          "ingredient": "curry powder or garam masala",
+          "importance": "essential",
+          "note": "The spine of the flavor \u2014 any warm curry blend you have will do."
+        },
+        {
+          "ingredient": "crushed tomatoes",
+          "importance": "essential",
+          "note": "Builds the sauce; a few tablespoons of tomato paste loosened with water can fill in."
+        },
+        {
+          "ingredient": "vegetable broth",
+          "importance": "nice_to_have",
+          "note": "Water plus a bit of salt works if you don't have any."
+        },
+        {
+          "ingredient": "rice or naan",
+          "importance": "nice_to_have",
+          "note": "For serving; skip if you'd rather eat it as a stew."
+        }
+      ],
+      "primary_sources": [
+        {
+          "title": "Greek Yogurt Chickpea Curry - The Plant Based School",
+          "url": "https://theplantbasedschool.com/greek-yogurt-chickpea-curry/",
+          "source": "theplantbasedschool.com",
+          "dish_name": "Greek Yogurt Chickpea Curry"
+        }
+      ],
+      "how_to_use_sources": "Follow the Greek Yogurt Chickpea Curry on The Plant Based School as your main recipe for the base, sauce, and timing. One tip worth borrowing from the Blessedish version: fold the yogurt in off the heat so it stays smooth and doesn't split \u2014 a small move that makes a big difference with dairy yogurt.",
+      "alternatives": [
+        {
+          "recipe": {
+            "title": "Yogurt, Chickpea & Spinach Curry: Flavorful Vegetarian Dinner",
+            "url": "https://kitchenwithchloe.com/yogurt-chickpea-and-spinach-curry-recipe/",
+            "source": "kitchenwithchloe.com",
+            "dish_name": "Yogurt, Chickpea & Spinach Curry"
+          },
+          "reason": "Pick this Kitchen with Chloe version if you want to work spinach into the curry for a bit more green."
+        },
+        {
+          "recipe": {
+            "title": "Creamy Chickpea Lemon Skillet with Greek Yogurt",
+            "url": "https://theplantbasedschool.com/chickpea-lemon-skillet/",
+            "source": "theplantbasedschool.com",
+            "dish_name": "Creamy Chickpea Lemon Skillet with Greek Yogurt"
+          },
+          "reason": "Go for the Creamy Chickpea Lemon Skillet on The Plant Based School when you want something brighter and faster \u2014 15 minutes, lemony rather than curried."
+        },
+        {
+          "recipe": {
+            "title": "Turmeric Chickpeas with Yogurt | Tried and True Recipes",
+            "url": "https://www.triedandtruerecipe.com/turmeric-chickpeas-with-yogurt/",
+            "source": "triedandtruerecipe.com",
+            "dish_name": "Turmeric Chickpeas with Yogurt"
+          },
+          "reason": "Choose the Turmeric Chickpeas with Yogurt if you'd rather serve spiced chickpeas over a yogurt base than blend the yogurt into a sauce."
+        }
+      ]
+    },
+    "candidates": [
+      {
+        "title": "Greek Yogurt Chickpea Curry - The Plant Based School",
+        "url": "https://theplantbasedschool.com/greek-yogurt-chickpea-curry/",
+        "source": "theplantbasedschool.com",
+        "dish_name": "Greek Yogurt Chickpea Curry",
+        "fit_score": 0.95,
+        "why_it_matches": "A one-pot 30-minute vegetarian curry built directly around chickpeas and a full cup of Greek yogurt stirred in for creaminess.",
+        "matched_ingredients": [
+          "yogurt",
+          "chickpeas"
+        ],
+        "possibly_missing": [
+          "onion",
+          "garlic",
+          "ginger",
+          "curry powder",
+          "crushed tomatoes",
+          "vegetable broth"
+        ],
+        "role": "best_base_recipe"
+      },
+      {
+        "title": "Greek Yogurt Chickpea Curry \u2013 Blessedish",
+        "url": "https://blesseddish.com/greek-yogurt-chickpea-curry/",
+        "source": "blesseddish.com",
+        "dish_name": "Greek Yogurt Chickpea Curry",
+        "fit_score": 0.9,
+        "why_it_matches": "A clearly-written 30-minute vegetarian curry with bloomed spices, chickpeas, and a full cup of Greek yogurt folded in off the heat.",
+        "matched_ingredients": [
+          "yogurt",
+          "chickpeas"
+        ],
+        "possibly_missing": [
+          "onion",
+          "garlic",
+          "ginger",
+          "curry powder",
+          "crushed tomatoes",
+          "vegetable broth"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Yogurt, Chickpea & Spinach Curry: Flavorful Vegetarian Dinner",
+        "url": "https://kitchenwithchloe.com/yogurt-chickpea-and-spinach-curry-recipe/",
+        "source": "kitchenwithchloe.com",
+        "dish_name": "Yogurt, Chickpea & Spinach Curry",
+        "fit_score": 0.88,
+        "why_it_matches": "Weeknight vegetarian curry blending yogurt into a tomato-spice base with chickpeas, plus spinach and rice on the side.",
+        "matched_ingredients": [
+          "yogurt",
+          "chickpeas"
+        ],
+        "possibly_missing": [
+          "spinach",
+          "tomatoes",
+          "onion",
+          "garlic",
+          "ginger",
+          "basmati rice",
+          "quinoa"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Creamy Yogurt Chickpea Curry",
+        "url": "https://www.chefpriya.com/recipes/creamy-yogurt-chickpea-curry",
+        "source": "chefpriya.com",
+        "dish_name": "Creamy Yogurt Chickpea Curry",
+        "fit_score": 0.86,
+        "why_it_matches": "Gluten-free vegetarian curry with whisked plain yogurt cooked into a spiced tomato base with chickpeas.",
+        "matched_ingredients": [
+          "yogurt",
+          "chickpeas"
+        ],
+        "possibly_missing": [
+          "onion",
+          "tomatoes",
+          "garlic",
+          "ginger",
+          "garam masala",
+          "cilantro"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Yoghurt Chickpea Curry - Add the Love by Julie Neville",
+        "url": "https://addthelove.com/yoghurt-chickpea-curry/",
+        "source": "addthelove.com",
+        "dish_name": "Yoghurt Chickpea Curry",
+        "fit_score": 0.85,
+        "why_it_matches": "Creamy 40-minute vegetarian curry with yogurt blended into the sauce and chickpeas and spinach, served with rice and naan.",
+        "matched_ingredients": [
+          "yoghurt",
+          "chickpeas"
+        ],
+        "possibly_missing": [
+          "spinach",
+          "tomatoes",
+          "onion",
+          "garlic",
+          "ginger",
+          "rice",
+          "naan"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Easy Chickpea Curry with Basmati Rice Recipe | ChefDeHome.com",
+        "url": "https://www.chefdehome.com/recipes/592/easy-chickpea-curry-with-basmati-rice",
+        "source": "chefdehome.com",
+        "dish_name": "Easy Chickpea Curry with Basmati Rice",
+        "fit_score": 0.83,
+        "why_it_matches": "25-minute gluten-free vegetarian chickpea curry with yogurt stirred in at the end for a mild tang, served over basmati rice.",
+        "matched_ingredients": [
+          "yogurt",
+          "chickpeas"
+        ],
+        "possibly_missing": [
+          "onion",
+          "tomato",
+          "garlic",
+          "ginger",
+          "curry powder",
+          "basmati rice",
+          "cilantro"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Creamy Chickpea Lemon Skillet with Greek Yogurt",
+        "url": "https://theplantbasedschool.com/chickpea-lemon-skillet/",
+        "source": "theplantbasedschool.com",
+        "dish_name": "Creamy Chickpea Lemon Skillet with Greek Yogurt",
+        "fit_score": 0.82,
+        "why_it_matches": "Quick 15-minute one-pan vegetarian skillet where Greek yogurt melts into chickpeas for a light lemony sauce.",
+        "matched_ingredients": [
+          "yogurt",
+          "chickpeas"
+        ],
+        "possibly_missing": [
+          "onion",
+          "garlic",
+          "lemon",
+          "vegetable broth",
+          "oregano",
+          "paprika"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Turmeric Chickpeas with Yogurt | Tried and True Recipes",
+        "url": "https://www.triedandtruerecipe.com/turmeric-chickpeas-with-yogurt/",
+        "source": "triedandtruerecipe.com",
+        "dish_name": "Turmeric Chickpeas with Yogurt",
+        "fit_score": 0.81,
+        "why_it_matches": "Quick one-pot dish of turmeric-spiced chickpeas piled over a whisked Greek yogurt base, using both ingredients you want to use up.",
+        "matched_ingredients": [
+          "yogurt",
+          "chickpeas"
+        ],
+        "possibly_missing": [
+          "shallot",
+          "jalape\u00f1o",
+          "butter",
+          "turmeric",
+          "cherry tomatoes",
+          "lemon",
+          "parsley"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Chickpea Stew & Herbed Greek Yogurt \u2014 The Skinny Fork",
+        "url": "https://theskinnyfork.com/blog/chickpea-stew-herbed-greek-yogurt",
+        "source": "theskinnyfork.com",
+        "dish_name": "Chickpea Harissa Stew with Herbed Greek Yogurt",
+        "fit_score": 0.8,
+        "why_it_matches": "Meatless chickpea-tomato stew topped with a herbed Greek yogurt dollop, using both target ingredients (use veggie stock to keep it vegetarian).",
+        "matched_ingredients": [
+          "yogurt",
+          "chickpeas"
+        ],
+        "possibly_missing": [
+          "cherry tomatoes",
+          "harissa",
+          "dill",
+          "capers",
+          "garlic",
+          "lemon"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Chickpea Lemon Skillet: Bright, Healthy & Delicious Dinner",
+        "url": "https://yumwithmia.com/chickpea-lemon-skillet-recipe/",
+        "source": "yumwithmia.com",
+        "dish_name": "Chickpea Lemon Skillet",
+        "fit_score": 0.79,
+        "why_it_matches": "Quick Mediterranean vegetarian skillet finishing chickpeas with Greek yogurt and lemon for a creamy sauce.",
+        "matched_ingredients": [
+          "yogurt",
+          "chickpeas"
+        ],
+        "possibly_missing": [
+          "onion",
+          "garlic",
+          "lemon",
+          "vegetable broth",
+          "paprika",
+          "oregano"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Chickpea Lemon Skillet: Bright, Quick Vegetarian Dinner",
+        "url": "https://www.sanacooks.com/chickpea-lemon-skillet-recipe/",
+        "source": "sanacooks.com",
+        "dish_name": "Chickpea Lemon Skillet",
+        "fit_score": 0.79,
+        "why_it_matches": "Quick 25-minute vegetarian one-pan skillet finishing chickpeas with Greek yogurt and lemon for a creamy sauce.",
+        "matched_ingredients": [
+          "yogurt",
+          "chickpeas"
+        ],
+        "possibly_missing": [
+          "onion",
+          "garlic",
+          "lemon",
+          "vegetable broth",
+          "paprika",
+          "oregano"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "10-Minute Coconut Yogurt & Chickpea Curry (Gluten-Free, Vegan)",
+        "url": "https://strengthandsunshine.com/10-minute-coconut-yogurt-chickpea-curry-gluten-free-vegan/",
+        "source": "strengthandsunshine.com",
+        "dish_name": "10-Minute Coconut Yogurt & Chickpea Curry",
+        "fit_score": 0.65,
+        "why_it_matches": "Very fast vegan curry with chickpeas and veggies, but it calls for coconut yogurt rather than the dairy yogurt you're using up.",
+        "matched_ingredients": [
+          "yogurt",
+          "chickpeas"
+        ],
+        "possibly_missing": [
+          "coconut yogurt",
+          "carrots",
+          "broccoli",
+          "shallot",
+          "curry powder",
+          "rice & quinoa cups"
+        ],
+        "role": "backup"
+      }
+    ]
+  }
+]

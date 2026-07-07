@@ -1,0 +1,1354 @@
+[
+  {
+    "number": 5,
+    "query": "Something high protein with canned tuna and eggs.",
+    "attempts": [
+      {
+        "feedback": null,
+        "queries": [
+          "Here is a high protein recipe using canned tuna and eggs:",
+          "This easy tuna and egg protein-packed recipe is perfect for a healthy meal:",
+          "Here is a quick high-protein tuna and egg salad recipe:"
+        ]
+      }
+    ],
+    "retried": false,
+    "pool_sizes": [
+      11
+    ],
+    "url_integrity_ok": true,
+    "rec_checks": {
+      "sources_from_usable_pool": true,
+      "no_index_leak_in_prose": true,
+      "primary_count_ok": true,
+      "no_primary_alt_overlap": true
+    },
+    "elapsed_s": 37.3,
+    "error": null,
+    "recommendation": {
+      "dish_name": "High-Protein Tuna Egg Salad",
+      "headline": "A high-protein tuna egg salad you can throw together in under 20 minutes with the canned tuna and eggs you've already got.",
+      "why_it_fits": "You want high protein with canned tuna and eggs, and this hits both squarely at 33g per serving. It leans on Greek yogurt instead of loads of mayo, so it stays light while still creamy. Since you've already got the two main players, you're most of the way there.",
+      "missing_items": [
+        {
+          "ingredient": "Greek yogurt",
+          "importance": "essential",
+          "note": "The creamy base here; plain mayo works if you don't have it."
+        },
+        {
+          "ingredient": "Mustard",
+          "importance": "nice_to_have",
+          "note": "Adds tang and depth; skip it or use a splash of lemon juice."
+        },
+        {
+          "ingredient": "Cornichons or capers",
+          "importance": "nice_to_have",
+          "note": "For briny crunch; any chopped pickle works, or leave them out."
+        }
+      ],
+      "primary_sources": [
+        {
+          "title": "Easy Tuna Egg Salad (High Protein) \u2022 Daisybeet",
+          "url": "https://www.daisybeet.com/high-protein-tuna-salad-recipe-with-egg/",
+          "source": "daisybeet.com",
+          "dish_name": "High-Protein Tuna Egg Salad"
+        }
+      ],
+      "how_to_use_sources": "Follow the Easy Tuna Egg Salad page on Daisybeet for the base method and the Greek yogurt dressing. If you'd like a bit more crunch and freshness, borrow the celery and red onion idea from the Quick Tuna Salad with Chopped Egg page on Clean & Delicious.",
+      "alternatives": [
+        {
+          "recipe": {
+            "title": "Tuna Salad Recipe With Egg (10 Min) - Wholesome Yum",
+            "url": "https://www.wholesomeyum.com/tuna-egg-salad-recipe/",
+            "source": "wholesomeyum.com",
+            "dish_name": "Tuna Egg Salad"
+          },
+          "reason": "Pick the Wholesome Yum page if you want the fastest, mayo-based version at around 10 minutes."
+        },
+        {
+          "recipe": {
+            "title": "Tuna Egg Salad - Skinnytaste",
+            "url": "https://www.skinnytaste.com/tuna-egg-salad/",
+            "source": "skinnytaste.com",
+            "dish_name": "Tuna Egg Salad"
+          },
+          "reason": "Go with the Skinnytaste page if you want the simplest four-ingredient route with minimal shopping."
+        },
+        {
+          "recipe": {
+            "title": "Tuna Salad Recipe with Egg | The Mediterranean Dish",
+            "url": "https://www.themediterraneandish.com/tuna-salad-recipe-with-egg/",
+            "source": "themediterraneandish.com",
+            "dish_name": "Protein-Packed Tuna Salad with Eggs"
+          },
+          "reason": "Choose the Mediterranean Dish page if you're after a zestier take with olives, jalapenos, and a Dijon vinaigrette."
+        }
+      ]
+    },
+    "candidates": [
+      {
+        "title": "Easy Tuna Egg Salad (High Protein) \u2022 Daisybeet",
+        "url": "https://www.daisybeet.com/high-protein-tuna-salad-recipe-with-egg/",
+        "source": "daisybeet.com",
+        "dish_name": "High-Protein Tuna Egg Salad",
+        "fit_score": 0.95,
+        "why_it_matches": "Combines canned albacore tuna and boiled eggs with Greek yogurt for 33g protein per serving, ready in under 20 minutes.",
+        "matched_ingredients": [
+          "canned tuna",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "greek yogurt",
+          "mustard",
+          "mayonnaise",
+          "cornichons",
+          "capers"
+        ],
+        "role": "best_base_recipe"
+      },
+      {
+        "title": "Tuna Salad Recipe With Egg (10 Min) - Wholesome Yum",
+        "url": "https://www.wholesomeyum.com/tuna-egg-salad-recipe/",
+        "source": "wholesomeyum.com",
+        "dish_name": "Tuna Egg Salad",
+        "fit_score": 0.9,
+        "why_it_matches": "Creamy tuna-and-egg salad delivering 34g protein per serving, made in about 10 minutes.",
+        "matched_ingredients": [
+          "canned tuna",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "mayonnaise",
+          "dijon mustard",
+          "celery",
+          "pickles",
+          "onion"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Quick Tuna Salad w/ Chopped Egg (27g Protein!) \u00ab Clean & Delicious",
+        "url": "https://cleananddelicious.com/quick-tuna-salad-w-chopped-egg-27g-protein/",
+        "source": "cleananddelicious.com",
+        "dish_name": "Quick Tuna Salad with Chopped Egg",
+        "fit_score": 0.89,
+        "why_it_matches": "Simple tuna salad with 4 hard-boiled eggs and Greek yogurt for 27g protein in minutes.",
+        "matched_ingredients": [
+          "canned tuna",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "mayonnaise",
+          "greek yogurt",
+          "red onion",
+          "celery"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Tuna Egg Salad - Skinnytaste",
+        "url": "https://www.skinnytaste.com/tuna-egg-salad/",
+        "source": "skinnytaste.com",
+        "dish_name": "Tuna Egg Salad",
+        "fit_score": 0.86,
+        "why_it_matches": "Four-ingredient high-protein tuna egg salad (30g protein) that's ready in 15 minutes.",
+        "matched_ingredients": [
+          "canned tuna",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "mayonnaise",
+          "red onion"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Tuna Egg Salad Recipe - Jessica Gavin",
+        "url": "https://www.jessicagavin.com/tuna-egg-salad/",
+        "source": "jessicagavin.com",
+        "dish_name": "Tuna Egg Salad",
+        "fit_score": 0.83,
+        "why_it_matches": "Protein-packed tuna and egg salad with crunchy veggies and a creamy mayo-mustard dressing.",
+        "matched_ingredients": [
+          "canned tuna",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "mayonnaise",
+          "celery",
+          "red onion",
+          "relish",
+          "dijon mustard",
+          "lemon juice"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Tuna Egg Salad | Real Balanced",
+        "url": "https://realbalanced.com/recipe/tuna-egg-salad/",
+        "source": "realbalanced.com",
+        "dish_name": "Tuna Egg Salad",
+        "fit_score": 0.82,
+        "why_it_matches": "Low-carb, high-protein (23g) tuna egg salad with Greek yogurt, ready in 25 minutes.",
+        "matched_ingredients": [
+          "canned tuna",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "greek yogurt",
+          "celery",
+          "red onion",
+          "pickles",
+          "dijon mustard",
+          "lemon juice"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Easy Tuna Egg Salad (High-Protein) | What Great Grandma Ate",
+        "url": "https://whatgreatgrandmaate.com/tuna-egg-salad/",
+        "source": "whatgreatgrandmaate.com",
+        "dish_name": "Easy Tuna Egg Salad",
+        "fit_score": 0.81,
+        "why_it_matches": "Six-ingredient tuna egg salad with 30g protein, naturally keto/Whole30-friendly, in under 30 minutes.",
+        "matched_ingredients": [
+          "canned tuna",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "red onion",
+          "celery",
+          "dill pickles",
+          "mayonnaise"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Tuna Salad Recipe with Egg | The Mediterranean Dish",
+        "url": "https://www.themediterraneandish.com/tuna-salad-recipe-with-egg/",
+        "source": "themediterraneandish.com",
+        "dish_name": "Protein-Packed Tuna Salad with Eggs",
+        "fit_score": 0.8,
+        "why_it_matches": "Zesty Mediterranean-style tuna and egg salad with jalapenos, olives, and Dijon vinaigrette, done in 15 minutes.",
+        "matched_ingredients": [
+          "canned tuna",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "jalapenos",
+          "celery",
+          "green onions",
+          "green olives",
+          "dijon vinaigrette"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "High-Protein Tuna and Egg Salad (32g+ Protein) - Live Well by Christina",
+        "url": "https://livewellbychristina.com/tuna-egg-salad/",
+        "source": "livewellbychristina.com",
+        "dish_name": "High-Protein Tuna and Egg Salad",
+        "fit_score": 0.79,
+        "why_it_matches": "Composed tuna and egg salad over rocket and broccoli with a mustard-yogurt dressing offering 32g+ protein.",
+        "matched_ingredients": [
+          "canned tuna",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "broccoli",
+          "rocket",
+          "onion",
+          "olive oil",
+          "lemon juice",
+          "mustard powder",
+          "greek yogurt"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "The Best Tuna Salad with Egg Recipe | Milk & Honey Nutrition",
+        "url": "https://www.milkandhoneynutrition.com/recipes/the-best-tuna-salad-with-egg-recipe/",
+        "source": "milkandhoneynutrition.com",
+        "dish_name": "Tuna Salad with Egg",
+        "fit_score": 0.78,
+        "why_it_matches": "Tuna egg salad with pecans and Greek yogurt-mayo dressing, 24g protein per serving.",
+        "matched_ingredients": [
+          "canned tuna",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "pecans",
+          "celery",
+          "red onion",
+          "greek yogurt",
+          "mayonnaise"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Tuna Salad with Egg {Easy + Healthy} - Eating Bird Food",
+        "url": "https://www.eatingbirdfood.com/tuna-egg-salad/",
+        "source": "eatingbirdfood.com",
+        "dish_name": "Tuna Salad with Egg",
+        "fit_score": 0.72,
+        "why_it_matches": "Extra-creamy tuna egg salad with Greek yogurt, but lower protein (12g per half serving) than others.",
+        "matched_ingredients": [
+          "canned tuna",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "greek yogurt",
+          "red onion",
+          "dill pickle"
+        ],
+        "role": "backup"
+      }
+    ]
+  },
+  {
+    "number": 6,
+    "query": "I have pasta, cream cheese, frozen peas, and no meat.",
+    "attempts": [
+      {
+        "feedback": null,
+        "queries": [
+          "Here is a delicious vegetarian pasta recipe with cream cheese and frozen peas:",
+          "Here is an easy creamy pasta recipe using cream cheese and peas:",
+          "Quick pasta with cream cheese sauce and green peas recipe:"
+        ]
+      }
+    ],
+    "retried": false,
+    "pool_sizes": [
+      12
+    ],
+    "url_integrity_ok": true,
+    "rec_checks": {
+      "sources_from_usable_pool": true,
+      "no_index_leak_in_prose": true,
+      "primary_count_ok": true,
+      "no_primary_alt_overlap": true
+    },
+    "elapsed_s": 43.6,
+    "error": null,
+    "recommendation": {
+      "dish_name": "Pea and Cream Cheese Pasta",
+      "headline": "You're basically already holding dinner: a creamy pea and cream cheese pasta that comes together in the time it takes the water to boil.",
+      "why_it_fits": "You've got pasta, cream cheese, and frozen peas \u2014 exactly the three things this dish is built on, and it's meatless by design so the no-meat part is a non-issue. The 4 Ingredient Pea and Cream Cheese Pasta page on whattohavefordinnertonight.com uses just those plus an onion, so you're one pantry item away. It's a genuine 5-minute weeknight rescue.",
+      "missing_items": [
+        {
+          "ingredient": "onion",
+          "importance": "nice_to_have",
+          "note": "Adds savory depth, but you can skip it or swap in a little garlic if that's what you have."
+        },
+        {
+          "ingredient": "parmesan",
+          "importance": "nice_to_have",
+          "note": "Stir in at the end for extra richness and salt; totally optional."
+        },
+        {
+          "ingredient": "pasta water",
+          "importance": "essential",
+          "note": "Not really shopping \u2014 just remember to reserve a cup before draining to loosen the cream cheese into a silky sauce."
+        }
+      ],
+      "primary_sources": [
+        {
+          "title": "4 Ingredient Pea and Cream Cheese Pasta",
+          "url": "https://whattohavefordinnertonight.com/4-ingredient-pea-and-cream-cheese-pasta/",
+          "source": "whattohavefordinnertonight.com",
+          "dish_name": "4-Ingredient Pea and Cream Cheese Pasta"
+        }
+      ],
+      "how_to_use_sources": "Follow the 4 Ingredient Pea and Cream Cheese Pasta page on whattohavefordinnertonight.com as your base \u2014 it maps almost perfectly to what's in your kitchen. If you want a slightly more built-out sauce, borrow the parmesan-and-seasoning finish from the Creamy Pea Pasta page on theclevermeal.com to round things out.",
+      "alternatives": [
+        {
+          "recipe": {
+            "title": "Creamy Pea Pasta - The clever meal",
+            "url": "https://theclevermeal.com/creamy-pea-pasta/",
+            "source": "theclevermeal.com",
+            "dish_name": "Creamy Pea Pasta"
+          },
+          "reason": "Pick this if you want a slightly more developed 15-minute version with parmesan and a bit more flavor."
+        },
+        {
+          "recipe": {
+            "title": "Green Pea Pasta (15-Minute) - Real Food Whole Life",
+            "url": "https://realfoodwholelife.com/recipes/green-pea-pasta/",
+            "source": "realfoodwholelife.com",
+            "dish_name": "Green Pea Pasta (pea pesto)"
+          },
+          "reason": "Better when you'd rather blend the peas into a bright pesto-style sauce and have basil, lemon, and garlic on hand."
+        },
+        {
+          "recipe": {
+            "title": "Cream Cheese Pasta {10 Minute Meal}",
+            "url": "https://www.tamingtwins.com/cream-cheese-pasta/",
+            "source": "tamingtwins.com",
+            "dish_name": "Cream Cheese Pasta"
+          },
+          "reason": "Good if you want a flexible 10-minute base you can toss extra veg into, skipping the bacon to keep it meatless."
+        }
+      ]
+    },
+    "candidates": [
+      {
+        "title": "4 Ingredient Pea and Cream Cheese Pasta",
+        "url": "https://whattohavefordinnertonight.com/4-ingredient-pea-and-cream-cheese-pasta/",
+        "source": "whattohavefordinnertonight.com",
+        "dish_name": "4-Ingredient Pea and Cream Cheese Pasta",
+        "fit_score": 0.96,
+        "why_it_matches": "A truly minimal 5-minute meatless recipe using exactly pasta, cream cheese and frozen peas plus one onion.",
+        "matched_ingredients": [
+          "pasta",
+          "cream cheese",
+          "frozen peas"
+        ],
+        "possibly_missing": [
+          "onion"
+        ],
+        "role": "best_base_recipe"
+      },
+      {
+        "title": "Creamy Pea Pasta - The clever meal",
+        "url": "https://theclevermeal.com/creamy-pea-pasta/",
+        "source": "theclevermeal.com",
+        "dish_name": "Creamy Pea Pasta",
+        "fit_score": 0.9,
+        "why_it_matches": "A 15-minute meatless pasta built on frozen peas and cream cheese, exactly matching what's on hand with only onion and parmesan added.",
+        "matched_ingredients": [
+          "pasta",
+          "cream cheese",
+          "frozen peas"
+        ],
+        "possibly_missing": [
+          "onion",
+          "parmesan cheese"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Green Pea Pasta (15-Minute) - Real Food Whole Life",
+        "url": "https://realfoodwholelife.com/recipes/green-pea-pasta/",
+        "source": "realfoodwholelife.com",
+        "dish_name": "Green Pea Pasta (pea pesto)",
+        "fit_score": 0.82,
+        "why_it_matches": "Blends frozen peas with cream cheese into a pesto-like sauce for a 15-minute vegetarian dinner using your core ingredients.",
+        "matched_ingredients": [
+          "pasta",
+          "cream cheese",
+          "frozen peas"
+        ],
+        "possibly_missing": [
+          "basil",
+          "lemon",
+          "garlic",
+          "parmesan"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Mac and Cheese and Peas Recipe | Damaris Phillips | Food Network",
+        "url": "https://www.foodnetwork.com/fnk/recipes/mac-and-cheese-and-peas-8353803",
+        "source": "foodnetwork.com",
+        "dish_name": "Mac and Cheese and Peas",
+        "fit_score": 0.7,
+        "why_it_matches": "A meatless baked-style mac using cream cheese and frozen peas with pasta, from a reliable source, needing extra cheeses.",
+        "matched_ingredients": [
+          "pasta",
+          "cream cheese",
+          "frozen peas"
+        ],
+        "possibly_missing": [
+          "butter",
+          "flour",
+          "milk",
+          "cheddar",
+          "american cheese"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Cream Cheese Pasta {10 Minute Meal}",
+        "url": "https://www.tamingtwins.com/cream-cheese-pasta/",
+        "source": "tamingtwins.com",
+        "dish_name": "Cream Cheese Pasta",
+        "fit_score": 0.6,
+        "why_it_matches": "A flexible 10-minute cream cheese pasta that includes peas and lets you skip the bacon to keep it meatless.",
+        "matched_ingredients": [
+          "pasta",
+          "cream cheese",
+          "frozen peas"
+        ],
+        "possibly_missing": [
+          "onion",
+          "garlic",
+          "courgettes",
+          "parmesan"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Creamy Pea Pasta \u2013 Quick & Delicious Vegetarian Dinner",
+        "url": "https://tastyrates.com/creamy-pea-pasta-recipe/",
+        "source": "tastyrates.com",
+        "dish_name": "Creamy Pea Pasta",
+        "fit_score": 0.55,
+        "why_it_matches": "A vegetarian pea and cream cheese pasta, though the page is a near-duplicate clone of another recipe with a suspicious future publish date.",
+        "matched_ingredients": [
+          "pasta",
+          "cream cheese",
+          "frozen peas"
+        ],
+        "possibly_missing": [
+          "onion",
+          "parmesan cheese"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Creamy Pea Pasta: Delicious, Quick, and Easy Dinner",
+        "url": "https://yummyhere.com/creamy-pea-pasta-recipe/",
+        "source": "yummyhere.com",
+        "dish_name": "Creamy Pea Pasta",
+        "fit_score": 0.5,
+        "why_it_matches": "Same meatless pea-and-cream-cheese method, but the content is a duplicated clone with spammy future dating.",
+        "matched_ingredients": [
+          "pasta",
+          "cream cheese",
+          "frozen peas"
+        ],
+        "possibly_missing": [
+          "onion",
+          "parmesan cheese"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Creamy Pea Pasta: Irresistibly Easy & Flavorful",
+        "url": "https://emilyscook.com/creamy-pea-pasta-recipe/",
+        "source": "emilyscook.com",
+        "dish_name": "Creamy Pea Pasta",
+        "fit_score": 0.5,
+        "why_it_matches": "Another cloned creamy pea pasta with cream cheese and frozen peas, flagged vegetarian but showing spam-like duplication.",
+        "matched_ingredients": [
+          "pasta",
+          "cream cheese",
+          "frozen peas"
+        ],
+        "possibly_missing": [
+          "onion",
+          "parmesan cheese"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Italian Creamy Pea Pasta Recipe - Cozy Italian Kitchen",
+        "url": "https://cozyitaliankitchen.com/italian-creamy-pea-pasta-recipe/",
+        "source": "cozyitaliankitchen.com",
+        "dish_name": "Italian Creamy Pea Pasta",
+        "fit_score": 0.45,
+        "why_it_matches": "A meatless pea pasta, but its creaminess comes from double cream rather than the cream cheese you have.",
+        "matched_ingredients": [
+          "pasta",
+          "frozen peas"
+        ],
+        "possibly_missing": [
+          "double cream",
+          "shallots",
+          "garlic",
+          "parmesan",
+          "mint",
+          "lemon"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Creamy Pasta with Ricotta and Peas | Powell Family Cooking",
+        "url": "https://www.powellfamilycooking.com/pasta-with-ricotta-and-peas/",
+        "source": "powellfamilycooking.com",
+        "dish_name": "Creamy Pasta with Ricotta and Peas",
+        "fit_score": 0.4,
+        "why_it_matches": "A quick vegetarian pea pasta, but it relies on ricotta instead of the cream cheese you have on hand.",
+        "matched_ingredients": [
+          "pasta",
+          "frozen peas"
+        ],
+        "possibly_missing": [
+          "ricotta",
+          "lemon",
+          "parmesan",
+          "basil"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "GREEN PEAS CREAM CHEESE PENNE PASTA/THE SKINNY POT",
+        "url": "https://theskinnypot.com/green-peas-cream-cheese-penne-pasta/",
+        "source": "theskinnypot.com",
+        "dish_name": "Green Peas Cream Cheese Penne",
+        "fit_score": 0.2,
+        "why_it_matches": "Uses cream cheese and peas but is built around ground chicken, which conflicts with the no-meat request.",
+        "matched_ingredients": [
+          "cream cheese",
+          "frozen peas"
+        ],
+        "possibly_missing": [
+          "ground chicken",
+          "milk",
+          "heavy cream",
+          "cornstarch"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Creamy Cheese & Peas Recipe + Video Masterclass | The Pasta Queen",
+        "url": "https://theroyalcourtofpasta.com/recipes/creamy-cheese-peas/",
+        "source": "theroyalcourtofpasta.com",
+        "dish_name": "Creamy Cheese & Peas",
+        "fit_score": 0.15,
+        "why_it_matches": "Relevant cheese-and-peas pasta concept but the page is video-focused and the excerpt is broken schema markup with no readable ingredients or steps.",
+        "matched_ingredients": [
+          "frozen peas"
+        ],
+        "possibly_missing": [],
+        "role": "ignore"
+      }
+    ]
+  },
+  {
+    "number": 7,
+    "query": "I want something Korean-ish with ground beef and rice.",
+    "attempts": [
+      {
+        "feedback": null,
+        "queries": [
+          "Here is a delicious Korean ground beef and rice bowl recipe:",
+          "Here is an easy Korean-inspired beef bulgogi rice bowl recipe with ground beef:",
+          "Here is a quick Korean-style ground beef with rice dinner recipe:"
+        ]
+      }
+    ],
+    "retried": false,
+    "pool_sizes": [
+      12
+    ],
+    "url_integrity_ok": true,
+    "rec_checks": {
+      "sources_from_usable_pool": true,
+      "no_index_leak_in_prose": true,
+      "primary_count_ok": true,
+      "no_primary_alt_overlap": true
+    },
+    "elapsed_s": 42.8,
+    "error": null,
+    "recommendation": {
+      "dish_name": "Korean Ground Beef and Rice Bowls",
+      "headline": "You're one quick pan of savory-sweet ground beef away from a Korean-ish rice bowl tonight.",
+      "why_it_fits": "You've already got the two things that matter most\u2014ground beef and rice\u2014so this comes together in about 20 minutes. The Korean Ground Beef and Rice Bowls page on My Korean Kitchen leans on an authentic bulgogi-style sauce, which gives you that real Korean flavor without hunting down anything exotic. If you want a little heat and freshness, the gochujang-and-cucumber version on Skinnytaste is right there as a backup.",
+      "missing_items": [
+        {
+          "ingredient": "soy sauce",
+          "importance": "essential",
+          "note": "The backbone of the sauce\u2014regular soy sauce is fine; tamari works if you're gluten-free."
+        },
+        {
+          "ingredient": "garlic",
+          "importance": "essential",
+          "note": "Fresh minced is best, but a spoon of jarred garlic does the job."
+        },
+        {
+          "ingredient": "brown sugar",
+          "importance": "essential",
+          "note": "Honey or regular sugar substitutes fine for that savory-sweet balance."
+        },
+        {
+          "ingredient": "sesame oil",
+          "importance": "essential",
+          "note": "Toasted sesame oil brings the signature nuttiness; don't skip if you can help it."
+        },
+        {
+          "ingredient": "ginger",
+          "importance": "nice_to_have",
+          "note": "Fresh or ground both work; skip it if you don't have any and it'll still taste Korean."
+        },
+        {
+          "ingredient": "green onions",
+          "importance": "nice_to_have",
+          "note": "A fresh finishing touch\u2014use any onion or skip if you're bare."
+        },
+        {
+          "ingredient": "rice wine or mirin",
+          "importance": "nice_to_have",
+          "note": "Adds depth to the marinade; a splash of water or a pinch more sugar covers for it."
+        }
+      ],
+      "primary_sources": [
+        {
+          "title": "Korean Ground Beef and Rice Bowls - My Korean Kitchen",
+          "url": "https://mykoreankitchen.com/korean-ground-beef-rice-bowls/",
+          "source": "mykoreankitchen.com",
+          "dish_name": "Korean Ground Beef and Rice Bowls"
+        }
+      ],
+      "how_to_use_sources": "Follow the Korean Ground Beef and Rice Bowls page on My Korean Kitchen for the base\u2014it walks you through the beef and the bulgogi-style sauce, plus the optional bibimbap sauce if you want to spoon something extra over top. If you'd rather punch up the heat, borrow the gochujang sauce idea and the quick cucumber side from the Skinnytaste Korean Beef page.",
+      "alternatives": [
+        {
+          "recipe": {
+            "title": "Korean Beef Recipe - Skinnytaste",
+            "url": "https://www.skinnytaste.com/korean-beef-rice-bowls/",
+            "source": "skinnytaste.com",
+            "dish_name": "Korean Beef Rice Bowls"
+          },
+          "reason": "Pick this Skinnytaste version if you want gochujang heat, a lean profile, and a fresh cucumber side."
+        },
+        {
+          "recipe": {
+            "title": "Korean Beef Bowl - Damn Delicious",
+            "url": "https://damndelicious.net/2013/07/07/korean-beef-bowl/",
+            "source": "damndelicious.net",
+            "dish_name": "Korean Beef Bowl"
+          },
+          "reason": "Go with the Damn Delicious Korean Beef Bowl for the fastest, most no-fuss pantry-sauce weeknight version."
+        },
+        {
+          "recipe": {
+            "title": "Ground Beef Bulgogi: Easy 15-Minute Korean Rice Bowl Recipe",
+            "url": "https://www.blondekimchi.com/easy-15-minutes-ground-beef-bulgogi-rice-bowl/",
+            "source": "blondekimchi.com",
+            "dish_name": "Ground Beef Bulgogi Rice Bowl"
+          },
+          "reason": "Choose the Blonde Kimchi ground beef bulgogi if you want a scrambled-egg topping and a 15-minute turnaround."
+        }
+      ]
+    },
+    "candidates": [
+      {
+        "title": "Korean Ground Beef and Rice Bowls - My Korean Kitchen",
+        "url": "https://mykoreankitchen.com/korean-ground-beef-rice-bowls/",
+        "source": "mykoreankitchen.com",
+        "dish_name": "Korean Ground Beef and Rice Bowls",
+        "fit_score": 0.93,
+        "why_it_matches": "An authentic Korean-source bulgogi spin-off with ground beef over rice, minimal ingredients, and optional bibimbap sauce for exactly this craving.",
+        "matched_ingredients": [
+          "ground beef",
+          "rice"
+        ],
+        "possibly_missing": [
+          "soy sauce",
+          "brown sugar",
+          "rice wine",
+          "garlic",
+          "ginger",
+          "sesame oil",
+          "green onions"
+        ],
+        "role": "best_base_recipe"
+      },
+      {
+        "title": "Korean Beef Bulgogi Rice Bowls - The easy way! - RecipeTin Eats",
+        "url": "https://www.recipetineats.com/korean-beef-bulgogi-rice-bowls-the-easy-way/",
+        "source": "recipetineats.com",
+        "dish_name": "Korean Beef Bulgogi Rice Bowls",
+        "fit_score": 0.87,
+        "why_it_matches": "Uses ground beef with an authentic bulgogi marinade served over rice, a very close and flavorful match.",
+        "matched_ingredients": [
+          "ground beef",
+          "rice"
+        ],
+        "possibly_missing": [
+          "soy sauce",
+          "garlic",
+          "ginger",
+          "sesame oil",
+          "mirin",
+          "brown sugar",
+          "apple"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Korean Beef Bowl - Damn Delicious",
+        "url": "https://damndelicious.net/2013/07/07/korean-beef-bowl/",
+        "source": "damndelicious.net",
+        "dish_name": "Korean Beef Bowl",
+        "fit_score": 0.86,
+        "why_it_matches": "Quick cheater-bulgogi with ground beef and a simple soy-brown sugar-sesame sauce served over rice in about 20 minutes.",
+        "matched_ingredients": [
+          "ground beef",
+          "rice"
+        ],
+        "possibly_missing": [
+          "brown sugar",
+          "soy sauce",
+          "sesame oil",
+          "garlic",
+          "ginger",
+          "green onions"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Korean Beef Bowl {Fast and Healthy} \u2013 WellPlated.com",
+        "url": "https://www.wellplated.com/korean-beef-bowl/",
+        "source": "wellplated.com",
+        "dish_name": "Korean Beef Bowl",
+        "fit_score": 0.85,
+        "why_it_matches": "Ground beef browned with soy, garlic, ginger, and sesame served over rice in 20 minutes\u2014directly matches the request.",
+        "matched_ingredients": [
+          "ground beef",
+          "rice"
+        ],
+        "possibly_missing": [
+          "soy sauce",
+          "garlic",
+          "ginger",
+          "sesame oil",
+          "honey",
+          "green onions"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Korean Beef Recipe - Skinnytaste",
+        "url": "https://www.skinnytaste.com/korean-beef-rice-bowls/",
+        "source": "skinnytaste.com",
+        "dish_name": "Korean Beef Rice Bowls",
+        "fit_score": 0.85,
+        "why_it_matches": "Ground beef with gochujang sauce over rice and cucumbers, a lean 30-minute Korean bowl.",
+        "matched_ingredients": [
+          "ground beef",
+          "rice"
+        ],
+        "possibly_missing": [
+          "soy sauce",
+          "brown sugar",
+          "sesame oil",
+          "onion",
+          "garlic",
+          "ginger",
+          "gochujang",
+          "cucumber"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "20-Minute Korean Ground Beef Bulgogi - We All Eat Together",
+        "url": "https://wealleattogether.com/ground-beef-bulgogi/",
+        "source": "wealleattogether.com",
+        "dish_name": "20-Minute Korean Ground Beef Bulgogi",
+        "fit_score": 0.84,
+        "why_it_matches": "Fast ground beef bulgogi served over fluffy white rice with a classic soy-brown sugar sauce.",
+        "matched_ingredients": [
+          "ground beef",
+          "rice"
+        ],
+        "possibly_missing": [
+          "soy sauce",
+          "brown sugar",
+          "sesame oil",
+          "garlic",
+          "ginger",
+          "onion",
+          "green onions"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Ground Beef Bulgogi: Easy 15-Minute Korean Rice Bowl Recipe",
+        "url": "https://www.blondekimchi.com/easy-15-minutes-ground-beef-bulgogi-rice-bowl/",
+        "source": "blondekimchi.com",
+        "dish_name": "Ground Beef Bulgogi Rice Bowl",
+        "fit_score": 0.83,
+        "why_it_matches": "A 15-minute ground beef bulgogi over rice topped with scrambled egg, hitting the Korean-ish request well.",
+        "matched_ingredients": [
+          "ground beef",
+          "rice"
+        ],
+        "possibly_missing": [
+          "soy sauce",
+          "garlic",
+          "plum extract",
+          "matsul/mirin",
+          "sugar",
+          "onion",
+          "sesame oil",
+          "eggs"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Korean Ground Beef and Rice Bowls | The Recipe Critic",
+        "url": "https://therecipecritic.com/korean-ground-beef-rice-bowls/",
+        "source": "therecipecritic.com",
+        "dish_name": "Korean Ground Beef and Rice Bowls",
+        "fit_score": 0.83,
+        "why_it_matches": "Minimal-ingredient ground beef over rice with classic Korean-style soy, brown sugar, and sesame in 20 minutes.",
+        "matched_ingredients": [
+          "ground beef",
+          "rice"
+        ],
+        "possibly_missing": [
+          "garlic",
+          "brown sugar",
+          "soy sauce",
+          "sesame oil",
+          "ground ginger",
+          "green onions"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "The BEST Korean Beef and Rice Recipe - Six Sisters' Stuff",
+        "url": "https://www.sixsistersstuff.com/recipe/korean-beef-and-rice/",
+        "source": "sixsistersstuff.com",
+        "dish_name": "Korean Beef and Rice",
+        "fit_score": 0.82,
+        "why_it_matches": "A simple, popular ground beef and rice recipe with a soy-brown sugar sauce ready in 20 minutes.",
+        "matched_ingredients": [
+          "ground beef",
+          "rice"
+        ],
+        "possibly_missing": [
+          "garlic",
+          "sesame oil",
+          "brown sugar",
+          "soy sauce",
+          "ground ginger",
+          "green onions"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Korean Ground Beef Bulgogi | Cake 'n Knife",
+        "url": "https://www.cakenknife.com/mgc-bulgogi/",
+        "source": "cakenknife.com",
+        "dish_name": "Korean Ground Beef Bulgogi",
+        "fit_score": 0.82,
+        "why_it_matches": "Under-20-minute ground beef bulgogi with pantry-staple sauce served over rice, noodles, or lettuce.",
+        "matched_ingredients": [
+          "ground beef",
+          "rice"
+        ],
+        "possibly_missing": [
+          "soy sauce",
+          "brown sugar",
+          "garlic",
+          "mirin",
+          "sesame oil",
+          "onion",
+          "green onions"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Korean Beef Bowl (Easy In 20 Minutes) - Wholesome Yum",
+        "url": "https://www.wholesomeyum.com/korean-ground-beef-bowl-recipe/",
+        "source": "wholesomeyum.com",
+        "dish_name": "Korean Ground Beef Bowl",
+        "fit_score": 0.72,
+        "why_it_matches": "Korean ground beef bowl but defaults to cauliflower rice and coconut aminos, so it strays from plain beef-and-rice.",
+        "matched_ingredients": [
+          "ground beef",
+          "rice"
+        ],
+        "possibly_missing": [
+          "coconut aminos",
+          "beef broth",
+          "sesame oil",
+          "ginger",
+          "garlic",
+          "cucumber"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Beef Bulgogi Bowls Recipe | HelloFresh",
+        "url": "https://www.hellofresh.com/recipes/ground-beef-bulgogi-bowls-5df3de8e1ffc032efe0109f1",
+        "source": "hellofresh.com",
+        "dish_name": "Beef Bulgogi Bowls",
+        "fit_score": 0.7,
+        "why_it_matches": "Meal-kit bulgogi bowl over jasmine rice, but relies on a pre-made bulgogi sauce packet which is harder to replicate.",
+        "matched_ingredients": [
+          "ground beef",
+          "rice"
+        ],
+        "possibly_missing": [
+          "bulgogi sauce",
+          "carrots",
+          "cucumber",
+          "vinegar",
+          "sriracha",
+          "sour cream",
+          "scallions"
+        ],
+        "role": "backup"
+      }
+    ]
+  },
+  {
+    "number": 8,
+    "query": "I have mushrooms, eggs, and leftover rice. Fast lunch.",
+    "attempts": [
+      {
+        "feedback": null,
+        "queries": [
+          "Here is a quick fried rice recipe with mushrooms and eggs using leftover rice:",
+          "Here is a fast lunch recipe using mushrooms, eggs, and leftover rice:",
+          "Here is an easy egg and mushroom rice skillet recipe for a speedy lunch:"
+        ]
+      }
+    ],
+    "retried": false,
+    "pool_sizes": [
+      12
+    ],
+    "url_integrity_ok": true,
+    "rec_checks": {
+      "sources_from_usable_pool": true,
+      "no_index_leak_in_prose": true,
+      "primary_count_ok": true,
+      "no_primary_alt_overlap": true
+    },
+    "elapsed_s": 50.0,
+    "error": null,
+    "recommendation": {
+      "dish_name": "Mushroom Egg Fried Rice",
+      "headline": "Turn those mushrooms, eggs, and leftover rice into a fast, one-pan mushroom fried rice for lunch.",
+      "why_it_fits": "You've already got the three things that matter most \u2014 mushrooms, eggs, and day-old rice, which is exactly what fried rice wants. The Quick Mushroom Fried Rice page on Jersey Girl Cooks pulls it all together in one pan in minutes, so lunch is quick. Skip the peas if you don't have them; they're optional.",
+      "missing_items": [
+        {
+          "ingredient": "Soy sauce",
+          "importance": "essential",
+          "note": "The main seasoning. If you're out, a splash of any salty sauce or just salt will do in a pinch."
+        },
+        {
+          "ingredient": "Cooking oil or butter",
+          "importance": "essential",
+          "note": "Any neutral oil works for the pan."
+        },
+        {
+          "ingredient": "Green onion",
+          "importance": "nice_to_have",
+          "note": "Nice for freshness on top, but skip it if you don't have any."
+        },
+        {
+          "ingredient": "Sesame oil",
+          "importance": "nice_to_have",
+          "note": "A few drops at the end add aroma; optional."
+        },
+        {
+          "ingredient": "Garlic",
+          "importance": "nice_to_have",
+          "note": "Adds depth, but the dish is fine without it."
+        }
+      ],
+      "primary_sources": [
+        {
+          "title": "Quick Mushroom Fried Rice - Jersey Girl Cooks",
+          "url": "https://www.jerseygirlcooks.com/mushroom-fried-rice/",
+          "source": "jerseygirlcooks.com",
+          "dish_name": "Mushroom Fried Rice with Egg and Peas"
+        }
+      ],
+      "how_to_use_sources": "Follow the Quick Mushroom Fried Rice page on Jersey Girl Cooks as your main guide for the one-pan method. If you want a slightly punchier sauce, glance at the Salu Salo Recipes egg and mushroom fried rice page for its oyster sauce and sriracha touches to borrow.",
+      "alternatives": [
+        {
+          "recipe": {
+            "title": "Quick Egg and Mushroom Fried Rice - Salu Salo Recipes",
+            "url": "https://salu-salo.com/quick-egg-mushroom-fried-rice/",
+            "source": "salu-salo.com",
+            "dish_name": "Quick Egg and Mushroom Fried Rice"
+          },
+          "reason": "Pick this Salu Salo page if you want a bolder, saucier version with oyster sauce and a little heat."
+        },
+        {
+          "recipe": {
+            "title": "Quick & Easy Eggs with Rice, Mushrooms, and Green Onions - Healthy Breakfast Recipe | Fitness Blender",
+            "url": "https://www.fitnessblender.com/articles/quick-and-easy-eggs-with-rice-mushrooms-and-green-onions-healthy-breakfast-recipe",
+            "source": "fitnessblender.com",
+            "dish_name": "Eggs with Rice, Mushrooms, and Green Onions"
+          },
+          "reason": "Go with the Fitness Blender eggs-over-rice bowl if you'd rather keep it lighter and simpler than a stir-fried rice."
+        },
+        {
+          "recipe": {
+            "title": "Egg and shiitake mushrooms fried rice - Weekday lunch idea \ud83d\udca1",
+            "url": "https://cookpad.com/ng/recipes/16601902-egg-and-shiitake-mushrooms-fried-rice-weekday-lunch-idea",
+            "source": "cookpad.com",
+            "dish_name": "Egg and Shiitake Mushroom Fried Rice"
+          },
+          "reason": "Choose the Cookpad shiitake fried rice if you happen to have shiitake and want a straightforward weekday build."
+        }
+      ]
+    },
+    "candidates": [
+      {
+        "title": "Quick Mushroom Fried Rice - Jersey Girl Cooks",
+        "url": "https://www.jerseygirlcooks.com/mushroom-fried-rice/",
+        "source": "jerseygirlcooks.com",
+        "dish_name": "Mushroom Fried Rice with Egg and Peas",
+        "fit_score": 0.95,
+        "why_it_matches": "Uses your mushrooms, eggs, and day-old rice in a single pan and comes together in minutes for a fast lunch.",
+        "matched_ingredients": [
+          "mushrooms",
+          "eggs",
+          "leftover rice"
+        ],
+        "possibly_missing": [
+          "frozen peas",
+          "soy sauce",
+          "sesame oil",
+          "green onion",
+          "garlic",
+          "butter"
+        ],
+        "role": "best_base_recipe"
+      },
+      {
+        "title": "Quick Egg and Mushroom Fried Rice - Salu Salo Recipes",
+        "url": "https://salu-salo.com/quick-egg-mushroom-fried-rice/",
+        "source": "salu-salo.com",
+        "dish_name": "Quick Egg and Mushroom Fried Rice",
+        "fit_score": 0.88,
+        "why_it_matches": "One-pan fried rice using cold cooked rice, mushrooms, and eggs that's fast enough for lunch.",
+        "matched_ingredients": [
+          "mushrooms",
+          "eggs",
+          "leftover rice"
+        ],
+        "possibly_missing": [
+          "green onions",
+          "ginger",
+          "garlic",
+          "frozen peas",
+          "soy sauce",
+          "oyster sauce",
+          "sriracha",
+          "sesame oil"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Mushroom Fried Rice with Egg and Peas (quick, fluffy rice, better than takeaway) - Little Sugar Snaps",
+        "url": "https://www.littlesugarsnaps.com/fried-rice-with-mushrooms/",
+        "source": "littlesugarsnaps.com",
+        "dish_name": "Mushroom Fried Rice with Egg and Peas",
+        "fit_score": 0.87,
+        "why_it_matches": "Ready in 15 minutes with pre-cooked chilled rice, mushrooms, and egg\u2014ideal for a quick lunch.",
+        "matched_ingredients": [
+          "mushrooms",
+          "eggs",
+          "leftover rice"
+        ],
+        "possibly_missing": [
+          "peas",
+          "spring onions",
+          "chives",
+          "ginger",
+          "garlic",
+          "rice vinegar",
+          "soy sauce"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Egg and shiitake mushrooms fried rice - Weekday lunch idea \ud83d\udca1",
+        "url": "https://cookpad.com/ng/recipes/16601902-egg-and-shiitake-mushrooms-fried-rice-weekday-lunch-idea",
+        "source": "cookpad.com",
+        "dish_name": "Egg and Shiitake Mushroom Fried Rice",
+        "fit_score": 0.82,
+        "why_it_matches": "A quick weekday-lunch fried rice built specifically around leftover rice, eggs, and mushrooms.",
+        "matched_ingredients": [
+          "mushrooms",
+          "eggs",
+          "leftover rice"
+        ],
+        "possibly_missing": [
+          "garlic",
+          "chicken stock powder",
+          "soy sauce",
+          "mayonnaise"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Quick & Easy Eggs with Rice, Mushrooms, and Green Onions - Healthy Breakfast Recipe | Fitness Blender",
+        "url": "https://www.fitnessblender.com/articles/quick-and-easy-eggs-with-rice-mushrooms-and-green-onions-healthy-breakfast-recipe",
+        "source": "fitnessblender.com",
+        "dish_name": "Eggs with Rice, Mushrooms, and Green Onions",
+        "fit_score": 0.6,
+        "why_it_matches": "A quick eggs-over-rice bowl with mushrooms and green onions that works with your leftover rice.",
+        "matched_ingredients": [
+          "mushrooms",
+          "eggs",
+          "leftover rice"
+        ],
+        "possibly_missing": [
+          "green onions",
+          "soy sauce"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Mushroom Egg Fried Rice - Mayuri's Jikoni",
+        "url": "https://mayuris-jikoni.com/2014/11/21/mushroom-egg-fried-rice/",
+        "source": "mayuris-jikoni.com",
+        "dish_name": "Mushroom Egg Fried Rice",
+        "fit_score": 0.6,
+        "why_it_matches": "Indo-Chinese fried rice using mushrooms, eggs, and leftover rice with a fresh egg-coating technique.",
+        "matched_ingredients": [
+          "mushrooms",
+          "eggs",
+          "leftover rice"
+        ],
+        "possibly_missing": [
+          "onion",
+          "garlic",
+          "ginger",
+          "chilli",
+          "sweet corn",
+          "soy sauce",
+          "spring onions"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Mushroom and Egg Rice Bowl",
+        "url": "https://www.saltnpepperhere.com/blog/mushroom-egg-gyudon-japanese-rice-bowl",
+        "source": "saltnpepperhere.com",
+        "dish_name": "Vegetarian Mushroom Egg Gyudon Rice Bowl",
+        "fit_score": 0.55,
+        "why_it_matches": "Combines mushrooms, eggs, and rice into a donburi bowl, though it takes 30 minutes and needs mirin and sake.",
+        "matched_ingredients": [
+          "mushrooms",
+          "eggs",
+          "leftover rice"
+        ],
+        "possibly_missing": [
+          "king oyster mushrooms",
+          "onion",
+          "mirin",
+          "sake",
+          "soy sauce",
+          "scallion"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Egg Mushroom Fried Rice - QuickFix With Bindu",
+        "url": "https://www.quickfixwithbindu.com/recipes/egg-mushroom-fried-rice/",
+        "source": "quickfixwithbindu.com",
+        "dish_name": "Egg Mushroom Fried Rice",
+        "fit_score": 0.5,
+        "why_it_matches": "Simple fried rice using all three ingredients, but the page is cluttered with unrelated listicle links.",
+        "matched_ingredients": [
+          "mushrooms",
+          "eggs",
+          "leftover rice"
+        ],
+        "possibly_missing": [
+          "onion",
+          "peas",
+          "chili",
+          "soy sauce",
+          "hot sauce",
+          "tomato paste",
+          "spring onions"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Mushroom and Egg Rice Bowls \u2013 A Comforting, Flavorful Delight",
+        "url": "https://recipiana.com/mushroom-and-egg-rice-bowls-recipe/",
+        "source": "recipiana.com",
+        "dish_name": "Mushroom and Egg Rice Bowls",
+        "fit_score": 0.5,
+        "why_it_matches": "Gyudon-style bowl with mushrooms, eggs, and rice, but it needs mirin and sake and takes longer.",
+        "matched_ingredients": [
+          "mushrooms",
+          "eggs",
+          "leftover rice"
+        ],
+        "possibly_missing": [
+          "king oyster mushrooms",
+          "onion",
+          "mirin",
+          "sake",
+          "soy sauce",
+          "scallions"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Mushroom Fried Rice - Cup of Yum",
+        "url": "https://cupofyum.com/recipes/mushroom-fried-rice",
+        "source": "cupofyum.com",
+        "dish_name": "Mushroom Fried Rice",
+        "fit_score": 0.45,
+        "why_it_matches": "Detailed fried rice with all three ingredients, but dried shiitake require hours of soaking so it isn't truly fast.",
+        "matched_ingredients": [
+          "mushrooms",
+          "eggs",
+          "leftover rice"
+        ],
+        "possibly_missing": [
+          "dried shiitake",
+          "oyster mushrooms",
+          "scallions",
+          "red onion",
+          "Shaoxing wine",
+          "soy sauce",
+          "sesame oil"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Mushroom Fried Rice - The Woks of Life",
+        "url": "https://thewoksoflife.com/mushroom-fried-rice/",
+        "source": "thewoksoflife.com",
+        "dish_name": "Mushroom Fried Rice",
+        "fit_score": 0.44,
+        "why_it_matches": "Same recipe as Cup of Yum requiring dried shiitake soaked for hours, so not quick despite using all three ingredients.",
+        "matched_ingredients": [
+          "mushrooms",
+          "eggs",
+          "leftover rice"
+        ],
+        "possibly_missing": [
+          "dried shiitake",
+          "oyster mushrooms",
+          "scallions",
+          "red onion",
+          "Shaoxing wine",
+          "soy sauce",
+          "sesame oil"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Mushroom Rice with Jammy Eggs \u2014 Homemade Cooking Classes",
+        "url": "https://www.homemadecooking.com/class/mushroom-rice-with-jammy-eggs",
+        "source": "homemadecooking.com",
+        "dish_name": "Mushroom Rice with Jammy Eggs",
+        "fit_score": 0.35,
+        "why_it_matches": "Cooks rice fresh in a rice cooker over 45 minutes, so it doesn't use your leftover rice or fit the fast lunch goal.",
+        "matched_ingredients": [
+          "mushrooms",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "jasmine rice",
+          "garlic",
+          "ginger",
+          "soy sauce",
+          "mirin",
+          "sesame oil",
+          "crispy shallots",
+          "scallions"
+        ],
+        "role": "ignore"
+      }
+    ]
+  }
+]
