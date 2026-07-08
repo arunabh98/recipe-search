@@ -49,6 +49,12 @@ QUERIES = [
     "I'm allergic to nuts. Quick Thai-style noodles?",
     "Need an appetizer and a main for a date night dinner.",
     "asdfghjkl qwerty",
+    # The demo UI's example chips, verbatim (static/index.html) — keep in sync
+    # so every front-door example stays covered by this eval.
+    "Kimchi, leftover rice, and eggs — something fast",
+    "Chicken thighs and a jar of peanut butter?",
+    "Two brown bananas and a bag of oats. Something sweet?",
+    "Stale bread, very ripe tomatoes, olive oil",
 ]
 
 REVIEW_CHECKLIST = """\
