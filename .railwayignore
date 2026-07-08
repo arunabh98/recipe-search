@@ -3,3 +3,4 @@
 .git/
 .pytest_cache/
 evals/
+usage.db*

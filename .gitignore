@@ -14,3 +14,6 @@ wheels/
 
 # Test caches
 .pytest_cache/
+
+# Local usage-recording database (USAGE_DB_PATH) and its WAL sidecars
+usage.db*

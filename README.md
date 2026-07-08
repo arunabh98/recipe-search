@@ -227,6 +227,34 @@ Also do these two things in provider dashboards — they are the real
 backstop: create a **separate Anthropic API key in its own workspace with a
 monthly spend limit**, and set a **usage cap/alert in the Exa dashboard**.
 
+## Usage stats (optional)
+
+Off by default. Setting `USAGE_DB_PATH` records one SQLite row per request —
+a salted IP hash (never the raw address), the query text, the outcome
+(recommended dish / null / off-topic / rate-limited / error), and timing —
+plus one row per home-page visit with its referer, so you can see which
+share drove traffic.
+
+```bash
+# .env locally, or Railway variables; generate secrets with `openssl rand -hex 24`
+USAGE_DB_PATH=/data/usage.db   # on Railway, mount a volume at /data first
+USAGE_SALT=<secret>            # keeps visitor hashes stable across restarts
+STATS_TOKEN=<secret>           # enables GET /stats
+```
+
+Read it back as aggregates (asks/visits per day, unique visitors, outcomes,
+top queries) plus the most recent rows:
+
+```bash
+curl -s https://your-app/stats -H "X-Stats-Token: $STATS_TOKEN"
+```
+
+Recording is additive: a failure to open or write the database never fails
+a request, and with `USAGE_DB_PATH` unset the app behaves exactly as
+before. `/stats` answers `404` unless the configured token matches
+(constant-time compare), so the endpoint is indistinguishable from
+nonexistent to probes. Raw IPs are never stored anywhere.
+
 ## Ranking eval
 
 ```bash

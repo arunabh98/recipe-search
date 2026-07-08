@@ -31,3 +31,8 @@ class Settings(BaseSettings):
     ip_requests_per_day: int = 8
     # Only set true behind a proxy you control (reads X-Forwarded-For).
     trust_proxy_headers: bool = False
+
+    # Optional usage recording; everything stays off until a path is set.
+    usage_db_path: str | None = None  # SQLite file, e.g. /data/usage.db
+    usage_salt: SecretStr | None = None  # keeps visitor hashes stable across restarts
+    stats_token: SecretStr | None = None  # enables GET /stats when set

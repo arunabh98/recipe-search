@@ -2,6 +2,7 @@
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import SecretStr
 
 from recipe_search.evaluation import (
     EvaluationAPIError,
@@ -23,6 +24,7 @@ from recipe_search.exa_search import (
 )
 from recipe_search.limits import RateLimiter
 from recipe_search.main import app, get_evaluator, get_search_client
+from recipe_search.usage import UsageRecorder
 
 EXAMPLE_QUERY = "I have eggs, salsa, tortillas, and cheese. I want something quick."
 
@@ -387,3 +389,126 @@ def test_recipes_search_without_configured_evaluator(fake_exa, monkeypatch):
         app.dependency_overrides.clear()
     assert response.status_code == 500
     assert "not configured" in response.json()["detail"]
+
+
+# --- usage recording -------------------------------------------------------
+
+
+@pytest.fixture
+def recorder(client, tmp_path):
+    """A live recorder wired onto the running app, removed afterwards."""
+    rec = UsageRecorder(str(tmp_path / "usage.db"), salt="test-salt")
+    app.state.usage = rec
+    try:
+        yield rec
+    finally:
+        app.state.usage = None
+        rec.close()
+
+
+def test_recommend_records_query_and_outcome(
+    client, fake_exa, fake_evaluator, recorder
+):
+    fake_exa.results = [MIGAS_RESULT]
+    fake_evaluator.candidates = [MIGAS_CANDIDATE]
+    fake_evaluator.recommendation = MIGAS_RECOMMENDATION
+
+    response = client.post("/recipes/recommend", json={"query": EXAMPLE_QUERY})
+
+    assert response.status_code == 200
+    (row,) = recorder.recent()
+    assert row["endpoint"] == "recipes/recommend"
+    assert row["query"] == EXAMPLE_QUERY
+    assert row["outcome"] == "recommended"
+    assert row["dish"] == "Tex-Mex migas"
+    assert row["source"] == "seriouseats.com"
+    assert row["duration_ms"] >= 0
+    # The raw client address never lands in the database, only its hash.
+    assert row["ip_hash"] == recorder.hash_ip("testclient")
+    assert "testclient" not in row["ip_hash"]
+
+
+def test_home_visits_are_recorded_with_referer(client, recorder):
+    response = client.get(
+        "/", headers={"referer": "https://example.com/post", "user-agent": "UA"}
+    )
+
+    assert response.status_code == 200
+    (row,) = recorder.recent()
+    assert row["endpoint"] == "home"
+    assert row["referer"] == "https://example.com/post"
+    assert row["user_agent"] == "UA"
+    assert row["query"] is None
+
+
+def test_rate_limited_requests_are_recorded(client, fake_exa, recorder):
+    app.state.limiter = RateLimiter(per_hour=1, per_day=5, daily_budget=100)
+    try:
+        first = client.post("/search", json={"query": "eggs"})
+        second = client.post("/search", json={"query": "eggs"})
+    finally:
+        app.state.limiter = None
+
+    assert first.status_code == 200
+    assert second.status_code == 429
+    outcomes = [row["outcome"] for row in recorder.recent()]
+    assert outcomes == ["rate_limited:rate_limit", "results:0"]
+
+
+def test_broken_recorder_never_breaks_requests(client, fake_exa, fake_evaluator):
+    class ExplodingRecorder:
+        def hash_ip(self, ip: str) -> str:
+            raise RuntimeError("boom")
+
+        async def record(self, **fields: object) -> None:
+            raise RuntimeError("boom")
+
+    fake_exa.results = [MIGAS_RESULT]
+    fake_evaluator.candidates = [MIGAS_CANDIDATE]
+    fake_evaluator.recommendation = MIGAS_RECOMMENDATION
+    app.state.usage = ExplodingRecorder()
+    try:
+        recommend = client.post("/recipes/recommend", json={"query": EXAMPLE_QUERY})
+        home = client.get("/")
+    finally:
+        app.state.usage = None
+
+    assert recommend.status_code == 200
+    assert home.status_code == 200
+
+
+# --- /stats ----------------------------------------------------------------
+
+
+def test_stats_is_hidden_when_no_token_is_configured(client, recorder):
+    assert client.get("/stats").status_code == 404
+    assert client.get("/stats", headers={"X-Stats-Token": "guess"}).status_code == 404
+
+
+def test_stats_requires_the_exact_token(client, recorder):
+    app.state.stats_token = SecretStr("owner-token")
+    try:
+        wrong = client.get("/stats", headers={"X-Stats-Token": "wrong"})
+        right = client.get("/stats", headers={"X-Stats-Token": "owner-token"})
+        via_param = client.get("/stats?token=owner-token")
+    finally:
+        app.state.stats_token = None
+
+    assert wrong.status_code == 404
+    assert wrong.json() == {"detail": "Not Found"}  # same body as a missing route
+    assert right.status_code == 200
+    body = right.json()
+    assert body["recording_enabled"] is True
+    assert "asks" in body["stats"] and "visits" in body["stats"]
+    assert via_param.status_code == 200
+
+
+def test_stats_reports_when_recording_is_off(client):
+    app.state.stats_token = SecretStr("owner-token")
+    try:
+        response = client.get("/stats", headers={"X-Stats-Token": "owner-token"})
+    finally:
+        app.state.stats_token = None
+
+    assert response.status_code == 200
+    assert response.json() == {"recording_enabled": False, "stats": {}, "recent": []}
