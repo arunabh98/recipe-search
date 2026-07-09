@@ -1,7 +1,7 @@
 [project]
 name = "recipe-search"
 version = "0.1.0"
-description = "Exa-backed natural-language web search API"
+description = "Simmer — natural-language recipe search and recommendations (Exa + Claude)"
 readme = "README.md"
 authors = [
     { name = "Arunabh", email = "arunabhghosh98@gmail.com" }

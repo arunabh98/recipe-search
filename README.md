@@ -68,7 +68,9 @@ Response (`200`):
 `snippet` comes from Exa *highlights* — query-relevant excerpts of the page.
 No matches is not an error: you get `200` with `"results": []`.
 
-Error responses are always `{"detail": "..."}`:
+Error responses carry a `detail` field: a plain sentence for upstream
+failures, FastAPI's structured list for `422` validation errors, and — in
+demo mode — an extra `"code"` field on rate-limit refusals:
 
 | status | meaning                                          |
 | ------ | ------------------------------------------------ |
@@ -125,8 +127,9 @@ Response (`200`):
 ```
 
 Candidates are sorted by `role` (`best_base_recipe` → `backup` → `ignore`),
-then `fit_score` descending. Exactly one candidate should be
-`best_base_recipe`; spammy or unusable pages stay in the list as `ignore` so
+then `fit_score` descending. The prompt asks for at most one
+`best_base_recipe`, though the server does not enforce that count; spammy
+or unusable pages stay in the list as `ignore` so
 you can see *why* they were rejected. Titles/URLs/sources always come from the
 search results — the model only returns judgments keyed by result index.
 
@@ -203,6 +206,12 @@ their own handling.
 uv run pytest
 ```
 
+Covers every endpoint's request/response behavior (including demo limits,
+off-topic refusals, and `/stats` auth), Exa request shape, normalization,
+and error mapping, Claude structured-output parsing and merging, pipeline
+retry and fallback behavior, and usage recording — all against in-process
+fakes, no network required.
+
 ## Sharing it publicly (demo mode)
 
 Set `DEMO_MODE=true` in `.env` before exposing the demo. It turns on:
@@ -255,16 +264,16 @@ before. `/stats` answers `404` unless the configured token matches
 (constant-time compare), so the endpoint is indistinguishable from
 nonexistent to probes. Raw IPs are never stored anywhere.
 
-## Ranking eval
+## Recommendation eval
 
 ```bash
-uv run python scripts/eval_recipes.py        # 10 queries, ~5 min, ~$1.50
+uv run python scripts/eval_recipes.py        # 18 queries, ~15 min, ~$3–5
 uv run python scripts/eval_recipes.py 1 2 3  # subset (1-based)
 ```
 
-Runs realistic queries through the real pipeline and writes a reviewable
-markdown + JSON report to `evals/`, including planned Exa queries, retry
-behavior, and a mechanical no-hallucinated-URLs check.
-
-Covers request shape, response normalization, all upstream error mappings, and
-endpoint validation — no network required.
+Runs realistic queries — including the demo UI's example chips, verbatim —
+through the real `/recipes/recommend` pipeline and writes a reviewable
+markdown + JSON report to `evals/`: planned Exa queries, retry behavior,
+and mechanical guardrail checks (every linked URL comes from the retrieved
+pool, sources drawn from usable candidates only, 1–2 primary sources, no
+primary/alternative overlap, no index vocabulary leaking into prose).
