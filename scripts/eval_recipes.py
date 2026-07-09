@@ -51,7 +51,7 @@ QUERIES = [
     "asdfghjkl qwerty",
     # The demo UI's example chips, verbatim (static/index.html) — keep in sync
     # so every front-door example stays covered by this eval.
-    "Kimchi, leftover rice, and eggs — something fast",
+    "Kimchi, leftover rice, and eggs. Something fast",
     "Chicken thighs and a jar of peanut butter?",
     "Two brown bananas and a bag of oats. Something sweet?",
     "Stale bread, very ripe tomatoes, olive oil",
