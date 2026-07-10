@@ -314,7 +314,7 @@
     <p class="sub">Describe your ingredients, cravings, or constraints in your own words. I'll scout trusted recipes across the web, judge every one, and hand you a real plan.</p>
 
     <form class="askbar" id="askForm">
-      <textarea id="queryInput" rows="1" autocomplete="off" maxlength="500" enterkeyhint="go"
+      <textarea id="queryInput" rows="1" autocomplete="off" maxlength="500"
              placeholder="I have eggs, salsa, tortillas, and cheese…"
              aria-label="What do you want to cook?"></textarea>
       <button type="submit" id="askBtn">Find my dish</button>
@@ -645,8 +645,16 @@
     input.style.height = Math.min(input.scrollHeight, 132) + "px";
   }
   input.addEventListener("input", autoGrow);
+  // Enter submits only where a hardware keyboard is the norm; on touch
+  // devices Enter inserts a newline and the button submits. Checked per
+  // keypress so plugging in a mouse is picked up live. Cmd/Ctrl+Enter
+  // submits everywhere (e.g. an iPad with a hardware keyboard).
+  function enterSubmits() {
+    return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  }
   input.addEventListener("keydown", function (e) {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(input.value); }
+    if (e.key !== "Enter" || e.shiftKey || e.isComposing) return;
+    if (e.metaKey || e.ctrlKey || enterSubmits()) { e.preventDefault(); ask(input.value); }
   });
 
   form.addEventListener("submit", function (e) { e.preventDefault(); ask(input.value); });
