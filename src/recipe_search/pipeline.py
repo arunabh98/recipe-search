@@ -5,8 +5,11 @@ plans the Exa queries (any phrasing, language, or vagueness), the pool is
 fanned out across query variants and deduped, and when evaluation judges
 the whole pool unusable the pipeline retries once, feeding the evaluator's
 own reasons back to the planner. Failures degrade instead of cascading: a
-failed planner falls back to a static recipe framing, and a failed search
-variant is dropped as long as any variant succeeds.
+failed retry planner falls back to a static recipe framing (the query
+already passed the on-topic gate on the first attempt), and a failed
+search variant is dropped as long as any variant succeeds. A first-attempt
+planner failure propagates instead: falling back there would search
+unvetted input, bypassing the on-topic gate.
 
 No FastAPI imports; reusable from CLIs, jobs, or other services.
 """
@@ -112,7 +115,11 @@ async def _plan_queries(
     try:
         plan = await evaluator.plan_searches(query, feedback=feedback)
     except EvaluationError as exc:
-        logger.warning("Search planning failed (%s); using fallback query", exc)
+        if feedback is None:
+            # First attempt: the query hasn't passed the on-topic gate yet,
+            # so searching a fallback framing of it would bypass the gate.
+            raise
+        logger.warning("Retry planning failed (%s); using fallback query", exc)
         return [_FALLBACK_QUERY_TEMPLATE.format(query)]
     if not plan.on_topic:
         # Stop before any search or evaluation spend.

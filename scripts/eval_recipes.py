@@ -30,7 +30,7 @@ from recipe_search.evaluation import (
     SearchPlan,
 )
 from recipe_search.exa_search import ExaSearchClient, SearchResult
-from recipe_search.pipeline import recommend_recipe
+from recipe_search.pipeline import OffTopicQuery, recommend_recipe
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -117,11 +117,14 @@ async def run_query(
 ) -> dict:
     recorder = RecordingEvaluator(evaluator)
     start = time.time()
+    off_topic = False
     try:
         recommendation, candidates = await recommend_recipe(
             query, num_results=8, exa=exa, evaluator=recorder
         )
         error = None
+    except OffTopicQuery:  # the expected outcome for non-food queries
+        recommendation, candidates, error, off_topic = None, [], None, True
     except Exception as exc:  # keep the eval going; report the failure
         recommendation, candidates, error = None, [], f"{type(exc).__name__}: {exc}"
     elapsed = time.time() - start
@@ -130,8 +133,11 @@ async def run_query(
     return {
         "number": number,
         "query": query,
-        "attempts": recorder.attempts,  # empty => planner fell back to template
-        "retried": len(recorder.attempts) > 1,
+        # Fewer attempts than pools => the retry planner failed and the
+        # pipeline fell back to the static template.
+        "attempts": recorder.attempts,
+        "retried": len(recorder.pools) > 1,
+        "off_topic": off_topic,
         "pool_sizes": [len(pool) for pool in recorder.pools],
         "url_integrity_ok": all(c.url in pool_urls for c in candidates),
         "rec_checks": (
@@ -149,6 +155,8 @@ async def run_query(
 def _checks_ok(entry: dict) -> str:
     if entry["error"]:
         return "ERROR"
+    if entry["off_topic"]:
+        return "n/a (off topic)"
     if not entry["url_integrity_ok"]:
         return "NO"
     if entry["rec_checks"] is None:
@@ -169,9 +177,10 @@ def render_markdown(entries: list[dict]) -> str:
     for e in entries:
         rec = e["recommendation"]
         top = e["candidates"][0] if e["candidates"] else None
+        null_dish = "— (off topic)" if e["off_topic"] else "— (null)"
         lines.append(
             f"| {e['number']} | {e['query'][:44]} | "
-            f"{(rec or {}).get('dish_name') or '— (null)'} | "
+            f"{(rec or {}).get('dish_name') or null_dish} | "
             f"{f'{top['fit_score']:.2f}' if top else '—'} | "
             f"{'yes' if e['retried'] else 'no'} | {_checks_ok(e)} | {e['elapsed_s']}s |"
         )
@@ -182,12 +191,19 @@ def render_markdown(entries: list[dict]) -> str:
         if e["error"]:
             lines += [f"**FAILED**: {e['error']}", ""]
             continue
-        if not e["attempts"]:
-            lines.append("- planner: fell back to the static template")
+        if e["off_topic"]:
+            lines += [
+                "**Off-topic refusal**: the planner judged this not a food "
+                "request; no search or evaluation spend.",
+                "",
+            ]
+            continue
         for i, attempt in enumerate(e["attempts"], 1):
             lines.append(f"- planned queries (attempt {i}): {attempt['queries']}")
             if attempt["feedback"]:
                 lines.append(f"  - retry feedback: {attempt['feedback']}")
+        if len(e["pool_sizes"]) > len(e["attempts"]):
+            lines.append("- retry planner failed; fell back to the static template")
         lines += [
             f"- retry: {'yes' if e['retried'] else 'no'} | "
             f"pool sizes: {e['pool_sizes']} | checks: {e['rec_checks']} | "

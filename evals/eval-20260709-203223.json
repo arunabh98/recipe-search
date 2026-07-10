@@ -1,0 +1,1538 @@
+[
+  {
+    "number": 10,
+    "query": "I have chicken thighs but no onions or garlic.",
+    "attempts": [
+      {
+        "feedback": null,
+        "queries": [
+          "Here is a great recipe for chicken thighs that skips onions and garlic entirely:",
+          "Here is a simple baked chicken thighs recipe using pantry spices instead of aromatics:",
+          "Here is an easy skillet chicken thighs recipe with minimal ingredients:"
+        ]
+      }
+    ],
+    "retried": false,
+    "off_topic": false,
+    "pool_sizes": [
+      12
+    ],
+    "url_integrity_ok": true,
+    "rec_checks": {
+      "sources_from_usable_pool": true,
+      "no_index_leak_in_prose": true,
+      "primary_count_ok": true,
+      "no_primary_alt_overlap": true
+    },
+    "elapsed_s": 49.7,
+    "error": null,
+    "recommendation": {
+      "dish_name": "Baked Boneless Chicken Thighs",
+      "headline": "With just chicken thighs, olive oil, and spices, the Healthy Recipes Blog baked chicken thighs are the easiest match for tonight since they skip onion and garlic entirely.",
+      "why_it_fits": "You said no onions or garlic, and this recipe is built entirely around basic pantry spices and olive oil, no aromatics needed. It's a simple bake, which suits chicken thighs well and keeps things low effort for a weeknight. Nothing in the ingredient list needs substitution because of your constraint.",
+      "missing_items": [
+        {
+          "ingredient": "spices (like paprika, salt, pepper)",
+          "importance": "essential",
+          "note": "Just basic pantry seasoning, use whatever dried spices you have on hand."
+        },
+        {
+          "ingredient": "olive oil",
+          "importance": "essential",
+          "note": "Needed to coat the thighs before baking; any neutral cooking oil works if you're out."
+        }
+      ],
+      "primary_sources": [
+        {
+          "title": "Baked Boneless Chicken Thighs (Easy Weeknight Recipe) - Healthy Recipes Blog",
+          "url": "https://healthyrecipesblogs.com/spicy-baked-chicken-thighs/",
+          "source": "healthyrecipesblogs.com",
+          "dish_name": "Baked Boneless Chicken Thighs"
+        }
+      ],
+      "how_to_use_sources": "Follow the Healthy Recipes Blog page for the full method, timing, and temperature for the baked thighs, it's built without onion or garlic already so you don't need to adapt anything.",
+      "alternatives": [
+        {
+          "recipe": {
+            "title": "Baked Boneless Chicken Thighs (Quick & Easy!) - Chelsea's Messy Apron",
+            "url": "https://www.chelseasmessyapron.com/baked-boneless-chicken-thighs/",
+            "source": "chelseasmessyapron.com",
+            "dish_name": "Baked Boneless Chicken Thighs with Balsamic"
+          },
+          "reason": "Pick the Chelsea's Messy Apron balsamic version if you want a tangier finish and have balsamic vinegar on hand."
+        },
+        {
+          "recipe": {
+            "title": "Easy Baked Chicken Thighs - Family Food on the Table",
+            "url": "https://www.familyfoodonthetable.com/easy-baked-chicken-thighs/",
+            "source": "familyfoodonthetable.com",
+            "dish_name": "Easy Baked Chicken Thighs"
+          },
+          "reason": "Use the Family Food on the Table recipe if you want something ready in about 30 minutes."
+        },
+        {
+          "recipe": {
+            "title": "5-Ingredient Cast Iron Skillet Chicken Thighs",
+            "url": "https://www.puresavory.com/5-ingredient-cast-iron-skillet-chicken-thighs/",
+            "source": "puresavory.com",
+            "dish_name": "5-Ingredient Cast Iron Skillet Chicken Thighs"
+          },
+          "reason": "Go with the cast iron skillet recipe from Pure Savory if you'd rather cook on the stovetop, just skip the garlic powder it calls for."
+        }
+      ]
+    },
+    "candidates": [
+      {
+        "title": "Baked Boneless Chicken Thighs (Easy Weeknight Recipe) - Healthy Recipes Blog",
+        "url": "https://healthyrecipesblogs.com/spicy-baked-chicken-thighs/",
+        "source": "healthyrecipesblogs.com",
+        "dish_name": "Baked Boneless Chicken Thighs",
+        "fit_score": 0.7,
+        "why_it_matches": "A simple baked chicken thigh recipe using just olive oil and spices with no mention of onion or garlic, making it a strong fit for the constraint.",
+        "matched_ingredients": [
+          "chicken thighs"
+        ],
+        "possibly_missing": [
+          "spices"
+        ],
+        "role": "best_base_recipe"
+      },
+      {
+        "title": "5-Ingredient Cast Iron Skillet Chicken Thighs",
+        "url": "https://www.puresavory.com/5-ingredient-cast-iron-skillet-chicken-thighs/",
+        "source": "puresavory.com",
+        "dish_name": "5-Ingredient Cast Iron Skillet Chicken Thighs",
+        "fit_score": 0.6,
+        "why_it_matches": "A minimal 5-ingredient skillet recipe for chicken thighs with no onion at all, though it does call for garlic powder which could be omitted or reduced.",
+        "matched_ingredients": [
+          "chicken thighs"
+        ],
+        "possibly_missing": [
+          "garlic powder"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Easy Baked Chicken Thighs - Family Food on the Table",
+        "url": "https://www.familyfoodonthetable.com/easy-baked-chicken-thighs/",
+        "source": "familyfoodonthetable.com",
+        "dish_name": "Easy Baked Chicken Thighs",
+        "fit_score": 0.55,
+        "why_it_matches": "A quick 30-minute baked chicken thigh recipe using basic seasonings with no explicit mention of onion or garlic in the excerpt.",
+        "matched_ingredients": [
+          "chicken thighs"
+        ],
+        "possibly_missing": [
+          "seasonings"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Baked Boneless Chicken Thighs (Quick & Easy!) - Chelsea's Messy Apron",
+        "url": "https://www.chelseasmessyapron.com/baked-boneless-chicken-thighs/",
+        "source": "chelseasmessyapron.com",
+        "dish_name": "Baked Boneless Chicken Thighs with Balsamic",
+        "fit_score": 0.55,
+        "why_it_matches": "Uses pantry spices, olive oil, and balsamic vinegar for flavor with no mention of onion or garlic in the excerpt, fitting the constraint well.",
+        "matched_ingredients": [
+          "chicken thighs"
+        ],
+        "possibly_missing": [
+          "balsamic vinegar",
+          "pantry spices"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Easy Saut\u00e9ed Chicken Thighs Recipe - This Healthy Table",
+        "url": "https://thishealthytable.com/blog/easy-chicken-thighs/",
+        "source": "thishealthytable.com",
+        "dish_name": "Easy Saut\u00e9ed Chicken Thighs",
+        "fit_score": 0.45,
+        "why_it_matches": "A dry-saut\u00e9 method for chicken thighs that uses small amounts of garlic powder and onion powder, which could be skipped since the author says seasonings are flexible.",
+        "matched_ingredients": [
+          "chicken thighs"
+        ],
+        "possibly_missing": [
+          "garlic powder",
+          "onion powder",
+          "chicken stock"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Low FODMAP Lemon Roasted Chicken Thighs | No Onion No Garlic Recipe",
+        "url": "https://noonionnogarlicrecipes.com/low-fodmap-lemon-roasted-chicken-thighs-no-onion-no-garlic-recipe/",
+        "source": "noonionnogarlicrecipes.com",
+        "dish_name": "Low FODMAP Lemon Roasted Chicken Thighs",
+        "fit_score": 0.35,
+        "why_it_matches": "Uses chicken thighs but relies on garlic oil as a key flavoring ingredient, conflicting with the no-garlic constraint.",
+        "matched_ingredients": [
+          "chicken thighs"
+        ],
+        "possibly_missing": [
+          "garlic oil",
+          "white wine",
+          "potatoes"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Baked Chicken Thighs (with Crispy Skin = Easy Weeknight Dinner) - Averie Cooks",
+        "url": "https://www.averiecooks.com/baked-chicken-thighs/",
+        "source": "averiecooks.com",
+        "dish_name": "Baked Chicken Thighs with Crispy Skin",
+        "fit_score": 0.35,
+        "why_it_matches": "A simple baked chicken thigh recipe but the seasoning blend explicitly requires garlic powder and onion powder, violating the stated constraint.",
+        "matched_ingredients": [
+          "chicken thighs"
+        ],
+        "possibly_missing": [
+          "garlic powder",
+          "onion powder",
+          "brown sugar"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Low Carb Oven Baked Chicken Thighs - Stylish Cravings",
+        "url": "https://stylishcravings.com/low-carb-oven-baked-chicken-thighs/",
+        "source": "stylishcravings.com",
+        "dish_name": "Low Carb Oven Baked Chicken Thighs",
+        "fit_score": 0.3,
+        "why_it_matches": "Baked chicken thighs recipe that explicitly requires both garlic powder and onion powder in the seasoning mix, conflicting with the constraint.",
+        "matched_ingredients": [
+          "chicken thighs"
+        ],
+        "possibly_missing": [
+          "garlic powder",
+          "onion powder"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Crispy Baked Chicken Thighs (Zero Carb & Sugar Free) | Healthy Ambitions",
+        "url": "https://healthyambitions.co/sugar-free-carb-free-recipes/",
+        "source": "healthyambitions.co",
+        "dish_name": "Crispy Baked Chicken Thighs (Zero Carb)",
+        "fit_score": 0.3,
+        "why_it_matches": "A crispy baked chicken thigh recipe that requires garlic powder and onion powder in the seasoning blend, conflicting with the stated constraint, and the text contains repetitive filler.",
+        "matched_ingredients": [
+          "chicken thighs"
+        ],
+        "possibly_missing": [
+          "garlic powder",
+          "onion powder"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Garlic-Lime Chicken Recipe (Just 5 Ingredients) | The Kitchn",
+        "url": "https://www.thekitchn.com/garlic-lime-chicken-thighs-recipe-23657488",
+        "source": "thekitchn.com",
+        "dish_name": "Garlic-Lime Chicken",
+        "fit_score": 0.15,
+        "why_it_matches": "This recipe centers on fresh garlic and garlic powder as core flavor components, directly conflicting with the no-garlic requirement.",
+        "matched_ingredients": [
+          "chicken thighs"
+        ],
+        "possibly_missing": [
+          "garlic",
+          "limes",
+          "honey"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Skillet Chicken Thighs (Crispy & Juicy!) - Two Peas & Their Pod",
+        "url": "https://www.twopeasandtheirpod.com/easy-skillet-chicken-thighs/",
+        "source": "twopeasandtheirpod.com",
+        "dish_name": "Skillet Chicken Thighs with Garlic Cream Sauce",
+        "fit_score": 0.15,
+        "why_it_matches": "This skillet chicken recipe features a garlic cream sauce as its main flavor component, directly conflicting with the no-garlic constraint.",
+        "matched_ingredients": [
+          "chicken thighs"
+        ],
+        "possibly_missing": [
+          "garlic",
+          "cream"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Chicken Lemon Garlic an Easy 5 Ingredient One-Skillet Dinner - The Good Plate",
+        "url": "https://the-good-plate.com/chicken-lemon-garlic/",
+        "source": "the-good-plate.com",
+        "dish_name": "Chicken Lemon Garlic Skillet Dinner",
+        "fit_score": 0.1,
+        "why_it_matches": "This dish explicitly requires garlic cloves and green onions as central ingredients, directly conflicting with the no-onion-no-garlic constraint, and the text is riddled with disjointed filler.",
+        "matched_ingredients": [
+          "chicken thighs"
+        ],
+        "possibly_missing": [
+          "garlic",
+          "green onions",
+          "lemon"
+        ],
+        "role": "ignore"
+      }
+    ]
+  },
+  {
+    "number": 14,
+    "query": "asdfghjkl qwerty",
+    "attempts": [
+      {
+        "feedback": null,
+        "queries": []
+      }
+    ],
+    "retried": false,
+    "off_topic": true,
+    "pool_sizes": [],
+    "url_integrity_ok": true,
+    "rec_checks": null,
+    "elapsed_s": 2.1,
+    "error": null,
+    "recommendation": null,
+    "candidates": []
+  },
+  {
+    "number": 15,
+    "query": "Kimchi, leftover rice, and eggs. Something fast",
+    "attempts": [
+      {
+        "feedback": null,
+        "queries": [
+          "Here is a great quick kimchi fried rice recipe using leftover rice and eggs:",
+          "Here is a fast and easy recipe for kimchi fried rice topped with a fried egg:",
+          "Here is a simple one-pan kimchi rice and egg recipe ready in 15 minutes:"
+        ]
+      }
+    ],
+    "retried": false,
+    "off_topic": false,
+    "pool_sizes": [
+      12
+    ],
+    "url_integrity_ok": true,
+    "rec_checks": {
+      "sources_from_usable_pool": true,
+      "no_index_leak_in_prose": true,
+      "primary_count_ok": true,
+      "no_primary_alt_overlap": true
+    },
+    "elapsed_s": 31.2,
+    "error": null,
+    "recommendation": {
+      "dish_name": "Kimchi Fried Rice with Egg",
+      "headline": "Kimchi fried rice is the fastest way to turn your leftover rice, kimchi, and eggs into dinner tonight.",
+      "why_it_fits": "You already have the three essentials, kimchi, leftover rice, and eggs, which is exactly the base this dish needs. The Beyond Kimchee version is built for speed, about 20 minutes start to finish, and leans on pantry basics rather than anything exotic. Using day-old rice actually helps here since it fries up crispier instead of turning mushy.",
+      "missing_items": [
+        {
+          "ingredient": "soy sauce",
+          "importance": "essential",
+          "note": "Adds the salty backbone to the fried rice, use tamari if you need gluten free."
+        },
+        {
+          "ingredient": "gochugaru or gochujang",
+          "importance": "nice_to_have",
+          "note": "Boosts heat and color, but the kimchi itself already brings plenty of flavor if you skip it."
+        },
+        {
+          "ingredient": "sesame oil",
+          "importance": "nice_to_have",
+          "note": "A finishing drizzle for aroma, fine to leave out if you don't have it."
+        },
+        {
+          "ingredient": "green onion",
+          "importance": "nice_to_have",
+          "note": "Nice fresh garnish, skip it without issue."
+        }
+      ],
+      "primary_sources": [
+        {
+          "title": "Kimchi Fried Rice (Kimchi Bokkeumbap) with Crispy Rice & Egg - Beyond Kimchee",
+          "url": "https://www.beyondkimchee.com/kimchi-fried-rice/",
+          "source": "beyondkimchee.com",
+          "dish_name": "Kimchi Fried Rice (Kimchi Bokkeumbap) with Crispy Rice & Egg"
+        }
+      ],
+      "how_to_use_sources": "Follow the Beyond Kimchee kimchi fried rice page for the whole method, including how they get the crispy rice texture and where the egg goes on top. If you want a slightly different flavor profile, peek at the Just One Cookbook version for how they season the kimchi juice into the rice.",
+      "alternatives": [
+        {
+          "recipe": {
+            "title": "Quick Kimchi Fried Rice (GF & Vegetarian)",
+            "url": "https://www.fermentingforfoodies.com/kimchi-fried-rice/",
+            "source": "fermentingforfoodies.com",
+            "dish_name": "Quick Kimchi Fried Rice"
+          },
+          "reason": "Pick the Fermenting for Foodies version if you want the absolute minimal ingredient list, just kimchi, rice, and egg, in 15 minutes."
+        },
+        {
+          "recipe": {
+            "title": "Kimchi Scrambled Eggs Rice Bowl | The Subversive Table",
+            "url": "https://thesubversivetable.com/kimchi-scrambled-eggs-rice-bowl/",
+            "source": "thesubversivetable.com",
+            "dish_name": "Kimchi Scrambled Eggs Rice Bowl"
+          },
+          "reason": "Choose the Subversive Table scrambled eggs rice bowl if you want something even faster, about 10 minutes, with a softer scrambled egg style instead of fried rice."
+        },
+        {
+          "recipe": {
+            "title": "Kimchi Fried Rice with Fried Egg",
+            "url": "https://www.foodnetwork.com/recipes/kimchi-fried-rice-with-fried-egg-recipe-2131583",
+            "source": "foodnetwork.com",
+            "dish_name": "Kimchi Fried Rice with Fried Egg"
+          },
+          "reason": "Go with the Food Network version if you specifically want a crispy fried egg on top rather than egg mixed into the rice."
+        }
+      ]
+    },
+    "candidates": [
+      {
+        "title": "Kimchi Fried Rice (Kimchi Bokkeumbap) with Crispy Rice & Egg - Beyond Kimchee",
+        "url": "https://www.beyondkimchee.com/kimchi-fried-rice/",
+        "source": "beyondkimchee.com",
+        "dish_name": "Kimchi Fried Rice (Kimchi Bokkeumbap) with Crispy Rice & Egg",
+        "fit_score": 0.93,
+        "why_it_matches": "Uses exactly kimchi, leftover rice, and egg, ready in 20 minutes with clear steps for a quick weeknight meal.",
+        "matched_ingredients": [
+          "kimchi",
+          "leftover rice",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "soy sauce",
+          "gochugaru",
+          "mayonnaise",
+          "sesame oil",
+          "green onion"
+        ],
+        "role": "best_base_recipe"
+      },
+      {
+        "title": "Kimchi Fried Rice \u2022 Just One Cookbook",
+        "url": "https://www.justonecookbook.com/kimchi-fried-rice/",
+        "source": "justonecookbook.com",
+        "dish_name": "Kimchi Fried Rice",
+        "fit_score": 0.88,
+        "why_it_matches": "Detailed recipe using leftover rice, kimchi, and a fried egg topping, cooked quickly in one wok.",
+        "matched_ingredients": [
+          "kimchi",
+          "leftover rice",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "gochujang",
+          "soy sauce",
+          "garlic",
+          "sesame oil"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Quick Kimchi Fried Rice (GF & Vegetarian)",
+        "url": "https://www.fermentingforfoodies.com/kimchi-fried-rice/",
+        "source": "fermentingforfoodies.com",
+        "dish_name": "Quick Kimchi Fried Rice",
+        "fit_score": 0.85,
+        "why_it_matches": "Ready in 15 minutes using just kimchi, leftover rice, and eggs scrambled in, very close to the user's exact pantry.",
+        "matched_ingredients": [
+          "kimchi",
+          "leftover rice",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "sesame oil"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Kimchi Scrambled Eggs Rice Bowl | The Subversive Table",
+        "url": "https://thesubversivetable.com/kimchi-scrambled-eggs-rice-bowl/",
+        "source": "thesubversivetable.com",
+        "dish_name": "Kimchi Scrambled Eggs Rice Bowl",
+        "fit_score": 0.82,
+        "why_it_matches": "Extremely fast (10 min) dish using just kimchi, egg, and rice, scrambled together and served over rice.",
+        "matched_ingredients": [
+          "kimchi",
+          "eggs",
+          "rice"
+        ],
+        "possibly_missing": [
+          "butter",
+          "cornstarch"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Kimchi Fried Rice with Fried Egg",
+        "url": "https://www.foodnetwork.com/recipes/kimchi-fried-rice-with-fried-egg-recipe-2131583",
+        "source": "foodnetwork.com",
+        "dish_name": "Kimchi Fried Rice with Fried Egg",
+        "fit_score": 0.8,
+        "why_it_matches": "Simple recipe with sour kimchi, day-old rice, soy sauce, and a fried egg matching the exact request.",
+        "matched_ingredients": [
+          "kimchi",
+          "day-old rice",
+          "egg"
+        ],
+        "possibly_missing": [
+          "scallion"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Easy Kimchi Fried Rice (Kimchi Bokkeumbap) - Omnivore's Cookbook",
+        "url": "https://omnivorescookbook.com/kimchi-fried-rice/",
+        "source": "omnivorescookbook.com",
+        "dish_name": "Kimchi Fried Rice (Kimchi Bokkeumbap)",
+        "fit_score": 0.75,
+        "why_it_matches": "A 15-minute kimchi, rice, and gochujang stir-fry that fits the fast request, though the excerpt is thin on egg detail.",
+        "matched_ingredients": [
+          "kimchi",
+          "rice"
+        ],
+        "possibly_missing": [
+          "gochujang",
+          "eggs"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Kimchi Fried Rice Recipe",
+        "url": "https://www.seriouseats.com/kimchi-fried-rice-recipe",
+        "source": "seriouseats.com",
+        "dish_name": "Kimchi Fried Rice (Seriouseats)",
+        "fit_score": 0.75,
+        "why_it_matches": "A well-regarded version topped with a whole egg, using kimchi and rice as the base.",
+        "matched_ingredients": [
+          "kimchi",
+          "rice",
+          "egg"
+        ],
+        "possibly_missing": [
+          "gochujang"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Kimchi fried rice (Kimchi-bokkeumbap) recipe by Maangchi",
+        "url": "https://www.maangchi.com/recipe/kimchi-bokkeumbap",
+        "source": "maangchi.com",
+        "dish_name": "Kimchi Fried Rice (Kimchi-bokkeumbap)",
+        "fit_score": 0.7,
+        "why_it_matches": "Classic Maangchi recipe stir-frying kimchi with rice and gochujang, quick to make though egg isn't clearly mentioned in excerpt.",
+        "matched_ingredients": [
+          "kimchi",
+          "rice"
+        ],
+        "possibly_missing": [
+          "gochujang",
+          "egg"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Kimchi Fried Rice (Kimchi Bokkeumbap) - Kimchimari",
+        "url": "https://kimchimari.com/kimchi-fried-rice/",
+        "source": "kimchimari.com",
+        "dish_name": "Kimchi Fried Rice (Kimchi Bokkeumbap)",
+        "fit_score": 0.7,
+        "why_it_matches": "Includes optional egg cooked separately and added to kimchi fried rice, fitting the fast, simple request.",
+        "matched_ingredients": [
+          "kimchi",
+          "rice",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "gochujang"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Easy Kimchi Fried Rice - My Korean Kitchen",
+        "url": "https://mykoreankitchen.com/kimchi-fried-rice/",
+        "source": "mykoreankitchen.com",
+        "dish_name": "Easy Kimchi Fried Rice with bacon",
+        "fit_score": 0.55,
+        "why_it_matches": "Kimchi fried rice topped with egg, but adds bacon which the user didn't mention, slightly off from a pure pantry-use request.",
+        "matched_ingredients": [
+          "kimchi",
+          "rice",
+          "egg"
+        ],
+        "possibly_missing": [
+          "bacon"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Easy Kimchi Fried Rice Recipe: Don't Throw Away your Leftover Rice! | Rice Life Foodie - Asian Recipes and Filipino Recipes with Natural Ingredients",
+        "url": "https://ricelifefoodie.com/kimchi-fried-rice-recipe/",
+        "source": "ricelifefoodie.com",
+        "dish_name": "Easy Kimchi Fried Rice Recipe",
+        "fit_score": 0.6,
+        "why_it_matches": "Uses leftover rice, kimchi, and sunny-side-up eggs but adds onion and optional protein, with slightly more steps than needed for speed.",
+        "matched_ingredients": [
+          "kimchi",
+          "leftover rice",
+          "eggs"
+        ],
+        "possibly_missing": [
+          "onion",
+          "garlic",
+          "sesame oil"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Easy Kimchi Fried Rice Recipe (Ready in 15 Minutes!)",
+        "url": "https://myrecipestimes.com/kimchi-fried-rice/",
+        "source": "myrecipestimes.com",
+        "dish_name": "Easy Kimchi Fried Rice",
+        "fit_score": 0.5,
+        "why_it_matches": "Recipe covers the requested ingredients but excerpt is heavily padded with repetitive filler text typical of low-quality content farms.",
+        "matched_ingredients": [
+          "kimchi",
+          "rice",
+          "egg"
+        ],
+        "possibly_missing": [
+          "gochujang",
+          "garlic"
+        ],
+        "role": "ignore"
+      }
+    ]
+  },
+  {
+    "number": 16,
+    "query": "Chicken thighs and a jar of peanut butter?",
+    "attempts": [
+      {
+        "feedback": null,
+        "queries": [
+          "Here is a delicious recipe for peanut butter chicken thighs:",
+          "Here is a great recipe using chicken thighs and peanut butter for a savory peanut sauce dish:",
+          "Here is an easy Thai-style peanut chicken thigh recipe:"
+        ]
+      }
+    ],
+    "retried": false,
+    "off_topic": false,
+    "pool_sizes": [
+      12
+    ],
+    "url_integrity_ok": true,
+    "rec_checks": {
+      "sources_from_usable_pool": true,
+      "no_index_leak_in_prose": true,
+      "primary_count_ok": true,
+      "no_primary_alt_overlap": true
+    },
+    "elapsed_s": 32.1,
+    "error": null,
+    "recommendation": {
+      "dish_name": "Peanut Butter Chicken",
+      "headline": "With chicken thighs and peanut butter on hand, you're basically one skillet away from 20-Minute Peanut Butter Chicken on Key To My Lime.",
+      "why_it_fits": "This recipe is built around exactly your two ingredients, chicken thighs and peanut butter, turned into a quick simmer sauce with pantry basics. It comes together in about 20 minutes in one skillet, so there's no special equipment or long ingredient list standing between you and dinner. The Saucy Peanut Butter Chicken Thighs recipe on theendlessmeal.com is nearly the same idea if you want to compare methods before you start.",
+      "missing_items": [
+        {
+          "ingredient": "soy sauce",
+          "importance": "essential",
+          "note": "Gives the sauce its salty backbone, tamari works fine if you need gluten free."
+        },
+        {
+          "ingredient": "garlic",
+          "importance": "essential",
+          "note": "Fresh cloves are best but garlic powder in a pinch will do."
+        },
+        {
+          "ingredient": "ginger",
+          "importance": "nice_to_have",
+          "note": "Adds brightness, you can skip it and the dish still works."
+        },
+        {
+          "ingredient": "crushed tomatoes",
+          "importance": "essential",
+          "note": "Balances the richness of the peanut butter, check the page for the exact amount."
+        },
+        {
+          "ingredient": "chicken broth",
+          "importance": "nice_to_have",
+          "note": "Helps thin the sauce to the right consistency, water can substitute in a pinch."
+        }
+      ],
+      "primary_sources": [
+        {
+          "title": "20-Minute Peanut Butter Chicken {EASY and TASTY} - Key To My Lime",
+          "url": "https://keytomylime.com/peanut-butter-chicken-recipe/",
+          "source": "keytomylime.com",
+          "dish_name": "20-Minute Peanut Butter Chicken"
+        }
+      ],
+      "how_to_use_sources": "Follow the 20-Minute Peanut Butter Chicken page on Key To My Lime for the full method, ingredient amounts, and timing. If you want a slightly different sauce balance, glance at the Saucy Peanut Butter Chicken Thighs page on theendlessmeal.com, which uses a similar peanut-tomato base with honey for a touch more sweetness.",
+      "alternatives": [
+        {
+          "recipe": {
+            "title": "Saucy Peanut Butter Chicken Thighs",
+            "url": "https://www.theendlessmeal.com/peanut-butter-chicken/",
+            "source": "theendlessmeal.com",
+            "dish_name": "Saucy Peanut Butter Chicken Thighs"
+          },
+          "reason": "Pick this one if you want a slightly sweeter, saucier version and don't mind a near-identical ingredient list."
+        },
+        {
+          "recipe": {
+            "title": "Peanut Butter Chicken - Mama Loves Food",
+            "url": "https://www.mamalovesfood.com/peanut-butter-chicken/",
+            "source": "mamalovesfood.com",
+            "dish_name": "Peanut Butter Chicken (sheet pan)"
+          },
+          "reason": "Choose this if you'd rather bake everything on a sheet pan and have bell peppers on hand."
+        },
+        {
+          "recipe": {
+            "title": "Slow Cooker Thai Peanut Chicken Recipe",
+            "url": "https://www.allrecipes.com/slow-cooker-thai-peanut-chicken-recipe-11880281",
+            "source": "allrecipes.com",
+            "dish_name": "Slow Cooker Thai Peanut Chicken"
+          },
+          "reason": "Go here only if you own a slow cooker and want to stock up on coconut milk, fish sauce, and other Thai pantry items for a bigger flavor payoff."
+        }
+      ]
+    },
+    "candidates": [
+      {
+        "title": "20-Minute Peanut Butter Chicken {EASY and TASTY} - Key To My Lime",
+        "url": "https://keytomylime.com/peanut-butter-chicken-recipe/",
+        "source": "keytomylime.com",
+        "dish_name": "20-Minute Peanut Butter Chicken",
+        "fit_score": 0.95,
+        "why_it_matches": "Uses chicken thighs and peanut butter as the two core ingredients in a quick 20-minute skillet sauce with pantry staples.",
+        "matched_ingredients": [
+          "chicken thighs",
+          "peanut butter"
+        ],
+        "possibly_missing": [
+          "soy sauce",
+          "crushed tomatoes",
+          "chicken broth",
+          "ginger",
+          "garlic"
+        ],
+        "role": "best_base_recipe"
+      },
+      {
+        "title": "Saucy Peanut Butter Chicken Thighs",
+        "url": "https://www.theendlessmeal.com/peanut-butter-chicken/",
+        "source": "theendlessmeal.com",
+        "dish_name": "Saucy Peanut Butter Chicken Thighs",
+        "fit_score": 0.92,
+        "why_it_matches": "Nearly identical concept to the top pick\u2014chicken thighs simmered in a peanut-tomato sauce with clear ingredient list and steps.",
+        "matched_ingredients": [
+          "chicken thighs",
+          "peanut butter"
+        ],
+        "possibly_missing": [
+          "soy sauce",
+          "crushed tomato",
+          "chicken stock",
+          "honey",
+          "ginger",
+          "garlic"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Slow Cooker Thai Peanut Chicken Recipe",
+        "url": "https://www.allrecipes.com/slow-cooker-thai-peanut-chicken-recipe-11880281",
+        "source": "allrecipes.com",
+        "dish_name": "Slow Cooker Thai Peanut Chicken",
+        "fit_score": 0.7,
+        "why_it_matches": "Uses chicken thighs and peanut butter but needs a slow cooker and many extra ingredients like coconut milk and fish sauce.",
+        "matched_ingredients": [
+          "chicken thighs",
+          "peanut butter"
+        ],
+        "possibly_missing": [
+          "coconut milk",
+          "soy sauce",
+          "brown sugar",
+          "ginger",
+          "garlic",
+          "lime juice",
+          "sriracha",
+          "fish sauce",
+          "cornstarch"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Peanut Butter Chicken - Mama Loves Food",
+        "url": "https://www.mamalovesfood.com/peanut-butter-chicken/",
+        "source": "mamalovesfood.com",
+        "dish_name": "Peanut Butter Chicken (sheet pan)",
+        "fit_score": 0.68,
+        "why_it_matches": "Uses chicken thighs and peanut butter in a simple one-pan bake, though needs bell peppers and sriracha not mentioned by the user.",
+        "matched_ingredients": [
+          "chicken thighs",
+          "peanut butter"
+        ],
+        "possibly_missing": [
+          "bell peppers",
+          "onion",
+          "soy sauce",
+          "sriracha",
+          "garlic"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Crockpot Thai Peanut Chicken - Simply Happy Foodie",
+        "url": "https://www.simplyhappyfoodie.com/crockpot-thai-peanut-chicken/",
+        "source": "simplyhappyfoodie.com",
+        "dish_name": "Crockpot Thai Peanut Chicken",
+        "fit_score": 0.55,
+        "why_it_matches": "Uses chicken thighs and peanut butter but requires a slow cooker and many additional specialty ingredients.",
+        "matched_ingredients": [
+          "chicken thighs",
+          "peanut butter"
+        ],
+        "possibly_missing": [
+          "coconut milk",
+          "honey",
+          "lime juice",
+          "soy sauce",
+          "rice wine vinegar",
+          "cornstarch"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Peanut Butter Chicken - That Girl Cooks Healthy",
+        "url": "https://thatgirlcookshealthy.com/peanut-butter-chicken/",
+        "source": "thatgirlcookshealthy.com",
+        "dish_name": "Peanut Butter Chicken (Caribbean-style)",
+        "fit_score": 0.55,
+        "why_it_matches": "Uses chicken thighs and peanut butter but requires several extra items like coconut milk, coconut aminos and a specific spice rub.",
+        "matched_ingredients": [
+          "chicken thighs",
+          "peanut butter"
+        ],
+        "possibly_missing": [
+          "coconut milk",
+          "coconut aminos",
+          "curry powder",
+          "tomato",
+          "parsley"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "The Best Juicy Chicken Thighs in Peanut Sauce Recipe You\u2019ll Love",
+        "url": "https://www.paulaplate.com/the-best-juicy-chicken-thighs-in-peanut-sauce-recipe-youll-love/",
+        "source": "paulaplate.com",
+        "dish_name": "Chicken Thighs in Peanut Sauce",
+        "fit_score": 0.5,
+        "why_it_matches": "Combines chicken thighs and peanut butter but the excerpt shows signs of AI-generated filler text with repetitive, low-quality prose.",
+        "matched_ingredients": [
+          "chicken thighs",
+          "peanut butter"
+        ],
+        "possibly_missing": [
+          "coconut milk",
+          "soy sauce",
+          "garlic",
+          "ginger",
+          "lime juice"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Easy Thai Peanut Chicken - All Day I Dream About Food",
+        "url": "https://alldayidreamaboutfood.com/easy-thai-peanut-chicken/",
+        "source": "alldayidreamaboutfood.com",
+        "dish_name": "Easy Thai Peanut Chicken",
+        "fit_score": 0.4,
+        "why_it_matches": "Mentions chicken thighs and a creamy sauce but excerpt gives no actual ingredient list or steps to confirm a full recipe.",
+        "matched_ingredients": [
+          "chicken thighs",
+          "peanut butter"
+        ],
+        "possibly_missing": [],
+        "role": "ignore"
+      },
+      {
+        "title": "Easy Peanut Butter Chicken Thighs",
+        "url": "https://fedandfit.com/peanut-butter-chicken-thighs/",
+        "source": "fedandfit.com",
+        "dish_name": "Easy Peanut Butter Chicken Thighs",
+        "fit_score": 0.4,
+        "why_it_matches": "Uses chicken thighs and a peanut sauce but excerpt lacks ingredient quantities or steps to verify as a full recipe.",
+        "matched_ingredients": [
+          "chicken thighs",
+          "peanut butter"
+        ],
+        "possibly_missing": [],
+        "role": "ignore"
+      },
+      {
+        "title": "Peanut butter chicken recipe",
+        "url": "https://www.bbcgoodfood.com/recipes/peanut-butter-chicken",
+        "source": "bbcgoodfood.com",
+        "dish_name": "Peanut butter chicken recipe",
+        "fit_score": 0.35,
+        "why_it_matches": "Excerpt only shows a partial step with coconut milk and tomatoes, no full ingredient list or chicken cut confirmed as thighs.",
+        "matched_ingredients": [
+          "peanut butter"
+        ],
+        "possibly_missing": [
+          "coconut milk",
+          "tomatoes"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Easy Spicy Thai Peanut Butter Chicken Thighs - Scrummy Lane",
+        "url": "https://scrummylane.com/one-pan-spicy-thai-peanut-chicken/",
+        "source": "scrummylane.com",
+        "dish_name": "Easy Spicy Thai Peanut Butter Chicken Thighs",
+        "fit_score": 0.35,
+        "why_it_matches": "Title fits chicken thighs and peanut butter but excerpt has no ingredient list or steps to verify usability.",
+        "matched_ingredients": [
+          "chicken thighs",
+          "peanut butter"
+        ],
+        "possibly_missing": [],
+        "role": "ignore"
+      },
+      {
+        "title": "Easy Thai Peanut Chicken Stir Fry Recipe {One Pan!}",
+        "url": "https://feelgoodfoodie.net/recipe/thai-peanut-chicken-stir-fry/",
+        "source": "feelgoodfoodie.net",
+        "dish_name": "Easy Thai Peanut Chicken Stir Fry",
+        "fit_score": 0.3,
+        "why_it_matches": "Mentions chicken and peanut sauce but excerpt gives no confirmation of thighs specifically nor full recipe details.",
+        "matched_ingredients": [
+          "chicken thighs"
+        ],
+        "possibly_missing": [
+          "vegetables",
+          "curry paste"
+        ],
+        "role": "ignore"
+      }
+    ]
+  },
+  {
+    "number": 17,
+    "query": "Two brown bananas and a bag of oats. Something sweet?",
+    "attempts": [
+      {
+        "feedback": null,
+        "queries": [
+          "Here is a great recipe for banana oat cookies using ripe bananas and oats:",
+          "Here is a delicious baked oatmeal banana bread recipe:",
+          "Here is an easy sweet banana oatmeal breakfast bake recipe:"
+        ]
+      }
+    ],
+    "retried": false,
+    "off_topic": false,
+    "pool_sizes": [
+      12
+    ],
+    "url_integrity_ok": true,
+    "rec_checks": {
+      "sources_from_usable_pool": true,
+      "no_index_leak_in_prose": true,
+      "primary_count_ok": true,
+      "no_primary_alt_overlap": true
+    },
+    "elapsed_s": 40.5,
+    "error": null,
+    "recommendation": {
+      "dish_name": "Banana Oat Cookies",
+      "headline": "With two brown bananas and a bag of oats, you're basically already making the Clean Banana Oat Cookies from Allrecipes.",
+      "why_it_fits": "This recipe is built around exactly what you have, two mashed bananas and rolled oats, so you're not stuck buying a long list of extras. It comes together fast and turns those overripe bananas into a genuinely sweet treat without needing flour or eggs. It's also the highest fit match, so the ratios of banana to oats should work well right out of the gate.",
+      "missing_items": [
+        {
+          "ingredient": "milk",
+          "importance": "nice_to_have",
+          "note": "Helps loosen the batter if it seems dry, but many banana oat cookies work fine without it."
+        },
+        {
+          "ingredient": "egg",
+          "importance": "nice_to_have",
+          "note": "Adds binding, skip it if you don't have one, the mashed banana does a lot of that work already."
+        },
+        {
+          "ingredient": "honey",
+          "importance": "nice_to_have",
+          "note": "For extra sweetness, you can leave it out since ripe bananas are already sweet."
+        },
+        {
+          "ingredient": "vanilla extract",
+          "importance": "nice_to_have",
+          "note": "Nice for flavor depth but not essential to the recipe working."
+        }
+      ],
+      "primary_sources": [
+        {
+          "title": "Clean Banana Oat Cookies Recipe",
+          "url": "https://www.allrecipes.com/recipe/254832/clean-banana-oat-cookies/",
+          "source": "allrecipes.com",
+          "dish_name": "Clean Banana Oat Cookies"
+        }
+      ],
+      "how_to_use_sources": "Follow the Clean Banana Oat Cookies page on Allrecipes start to finish for quantities and bake time. If you want a flavor boost and happen to have cinnamon or vanilla around, you can borrow that idea from the Nutrition.gov Banana Oatmeal Cookies page, but it's not necessary to make the base recipe work.",
+      "alternatives": [
+        {
+          "recipe": {
+            "title": "Healthy 3-Ingredient Banana Oatmeal Cookies - Skinnytaste",
+            "url": "https://www.skinnytaste.com/healthy-cookies/",
+            "source": "skinnytaste.com",
+            "dish_name": "Healthy 3-Ingredient Banana Oatmeal Cookies"
+          },
+          "reason": "Pick the Skinnytaste 3-Ingredient recipe if you want the absolute simplest version and don't mind skipping walnuts."
+        },
+        {
+          "recipe": {
+            "title": "Easy Banana Baked Oatmeal \u2013 A Couple Cooks",
+            "url": "https://www.acouplecooks.com/banana-baked-oatmeal/",
+            "source": "acouplecooks.com",
+            "dish_name": "Easy Banana Baked Oatmeal"
+          },
+          "reason": "Choose A Couple Cooks' Easy Banana Baked Oatmeal if you'd rather have a warm baked dish for breakfast instead of individual cookies, provided you have milk and maple syrup."
+        },
+        {
+          "recipe": {
+            "title": "Soft & Chewy Banana Oatmeal Cookies - Preppy Kitchen",
+            "url": "https://preppykitchen.com/banana-oatmeal-cookies/",
+            "source": "preppykitchen.com",
+            "dish_name": "Soft & Chewy Banana Oatmeal Cookies"
+          },
+          "reason": "Go with the Preppy Kitchen cookies if you have chocolate chips on hand and want a richer, dessert-like treat."
+        }
+      ]
+    },
+    "candidates": [
+      {
+        "title": "Clean Banana Oat Cookies Recipe",
+        "url": "https://www.allrecipes.com/recipe/254832/clean-banana-oat-cookies/",
+        "source": "allrecipes.com",
+        "dish_name": "Clean Banana Oat Cookies",
+        "fit_score": 0.9,
+        "why_it_matches": "Uses exactly 2 mashed bananas and rolled oats plus a few common pantry items to make a quick sweet treat.",
+        "matched_ingredients": [
+          "bananas",
+          "oats"
+        ],
+        "possibly_missing": [
+          "milk",
+          "egg",
+          "honey",
+          "vanilla extract"
+        ],
+        "role": "best_base_recipe"
+      },
+      {
+        "title": "Healthy 3-Ingredient Banana Oatmeal Cookies - Skinnytaste",
+        "url": "https://www.skinnytaste.com/healthy-cookies/",
+        "source": "skinnytaste.com",
+        "dish_name": "Healthy 3-Ingredient Banana Oatmeal Cookies",
+        "fit_score": 0.85,
+        "why_it_matches": "Only needs mashed bananas, oats, and walnuts, making it an extremely low-ingredient sweet cookie using what's on hand.",
+        "matched_ingredients": [
+          "bananas",
+          "oats"
+        ],
+        "possibly_missing": [
+          "walnuts"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Banana Oatmeal Cookies | Nutrition.gov",
+        "url": "https://www.nutrition.gov/recipes/banana-oatmeal-cookies",
+        "source": "nutrition.gov",
+        "dish_name": "Banana Oatmeal Cookies",
+        "fit_score": 0.8,
+        "why_it_matches": "Simple no-flour cookie recipe using mashed bananas, oats, cinnamon, vanilla, and raisins with clear steps.",
+        "matched_ingredients": [
+          "bananas",
+          "oats"
+        ],
+        "possibly_missing": [
+          "cinnamon",
+          "vanilla",
+          "raisins"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Easy Banana Baked Oatmeal \u2013 A Couple Cooks",
+        "url": "https://www.acouplecooks.com/banana-baked-oatmeal/",
+        "source": "acouplecooks.com",
+        "dish_name": "Easy Banana Baked Oatmeal",
+        "fit_score": 0.75,
+        "why_it_matches": "Full recipe uses 2 ripe bananas and rolled oats baked into a sweet, filling dish, though it calls for pecans, milk, and maple syrup too.",
+        "matched_ingredients": [
+          "bananas",
+          "oats"
+        ],
+        "possibly_missing": [
+          "pecans",
+          "milk",
+          "maple syrup",
+          "vanilla extract"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Banana Bread Baked Oatmeal Recipe",
+        "url": "https://www.allrecipes.com/banana-bread-baked-oatmeal-recipe-11880277",
+        "source": "allrecipes.com",
+        "dish_name": "Banana Bread Baked Oatmeal",
+        "fit_score": 0.7,
+        "why_it_matches": "Full recipe using ripe bananas and rolled oats baked into sweet bars, though it needs 3 bananas and several extra wet ingredients.",
+        "matched_ingredients": [
+          "bananas",
+          "oats"
+        ],
+        "possibly_missing": [
+          "milk",
+          "eggs",
+          "maple syrup",
+          "brown sugar"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Soft & Chewy Banana Oatmeal Cookies - Preppy Kitchen",
+        "url": "https://preppykitchen.com/banana-oatmeal-cookies/",
+        "source": "preppykitchen.com",
+        "dish_name": "Soft & Chewy Banana Oatmeal Cookies",
+        "fit_score": 0.7,
+        "why_it_matches": "Quick cookie recipe (under 30 minutes) using bananas and oats plus cinnamon and chocolate chips for sweetness.",
+        "matched_ingredients": [
+          "bananas",
+          "oats"
+        ],
+        "possibly_missing": [
+          "cinnamon",
+          "chocolate chips"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Banana Baked Oatmeal Recipe - Jessica Gavin",
+        "url": "https://www.jessicagavin.com/banana-baked-oatmeal/",
+        "source": "jessicagavin.com",
+        "dish_name": "Banana Baked Oatmeal",
+        "fit_score": 0.65,
+        "why_it_matches": "Detailed recipe using 2 mashed bananas and rolled oats, but needs eggs, milk, maple syrup, walnuts, and spices beyond what's on hand.",
+        "matched_ingredients": [
+          "bananas",
+          "oats"
+        ],
+        "possibly_missing": [
+          "eggs",
+          "milk",
+          "maple syrup",
+          "walnuts",
+          "cinnamon",
+          "nutmeg"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Best Ever Banana Bread Baked Oatmeal - Our Handcrafted Home",
+        "url": "https://ourhandcraftedhome.com/best-ever-banana-bread-baked-oatmeal/",
+        "source": "ourhandcraftedhome.com",
+        "dish_name": "Best Ever Banana Bread Baked Oatmeal",
+        "fit_score": 0.6,
+        "why_it_matches": "Uses ripe bananas and rolled oats baked into a banana-bread-style oatmeal, but requires butter, eggs, brown sugar, and pecans not on hand.",
+        "matched_ingredients": [
+          "bananas",
+          "oats"
+        ],
+        "possibly_missing": [
+          "butter",
+          "eggs",
+          "brown sugar",
+          "pecans"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Easy Banana Bread Baked Oatmeal (Healthy Meal Prep Breakfast) - Thyme On Our Hands",
+        "url": "https://thymeonourhands.com/banana-bread-baked-oatmeal/",
+        "source": "thymeonourhands.com",
+        "dish_name": "Banana Bread Baked Oatmeal",
+        "fit_score": 0.45,
+        "why_it_matches": "Uses bananas and oats but adds many extra ingredients like chia seeds, flax, Greek yogurt, and eggs not mentioned by the user.",
+        "matched_ingredients": [
+          "bananas",
+          "oats"
+        ],
+        "possibly_missing": [
+          "chia seeds",
+          "flax seed",
+          "greek yogurt",
+          "milk",
+          "eggs"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Banana Baked Oatmeal - Sally's Baking Addiction",
+        "url": "https://sallysbakingaddiction.com/banana-baked-oatmeal/",
+        "source": "sallysbakingaddiction.com",
+        "dish_name": "Banana Baked Oatmeal",
+        "fit_score": 0.3,
+        "why_it_matches": "Title matches the craving but the excerpt gives no visible ingredient list or steps to confirm a usable recipe.",
+        "matched_ingredients": [
+          "bananas",
+          "oats"
+        ],
+        "possibly_missing": [],
+        "role": "ignore"
+      },
+      {
+        "title": "Banana Bread Baked Oatmeal Recipe",
+        "url": "https://www.budgetbytes.com/banana-bread-oatmeal/",
+        "source": "budgetbytes.com",
+        "dish_name": "Banana Bread Baked Oatmeal",
+        "fit_score": 0.3,
+        "why_it_matches": "Describes a dessert-like baked oatmeal with bananas and oats but the excerpt lacks a visible ingredient list or method.",
+        "matched_ingredients": [
+          "bananas",
+          "oats"
+        ],
+        "possibly_missing": [],
+        "role": "ignore"
+      },
+      {
+        "title": "2 Ingredient Banana Oatmeal Cookies - Kirbie's Cravings",
+        "url": "https://kirbiecravings.com/2-ingredient-banana-oatmeal-cookies/",
+        "source": "kirbiecravings.com",
+        "dish_name": "2 Ingredient Banana Oatmeal Cookies",
+        "fit_score": 0.3,
+        "why_it_matches": "Title suggests a minimal banana-oat cookie but the excerpt reads like a comment/note rather than a full recipe with steps.",
+        "matched_ingredients": [
+          "bananas",
+          "oats"
+        ],
+        "possibly_missing": [
+          "sultanas"
+        ],
+        "role": "ignore"
+      }
+    ]
+  },
+  {
+    "number": 18,
+    "query": "Stale bread, very ripe tomatoes, olive oil",
+    "attempts": [
+      {
+        "feedback": null,
+        "queries": [
+          "Here is a great Panzanella salad recipe using stale bread and ripe tomatoes with olive oil:",
+          "Here is a classic Tuscan bread soup (pappa al pomodoro) recipe using stale bread and ripe tomatoes:",
+          "Here is a delicious bruschetta recipe using ripe tomatoes, olive oil, and stale bread:"
+        ]
+      }
+    ],
+    "retried": false,
+    "off_topic": false,
+    "pool_sizes": [
+      12
+    ],
+    "url_integrity_ok": true,
+    "rec_checks": {
+      "sources_from_usable_pool": true,
+      "no_index_leak_in_prose": true,
+      "primary_count_ok": true,
+      "no_primary_alt_overlap": true
+    },
+    "elapsed_s": 43.4,
+    "error": null,
+    "recommendation": {
+      "dish_name": "Panzanella",
+      "headline": "With stale bread, ripe tomatoes, and olive oil on hand, you're basically staring at a finished panzanella.",
+      "why_it_fits": "Panzanella exists specifically to rescue stale bread and showcase tomatoes at their juiciest, and olive oil is the third leg of the whole dish. You don't need to cook anything, just tear, soak, and toss, which suits what you've already got sitting on the counter. It's forgiving too, so if your tomatoes are more mush than firm, that's actually ideal here.",
+      "missing_items": [
+        {
+          "ingredient": "vinegar",
+          "importance": "essential",
+          "note": "Red wine vinegar is classic, but any vinegar or even a squeeze of lemon will give the salad the acidity it needs."
+        },
+        {
+          "ingredient": "basil",
+          "importance": "nice_to_have",
+          "note": "Adds the classic aroma but the salad works fine without it, maybe toss in any other soft herb you have."
+        },
+        {
+          "ingredient": "garlic",
+          "importance": "nice_to_have",
+          "note": "Rubbing a cut clove on the bread or tossing a little into the dressing rounds it out, but it's skippable."
+        }
+      ],
+      "primary_sources": [
+        {
+          "title": "Panzanella (Italian tomato & bread salad) - RecipeTin Eats",
+          "url": "https://www.recipetineats.com/panzanella-italian-tomato-bread-salad/",
+          "source": "recipetineats.com",
+          "dish_name": "Panzanella (Italian Tomato & Bread Salad)"
+        }
+      ],
+      "how_to_use_sources": "Follow the RecipeTin Eats panzanella page as your main guide for ratios and timing on soaking the bread and macerating the tomatoes. If you want a slightly more traditional Tuscan touch, peek at the Serious Eats classic panzanella page for how it handles the vinegar and bread soak, but you don't need both, the RecipeTin Eats version is enough on its own.",
+      "alternatives": [
+        {
+          "recipe": {
+            "title": "Classic Panzanella Salad (Tuscan-Style Tomato and Bread Salad) Recipe",
+            "url": "https://www.seriouseats.com/classic-panzanella-salad-recipe",
+            "source": "seriouseats.com",
+            "dish_name": "Classic Panzanella Salad"
+          },
+          "reason": "Pick this one if you want a more traditional Tuscan-style version with a slightly different bread soaking technique."
+        },
+        {
+          "recipe": {
+            "title": "Pappa al Pomodoro | America's Test Kitchen",
+            "url": "https://www.americastestkitchen.com/recipes/15812-pappa-al-pomodoro",
+            "source": "americastestkitchen.com",
+            "dish_name": "Pappa al Pomodoro"
+          },
+          "reason": "Choose the America's Test Kitchen pappa al pomodoro instead if you'd rather turn this into a warm, cooked soup than a cold salad."
+        },
+        {
+          "recipe": {
+            "title": "How to Make Tomato Bruschetta (Classic Italian Recipe) - Olivia's Cuisine",
+            "url": "https://www.oliviascuisine.com/tomato-bruschetta/",
+            "source": "oliviascuisine.com",
+            "dish_name": "Tomato Bruschetta"
+          },
+          "reason": "Go with the tomato bruschetta page if you'd prefer individual toasts over a mixed salad and don't mind toasting the bread first."
+        }
+      ]
+    },
+    "candidates": [
+      {
+        "title": "Panzanella (Italian tomato & bread salad) - RecipeTin Eats",
+        "url": "https://www.recipetineats.com/panzanella-italian-tomato-bread-salad/",
+        "source": "recipetineats.com",
+        "dish_name": "Panzanella (Italian Tomato & Bread Salad)",
+        "fit_score": 0.92,
+        "why_it_matches": "Explicitly built around torn stale bread, juicy ripe tomatoes, and olive oil with minimal extra ingredients needed, from a trusted recipe source.",
+        "matched_ingredients": [
+          "stale bread",
+          "very ripe tomatoes",
+          "olive oil"
+        ],
+        "possibly_missing": [
+          "vinegar",
+          "basil"
+        ],
+        "role": "best_base_recipe"
+      },
+      {
+        "title": "Classic Panzanella Salad (Tuscan-Style Tomato and Bread Salad) Recipe",
+        "url": "https://www.seriouseats.com/classic-panzanella-salad-recipe",
+        "source": "seriouseats.com",
+        "dish_name": "Classic Panzanella Salad",
+        "fit_score": 0.88,
+        "why_it_matches": "Uses cubed stale bread, ripe tomatoes, and olive oil as the core of a simple no-cook salad.",
+        "matched_ingredients": [
+          "stale bread",
+          "very ripe tomatoes",
+          "olive oil"
+        ],
+        "possibly_missing": [
+          "basil",
+          "vinegar"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Pappa al Pomodoro | America's Test Kitchen",
+        "url": "https://www.americastestkitchen.com/recipes/15812-pappa-al-pomodoro",
+        "source": "americastestkitchen.com",
+        "dish_name": "Pappa al Pomodoro",
+        "fit_score": 0.87,
+        "why_it_matches": "A trusted, well-tested recipe for tomato-bread soup that explicitly allows stale or fresh bread and ripe tomatoes with olive oil.",
+        "matched_ingredients": [
+          "stale bread",
+          "very ripe tomatoes",
+          "olive oil"
+        ],
+        "possibly_missing": [
+          "garlic",
+          "basil",
+          "parmesan"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Pappa al Pomodoro (Tuscan Tomato Bread Soup) - Recipes from Italy",
+        "url": "https://www.recipesfromitaly.com/pappa-al-pomodoro-recipe/",
+        "source": "recipesfromitaly.com",
+        "dish_name": "Pappa al Pomodoro",
+        "fit_score": 0.85,
+        "why_it_matches": "A classic use for stale bread and ripe tomatoes cooked down with olive oil into a rustic soup, though the page has repeated/duplicated text sections suggesting some content padding.",
+        "matched_ingredients": [
+          "stale bread",
+          "very ripe tomatoes",
+          "olive oil"
+        ],
+        "possibly_missing": [
+          "garlic",
+          "vegetable broth",
+          "basil",
+          "sugar"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Pappa al pomodoro (Tuscan Tomato and Bread Soup) - Italian recipes by GialloZafferano",
+        "url": "https://www.giallozafferano.com/recipes/Pappa-al-pomodoro-Tuscan-Tomato-and-Bread-Soup.html",
+        "source": "giallozafferano.com",
+        "dish_name": "Pappa al Pomodoro (Tuscan Tomato and Bread Soup)",
+        "fit_score": 0.83,
+        "why_it_matches": "Traditional recipe using bread, tomato, and olive oil, ideal for using up stale bread with ripe or canned tomatoes.",
+        "matched_ingredients": [
+          "stale bread",
+          "very ripe tomatoes",
+          "olive oil"
+        ],
+        "possibly_missing": [
+          "garlic",
+          "basil"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Pappa al Pomodoro (Authentic Italian Tomato & Bread Soup) - Savoring Italy",
+        "url": "https://www.savoringitaly.com/pappa-al-pomodoro/",
+        "source": "savoringitaly.com",
+        "dish_name": "Pappa al Pomodoro",
+        "fit_score": 0.78,
+        "why_it_matches": "Another authentic tomato-bread soup recipe using exactly stale bread, ripe tomatoes, and olive oil as core ingredients.",
+        "matched_ingredients": [
+          "stale bread",
+          "very ripe tomatoes",
+          "olive oil"
+        ],
+        "possibly_missing": [
+          "garlic",
+          "basil"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "How to Make Tomato Bruschetta (Classic Italian Recipe) - Olivia's Cuisine",
+        "url": "https://www.oliviascuisine.com/tomato-bruschetta/",
+        "source": "oliviascuisine.com",
+        "dish_name": "Tomato Bruschetta",
+        "fit_score": 0.68,
+        "why_it_matches": "Uses day-old bread and ripe tomatoes with olive oil, but excerpt is thin on ingredient detail.",
+        "matched_ingredients": [
+          "very ripe tomatoes",
+          "olive oil"
+        ],
+        "possibly_missing": [
+          "garlic",
+          "basil"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Authentic Italian Bruschetta Recipe - Keeping It Simple Italian",
+        "url": "https://keepingitsimpleitalian.com/authentic-italian-bruschetta-recipe-bruschetta-italiana/",
+        "source": "keepingitsimpleitalian.com",
+        "dish_name": "Authentic Italian Bruschetta",
+        "fit_score": 0.62,
+        "why_it_matches": "A simple bruschetta recipe with fresh tomatoes and olive oil on toasted bread, though it calls for a baguette rather than specifically stale bread.",
+        "matched_ingredients": [
+          "very ripe tomatoes",
+          "olive oil"
+        ],
+        "possibly_missing": [
+          "garlic",
+          "balsamic"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Authentic Panzanella Recipe From Tuscany (Tomato And Bread Salad) - Eating Around Italy",
+        "url": "https://eatingarounditaly.com/authentic-panzanella-recipe/",
+        "source": "eatingarounditaly.com",
+        "dish_name": "Authentic Panzanella",
+        "fit_score": 0.6,
+        "why_it_matches": "Uses stale bread, ripe tomatoes, and olive oil in a traditional salad, though the excerpt shows garbled/repeated text suggesting extraction issues.",
+        "matched_ingredients": [
+          "stale bread",
+          "very ripe tomatoes",
+          "olive oil"
+        ],
+        "possibly_missing": [
+          "cucumber",
+          "red onion",
+          "basil",
+          "vinegar"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Easy Blistered Tomato Bruschetta Recipe (15 mins) | The Mediterranean Dish",
+        "url": "https://www.themediterraneandish.com/tomato-bruschetta/",
+        "source": "themediterraneandish.com",
+        "dish_name": "Blistered Tomato Bruschetta",
+        "fit_score": 0.55,
+        "why_it_matches": "Uses ripe cherry tomatoes and grilled bread with olive oil, but relies on balsamic glaze and doesn't emphasize using stale bread.",
+        "matched_ingredients": [
+          "very ripe tomatoes",
+          "olive oil"
+        ],
+        "possibly_missing": [
+          "balsamic glaze",
+          "basil"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Authentic Italian Tomato Bruschetta Recipe | Fresh & Easy Appetizer",
+        "url": "https://www.giallozafferano.com/recipes/tomato-bruschetta.html",
+        "source": "giallozafferano.com",
+        "dish_name": "Tomato Bruschetta",
+        "fit_score": 0.5,
+        "why_it_matches": "Has a workable bruschetta recipe with ripe tomatoes and olive oil, but the page is heavily padded with marketing-style filler text.",
+        "matched_ingredients": [
+          "very ripe tomatoes",
+          "olive oil"
+        ],
+        "possibly_missing": [
+          "garlic",
+          "basil",
+          "oregano"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Panzanella Recipe | Gabriele Bertaccini | Food Network",
+        "url": "https://www.foodnetwork.com/recipes/panzanella-24576682",
+        "source": "foodnetwork.com",
+        "dish_name": null,
+        "fit_score": 0.05,
+        "why_it_matches": "Page only shows legal/privacy boilerplate with no visible recipe content.",
+        "matched_ingredients": [],
+        "possibly_missing": [],
+        "role": "ignore"
+      }
+    ]
+  }
+]

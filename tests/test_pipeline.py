@@ -135,15 +135,32 @@ async def test_pool_is_capped(exa, evaluator):
     assert len(evaluator.evaluate_calls[0]["results"]) == 12
 
 
-async def test_planner_failure_falls_back_to_template(exa, evaluator):
+async def test_first_attempt_planner_failure_propagates(exa, evaluator):
+    # No fallback here: the query hasn't passed the on-topic gate, so
+    # searching it anyway would bypass the gate.
     evaluator.plans = [EvaluationAPIError("planner down")]
     exa.default = [result("https://a")]
-    evaluator.evaluations = [[candidate("best_base_recipe")]]
+
+    with pytest.raises(EvaluationAPIError):
+        await run(exa, evaluator)
+    assert exa.calls == []
+    assert evaluator.evaluate_calls == []
+
+
+async def test_retry_planner_failure_falls_back_to_template(exa, evaluator):
+    a = result("https://a")
+    evaluator.plans = [SearchPlan(queries=["q1"]), EvaluationAPIError("planner down")]
+    exa.pools = {"q1": [a]}
+    exa.default = [result("https://b")]
+    evaluator.evaluations = [
+        [candidate("ignore", url="https://a")],
+        [candidate("best_base_recipe", url="https://b")],
+    ]
 
     candidates = await run(exa, evaluator)
 
-    assert len(candidates) == 1
-    assert exa.calls[0]["query"] == f"Here is a great home-cooked recipe: {QUERY}"
+    assert [c.role for c in candidates] == ["best_base_recipe"]
+    assert exa.calls[-1]["query"] == f"Here is a great home-cooked recipe: {QUERY}"
 
 
 async def test_one_failed_search_variant_is_tolerated(exa, evaluator):
