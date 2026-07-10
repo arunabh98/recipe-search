@@ -17,3 +17,6 @@ wheels/
 
 # Local usage-recording database (USAGE_DB_PATH) and its WAL sidecars
 usage.db*
+
+# macOS Finder metadata
+.DS_Store
