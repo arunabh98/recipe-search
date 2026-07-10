@@ -1,0 +1,611 @@
+[
+  {
+    "number": 19,
+    "query": "Broccoli, some cashews, and a bunch of mint. Some Indian dish?",
+    "attempts": [
+      {
+        "feedback": null,
+        "queries": [
+          "Here is a delicious Indian-style broccoli and cashew curry recipe:",
+          "Here is a great recipe for Indian broccoli cashew stir-fry with mint chutney:",
+          "Here is a fresh mint chutney recipe to pair with an Indian vegetable dish:"
+        ]
+      }
+    ],
+    "retried": false,
+    "off_topic": false,
+    "pool_sizes": [
+      12
+    ],
+    "url_integrity_ok": true,
+    "rec_checks": {
+      "sources_from_usable_pool": true,
+      "no_index_leak_in_prose": true,
+      "primary_count_ok": true,
+      "no_primary_alt_overlap": true
+    },
+    "elapsed_s": 31.5,
+    "error": null,
+    "recommendation": {
+      "dish_name": "Malai Broccoli",
+      "headline": "With broccoli, cashews, and mint on hand, Malai Broccoli lets all three shine in one creamy appetizer.",
+      "why_it_fits": "This is the only recipe on the list that actually calls for mint alongside broccoli and cashews, so you're not left with a stray bunch of herbs. It's built as a rich, marinated appetizer rather than a full gravy dish, which keeps the ingredient list close to what you already have.",
+      "missing_items": [
+        {
+          "ingredient": "yogurt",
+          "importance": "essential",
+          "note": "forms the base of the marinade, use a thick plain yogurt"
+        },
+        {
+          "ingredient": "cream",
+          "importance": "essential",
+          "note": "adds the malai richness, half and half works if that's what you have"
+        },
+        {
+          "ingredient": "cheese",
+          "importance": "nice_to_have",
+          "note": "a grated hard cheese boosts richness but can be skipped"
+        },
+        {
+          "ingredient": "coriander leaves",
+          "importance": "nice_to_have",
+          "note": "for garnish, mint alone is fine if you don't have it"
+        }
+      ],
+      "primary_sources": [
+        {
+          "title": "Malai Broccoli Recipe",
+          "url": "https://www.mygingergarlickitchen.com/malai-broccoli/",
+          "source": "mygingergarlickitchen.com",
+          "dish_name": "Malai Broccoli"
+        }
+      ],
+      "how_to_use_sources": "Follow the Malai Broccoli recipe on mygingergarlickitchen.com from start to finish, it already uses your broccoli, cashews, and mint in the marinade and roasting method.",
+      "alternatives": [
+        {
+          "recipe": {
+            "title": "Shahi Broccoli | Broccoli recipe Indian | how to make broccoli sabzi - Rumki's Golden Spoon",
+            "url": "https://rumkisgoldenspoon.com/shahi-broccoli/",
+            "source": "rumkisgoldenspoon.com",
+            "dish_name": "Shahi Broccoli"
+          },
+          "reason": "Pick the Shahi Broccoli page from Rumki's Golden Spoon if you'd rather have a saucy curry to eat with rice instead of an appetizer, though you'll set the mint aside."
+        },
+        {
+          "recipe": {
+            "title": "broccoli-cashew poriyal \u2013 A Bit Wholesomely",
+            "url": "https://www.abitwholesomely.com/2015/06/broccoli-cashew-poriyal_11.html",
+            "source": "abitwholesomely.com",
+            "dish_name": "Broccoli-Cashew Poriyal"
+          },
+          "reason": "Choose the broccoli-cashew poriyal from A Bit Wholesomely if you want something quicker and lighter, more of a South Indian stir-fry than a rich starter."
+        },
+        {
+          "recipe": {
+            "title": "Smoky Creamy And Irresistible! Tandoori Broccoli Makhani \u2013 Rajshri Food",
+            "url": "https://rajshrifood.com/smoky-creamy-irresistible-tandoori-broccoli-makhani/",
+            "source": "rajshrifood.com",
+            "dish_name": "Tandoori Broccoli Makhani"
+          },
+          "reason": "Go for the Tandoori Broccoli Makhani from Rajshri Food if you're in the mood for a heavier, tomato based gravy and don't mind a longer ingredient list."
+        }
+      ]
+    },
+    "candidates": [
+      {
+        "title": "Shahi Broccoli | Broccoli recipe Indian | how to make broccoli sabzi - Rumki's Golden Spoon",
+        "url": "https://rumkisgoldenspoon.com/shahi-broccoli/",
+        "source": "rumkisgoldenspoon.com",
+        "dish_name": "Shahi Broccoli",
+        "fit_score": 0.85,
+        "why_it_matches": "Uses broccoli and cashews directly in a creamy Indian curry, though mint isn't part of it.",
+        "matched_ingredients": [
+          "broccoli",
+          "cashews"
+        ],
+        "possibly_missing": [
+          "almonds",
+          "milk",
+          "kewra water",
+          "onions",
+          "tomato"
+        ],
+        "role": "best_base_recipe"
+      },
+      {
+        "title": "broccoli-cashew poriyal \u2013 A Bit Wholesomely",
+        "url": "https://www.abitwholesomely.com/2015/06/broccoli-cashew-poriyal_11.html",
+        "source": "abitwholesomely.com",
+        "dish_name": "Broccoli-Cashew Poriyal",
+        "fit_score": 0.7,
+        "why_it_matches": "South Indian stir-fry combining broccoli and cashews with coconut and spices, quick to make.",
+        "matched_ingredients": [
+          "broccoli",
+          "cashews"
+        ],
+        "possibly_missing": [
+          "coconut",
+          "curry leaves",
+          "mustard seeds",
+          "jalapeno"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Malai Broccoli Recipe",
+        "url": "https://www.mygingergarlickitchen.com/malai-broccoli/",
+        "source": "mygingergarlickitchen.com",
+        "dish_name": "Malai Broccoli",
+        "fit_score": 0.6,
+        "why_it_matches": "Uses broccoli, cashews, and mint leaves together in a creamy marinade for an appetizer.",
+        "matched_ingredients": [
+          "broccoli",
+          "cashews",
+          "mint"
+        ],
+        "possibly_missing": [
+          "yogurt",
+          "cream",
+          "cheese",
+          "coriander leaves"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Smoky Creamy And Irresistible! Tandoori Broccoli Makhani \u2013 Rajshri Food",
+        "url": "https://rajshrifood.com/smoky-creamy-irresistible-tandoori-broccoli-makhani/",
+        "source": "rajshrifood.com",
+        "dish_name": "Tandoori Broccoli Makhani",
+        "fit_score": 0.55,
+        "why_it_matches": "Uses broccoli and cashews in a rich makhani gravy but requires a large tomato-heavy gravy and no mint.",
+        "matched_ingredients": [
+          "broccoli",
+          "cashews"
+        ],
+        "possibly_missing": [
+          "tomatoes",
+          "curd",
+          "fenugreek leaves",
+          "paneer"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Spiced broccoli, paneer & peas with garam masala cashews - Good Food Middle East",
+        "url": "https://www.bbcgoodfoodme.com/recipes/spiced-broccoli-paneer-peas-garam-masala-cashews/",
+        "source": "bbcgoodfoodme.com",
+        "dish_name": "Spiced broccoli, paneer & peas with garam masala cashews",
+        "fit_score": 0.5,
+        "why_it_matches": "Uses broccoli and cashews in an Indian-spiced tray dish but requires paneer, sprouts and peas not mentioned by user.",
+        "matched_ingredients": [
+          "broccoli",
+          "cashews"
+        ],
+        "possibly_missing": [
+          "paneer",
+          "yogurt",
+          "brussels sprouts",
+          "peas"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Cashew Curry Broccoli Stir Fry",
+        "url": "https://www.contentednesscooking.com/cashew-curry-broccoli-stir-fry/",
+        "source": "contentednesscooking.com",
+        "dish_name": "Cashew Curry Broccoli Stir Fry",
+        "fit_score": 0.45,
+        "why_it_matches": "Combines broccoli and cashew butter in a curried coconut stir fry, though not distinctly Indian and no mint.",
+        "matched_ingredients": [
+          "broccoli",
+          "cashews"
+        ],
+        "possibly_missing": [
+          "coconut milk",
+          "curry paste",
+          "garlic"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Stir fry Broccoli | with Cashew Sauce \u2013 Candid Treat",
+        "url": "https://candidtreat.com/stir-fry-broccoli-with-cashew-sauce/",
+        "source": "candidtreat.com",
+        "dish_name": "Stir fry Broccoli with Cashew Sauce",
+        "fit_score": 0.4,
+        "why_it_matches": "Uses broccoli and cashews in an Indian-inspired creamy sauce but skews towards a novelty dessert-adjacent presentation with strawberry curd, and no mint.",
+        "matched_ingredients": [
+          "broccoli",
+          "cashews"
+        ],
+        "possibly_missing": [
+          "curd",
+          "cheese",
+          "milk",
+          "garlic"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Pudina Chutney (Mint Chutney) - Swasthi's Recipes",
+        "url": "https://www.indianhealthyrecipes.com/pudina-chutney-recipe-idli-dosa-vada/",
+        "source": "indianhealthyrecipes.com",
+        "dish_name": "Pudina Chutney (Mint Chutney)",
+        "fit_score": 0.3,
+        "why_it_matches": "Uses the mint on hand for a chutney side, but doesn't use broccoli or cashews as a main dish.",
+        "matched_ingredients": [
+          "mint"
+        ],
+        "possibly_missing": [
+          "coriander leaves",
+          "yogurt",
+          "green chilies"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Cilantro Mint Chutney \u2013 Dassana\u2019s Veg Recipes",
+        "url": "https://www.vegrecipesofindia.com/mint-coriander-chutney-recipe/",
+        "source": "vegrecipesofindia.com",
+        "dish_name": "Cilantro Mint Chutney",
+        "fit_score": 0.25,
+        "why_it_matches": "Uses mint for a chutney side dip but ignores broccoli and cashews entirely.",
+        "matched_ingredients": [
+          "mint"
+        ],
+        "possibly_missing": [
+          "cilantro",
+          "green chilies"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Mint Cilantro Chutney (Indian Green Chutney) - Piping Pot Curry",
+        "url": "https://pipingpotcurry.com/mint-cilantro-chutney/",
+        "source": "pipingpotcurry.com",
+        "dish_name": "Mint Cilantro Chutney (Indian Green Chutney)",
+        "fit_score": 0.25,
+        "why_it_matches": "Uses the mint on hand for a chutney condiment but not a main dish using broccoli or cashews.",
+        "matched_ingredients": [
+          "mint"
+        ],
+        "possibly_missing": [
+          "cilantro",
+          "green chili",
+          "garlic"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Broccoli Stir Fry Curry (Indian Style) - Swasthi's Recipes",
+        "url": "https://www.indianhealthyrecipes.com/broccoli-curry-recipe-indian-broccoli-stir-fry/",
+        "source": "indianhealthyrecipes.com",
+        "dish_name": "Broccoli Stir Fry Curry (Indian Style)",
+        "fit_score": 0.2,
+        "why_it_matches": "Excerpt only shows a partial step, not a full usable recipe with ingredient list.",
+        "matched_ingredients": [
+          "broccoli"
+        ],
+        "possibly_missing": [
+          "cashews",
+          "mint"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Pudina Chutney Recipe (Mint Chutney) \u2013 Dassana\u2019s Veg Recipes",
+        "url": "https://www.vegrecipesofindia.com/pudina-chutney-recipe/",
+        "source": "vegrecipesofindia.com",
+        "dish_name": "Pudina Chutney Recipe (Mint Chutney)",
+        "fit_score": 0.2,
+        "why_it_matches": "Brief excerpt describing mint chutney without full recipe details shown, and doesn't use broccoli or cashews.",
+        "matched_ingredients": [
+          "mint"
+        ],
+        "possibly_missing": [
+          "ginger",
+          "garlic",
+          "green chilies"
+        ],
+        "role": "ignore"
+      }
+    ]
+  },
+  {
+    "number": 20,
+    "query": "Broccoli, cashews, and mint. One of those melt-in-your-mouth Indian restaurant starters?",
+    "attempts": [
+      {
+        "feedback": null,
+        "queries": [
+          "Here is a melt-in-your-mouth Indian restaurant-style broccoli cashew starter recipe:",
+          "Here is a creamy Indian appetizer recipe using broccoli, cashews, and mint chutney:",
+          "Here is a restaurant-style broccoli cashew pepper fry starter recipe:"
+        ]
+      }
+    ],
+    "retried": false,
+    "off_topic": false,
+    "pool_sizes": [
+      12
+    ],
+    "url_integrity_ok": true,
+    "rec_checks": {
+      "sources_from_usable_pool": true,
+      "no_index_leak_in_prose": true,
+      "primary_count_ok": true,
+      "no_primary_alt_overlap": true
+    },
+    "elapsed_s": 47.0,
+    "error": null,
+    "recommendation": {
+      "dish_name": "Malai Broccoli",
+      "headline": "Malai Broccoli is exactly the melt-in-your-mouth Indian starter you're picturing, and the My Ginger Garlic Kitchen version uses your broccoli, cashews, and mint right in the marinade.",
+      "why_it_fits": "You already have the three ingredients that actually define this dish: broccoli florets, cashews blended into the creamy base, and mint worked into the marinade rather than just as a garnish. That's rarer than it sounds, most versions only add mint as a chutney afterthought. This one bakes to that golden, creamy, restaurant-style bite you're after.",
+      "missing_items": [
+        {
+          "ingredient": "hung curd or cream cheese",
+          "importance": "essential",
+          "note": "this is what makes the marinade cling and go golden, plain thick yogurt strained a bit works as a swap"
+        },
+        {
+          "ingredient": "cheese slices",
+          "importance": "nice_to_have",
+          "note": "adds richness and helps browning, you can skip it and just baste with a bit more oil or butter while baking"
+        }
+      ],
+      "primary_sources": [
+        {
+          "title": "Malai Broccoli Recipe",
+          "url": "https://www.mygingergarlickitchen.com/malai-broccoli/",
+          "source": "mygingergarlickitchen.com",
+          "dish_name": "Malai Broccoli (creamy Indian appetizer)"
+        }
+      ],
+      "how_to_use_sources": "Follow the My Ginger Garlic Kitchen malai broccoli page start to finish for the marinade, baking time, and temperature since it's built around your exact three ingredients already.",
+      "alternatives": [
+        {
+          "recipe": {
+            "title": "Air fryer Malai Broccoli Tikka | Broccoli in Air fryer - Yummy tales of tummy",
+            "url": "https://yummytalesoftummy.com/air-fryer-malai-broccoli-tikka/",
+            "source": "yummytalesoftummy.com",
+            "dish_name": "Air Fryer Malai Broccoli Tikka"
+          },
+          "reason": "Pick this one if you'd rather air fry than bake and want the mint served as a chutney on the side instead of blended in."
+        },
+        {
+          "recipe": {
+            "title": "Malai Broccoli Tikka - mytastycurry.com",
+            "url": "https://mytastycurry.com/malai-broccoli/",
+            "source": "mytastycurry.com",
+            "dish_name": "Malai Broccoli Tikka (Tandoori Malai Broccoli)"
+          },
+          "reason": "Good backup if you're missing cheese entirely and want a version that leans more on a straightforward cashew paste marinade."
+        },
+        {
+          "recipe": {
+            "title": "Air Fryer Malai Broccoli Recipe  - Fun FOOD Frolic",
+            "url": "https://www.funfoodfrolic.com/malai-broccoli-recipe/",
+            "source": "funfoodfrolic.com",
+            "dish_name": "Air Fryer Malai Broccoli"
+          },
+          "reason": "Another air fryer option if you want a faster cook time and don't mind mint being a dip rather than part of the marinade."
+        }
+      ]
+    },
+    "candidates": [
+      {
+        "title": "Malai Broccoli Recipe",
+        "url": "https://www.mygingergarlickitchen.com/malai-broccoli/",
+        "source": "mygingergarlickitchen.com",
+        "dish_name": "Malai Broccoli (creamy Indian appetizer)",
+        "fit_score": 0.93,
+        "why_it_matches": "This recipe explicitly blends broccoli, soaked cashews, and mint leaves into the creamy marinade, then bakes to a golden, melt-in-mouth Indian restaurant-style appetizer, matching all three key ingredients and the requested style.",
+        "matched_ingredients": [
+          "broccoli",
+          "cashews",
+          "mint"
+        ],
+        "possibly_missing": [
+          "hung curd or cream cheese",
+          "cheese slices"
+        ],
+        "role": "best_base_recipe"
+      },
+      {
+        "title": "Air fryer Malai Broccoli Tikka | Broccoli in Air fryer - Yummy tales of tummy",
+        "url": "https://yummytalesoftummy.com/air-fryer-malai-broccoli-tikka/",
+        "source": "yummytalesoftummy.com",
+        "dish_name": "Air Fryer Malai Broccoli Tikka",
+        "fit_score": 0.82,
+        "why_it_matches": "Cashews are blended directly into the marinade with broccoli florets and the dish is explicitly recommended to be served with mint chutney, closely matching the request.",
+        "matched_ingredients": [
+          "broccoli",
+          "cashews",
+          "mint"
+        ],
+        "possibly_missing": [
+          "curd",
+          "processed cheese"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Malai Broccoli Tikka - mytastycurry.com",
+        "url": "https://mytastycurry.com/malai-broccoli/",
+        "source": "mytastycurry.com",
+        "dish_name": "Malai Broccoli Tikka (Tandoori Malai Broccoli)",
+        "fit_score": 0.78,
+        "why_it_matches": "Uses broccoli and cashew paste in a creamy, spiced marinade air-fried to a melt-in-mouth texture typical of Indian restaurant starters, though mint is only mentioned as a serving suggestion.",
+        "matched_ingredients": [
+          "broccoli",
+          "cashews"
+        ],
+        "possibly_missing": [
+          "yogurt",
+          "heavy cream",
+          "mint (for chutney)"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Air Fryer Malai Broccoli Recipe  - Fun FOOD Frolic",
+        "url": "https://www.funfoodfrolic.com/malai-broccoli-recipe/",
+        "source": "funfoodfrolic.com",
+        "dish_name": "Air Fryer Malai Broccoli",
+        "fit_score": 0.75,
+        "why_it_matches": "Uses broccoli and a cashew paste marinade for a creamy Indian appetizer, with mint chutney suggested as a dip, closely aligning with the request.",
+        "matched_ingredients": [
+          "broccoli",
+          "cashews"
+        ],
+        "possibly_missing": [
+          "yogurt",
+          "cheese",
+          "mint (for chutney)"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Malai Broccoli (restaurant style) | J Cooking Odyssey",
+        "url": "https://www.jcookingodyssey.com/malai-broccoli/",
+        "source": "jcookingodyssey.com",
+        "dish_name": "Malai Broccoli (restaurant style)",
+        "fit_score": 0.68,
+        "why_it_matches": "A restaurant-style creamy broccoli appetizer that optionally suggests cashew paste as a dairy substitute, but doesn't include mint and cashews are only optional.",
+        "matched_ingredients": [
+          "broccoli"
+        ],
+        "possibly_missing": [
+          "cashews (optional)",
+          "cream cheese",
+          "mint"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "QUICK Air Fryer or Oven Malai Broccoli Tikka - Some Indian Girl",
+        "url": "https://someindiangirl.com/malai-broccoli/",
+        "source": "someindiangirl.com",
+        "dish_name": "Malai Broccoli Tikka (Air Fryer/Oven)",
+        "fit_score": 0.55,
+        "why_it_matches": "Delivers the creamy, restaurant-style malai broccoli appetizer with broccoli as the base, but the recipe itself doesn't use cashews (only cream cheese/yogurt) and mint appears only in a chutney suggestion.",
+        "matched_ingredients": [
+          "broccoli"
+        ],
+        "possibly_missing": [
+          "cashews",
+          "mint",
+          "cream cheese"
+        ],
+        "role": "backup"
+      },
+      {
+        "title": "Malai Broccoli Tikka \u2013 Mellow Masala",
+        "url": "https://www.mellowmasala.com/recipe/malai-broccoli-tikka/",
+        "source": "mellowmasala.com",
+        "dish_name": "Malai Broccoli Tikka",
+        "fit_score": 0.5,
+        "why_it_matches": "A creamy Indian tikka appetizer using broccoli, but the marinade relies on ricotta/hung curd rather than cashews, and mint is absent from the recipe itself.",
+        "matched_ingredients": [
+          "broccoli"
+        ],
+        "possibly_missing": [
+          "cashews",
+          "mint",
+          "ricotta"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Easy Creamy Malai Broccoli Kebab Recipe",
+        "url": "https://eathealthy365.com/easy-creamy-malai-broccoli-kebabs/",
+        "source": "eathealthy365.com",
+        "dish_name": "Creamy Malai Broccoli Kebabs",
+        "fit_score": 0.5,
+        "why_it_matches": "Uses broccoli and cashew paste in a creamy tandoori-style marinade, but has heavy promotional filler text and no mint ingredient in the recipe.",
+        "matched_ingredients": [
+          "broccoli",
+          "cashews"
+        ],
+        "possibly_missing": [
+          "hung curd",
+          "cream cheese",
+          "mint"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Broccoli Cashew Stir-Fry - The Grateful Girl Cooks!",
+        "url": "https://www.thegratefulgirlcooks.com/broccoli-cashew-stir-fry/",
+        "source": "thegratefulgirlcooks.com",
+        "dish_name": "Broccoli Cashew Stir-Fry",
+        "fit_score": 0.2,
+        "why_it_matches": "Uses broccoli and cashews but is a Western-style stir-fry, not an Indian restaurant-style melt-in-mouth starter, and has no mint.",
+        "matched_ingredients": [
+          "broccoli",
+          "cashews"
+        ],
+        "possibly_missing": [
+          "bell peppers",
+          "onions",
+          "sauce ingredients"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Gingery broccoli-fry with cashews",
+        "url": "https://creativecooking101.com/gingery-broccoli-fry-with-cashews/",
+        "source": "creativecooking101.com",
+        "dish_name": "Gingery broccoli-fry with cashews",
+        "fit_score": 0.2,
+        "why_it_matches": "Contains broccoli and cashews but is a soy-ginger stir-fry, not the creamy Indian restaurant starter style requested, and lacks mint; text shows some generic blog filler.",
+        "matched_ingredients": [
+          "broccoli",
+          "cashews"
+        ],
+        "possibly_missing": [
+          "soy sauce",
+          "bell pepper"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Broccoli Cashew Stir-Fry Recipe - Best Plant-Based Asian Dish",
+        "url": "https://forkandroots.com/broccoli-cashew-stir-fry/",
+        "source": "forkandroots.com",
+        "dish_name": "Broccoli Cashew Stir-Fry (Asian-inspired)",
+        "fit_score": 0.15,
+        "why_it_matches": "Contains broccoli and cashews but is a soy-maple Asian stir-fry with heavy blog filler text, not matching the Indian restaurant starter request or mint ingredient.",
+        "matched_ingredients": [
+          "broccoli",
+          "cashews"
+        ],
+        "possibly_missing": [
+          "soy sauce",
+          "maple syrup",
+          "bell pepper"
+        ],
+        "role": "ignore"
+      },
+      {
+        "title": "Gingery Broccoli Fry with Cashews | Quick & Flavorful Vegetable Stir-Fry",
+        "url": "https://theethankitchen.com/gingery-broccoli-fry-with-cashews-recipe/",
+        "source": "theethankitchen.com",
+        "dish_name": "Gingery Broccoli Fry with Cashews (broccoli rice with eggs)",
+        "fit_score": 0.15,
+        "why_it_matches": "Uses broccoli and cashews but is an Asian-inspired stir-fry with eggs and tamari, not matching the Indian creamy starter style or mint requirement.",
+        "matched_ingredients": [
+          "broccoli",
+          "cashews"
+        ],
+        "possibly_missing": [
+          "tamari",
+          "eggs",
+          "lime"
+        ],
+        "role": "ignore"
+      }
+    ]
+  }
+]

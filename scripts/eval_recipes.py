@@ -54,7 +54,7 @@ QUERIES = [
     "Kimchi, leftover rice, and eggs. Something fast",
     "Chicken thighs and a jar of peanut butter?",
     "Two brown bananas and a bag of oats. Something sweet?",
-    "Stale bread, very ripe tomatoes, olive oil",
+    "Broccoli, some cashews, and a bunch of mint. Some Indian dish?",
 ]
 
 REVIEW_CHECKLIST = """\
