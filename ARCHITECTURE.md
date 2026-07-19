@@ -7,7 +7,7 @@ the answer comes back as a source-linked cooking plan — or an honest
 "nothing fit." This is the module-by-module account of how that happens:
 every route, every prompt, every failure path, every test.
 
-> **Accurate as of commit `5749ddc` (2026-07-09).** This file describes
+> **Accurate as of commit `47c096c` (2026-07-19).** This file describes
 > behavior. When a change alters behavior, update the matching section in
 > the same change — a stale line-by-line account is worse than none.
 
@@ -116,7 +116,7 @@ recipe-search/
 ├── uv.lock                      # resolved dependency graph
 ├── scripts/
 │   └── eval_recipes.py          # live-pipeline eval → evals/ reports (§14)
-├── evals/                       # committed eval reports (markdown + JSON pairs)
+├── evals/                       # local eval reports (markdown + JSON pairs, gitignored)
 ├── src/recipe_search/
 │   ├── __init__.py              # console-script entry point (dev server)
 │   ├── config.py                # Settings — env / .env (15 fields)

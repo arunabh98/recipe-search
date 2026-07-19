@@ -23,3 +23,6 @@ usage.db*
 
 # Local screenshots and marketing images
 demo_images/
+
+# Local eval run reports (written by scripts/eval_recipes.py)
+evals/
