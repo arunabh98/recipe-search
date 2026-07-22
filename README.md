@@ -7,10 +7,11 @@ source-linked cooking recommendation.
 
 Run the server and open **http://127.0.0.1:8000/** for the demo UI — a
 single self-contained page (`src/recipe_search/static/index.html`, no build
-step, no CDN) with example queries, a staged progress view while the
-pipeline runs, and the full recommendation experience: the dish, why it
-fits, essential vs nice-to-have missing items, cook-from source cards, and
-alternatives.
+step, no CDN) with example queries, an **Add photo** action that turns a
+fridge photo into a thumbnail-backed list of removable ingredient chips,
+a staged progress view while the pipeline runs, and the full
+recommendation experience: the dish, why it fits, essential vs
+nice-to-have missing items, cook-from source cards, and alternatives.
 
 ## Setup
 
@@ -161,6 +162,43 @@ found, `recommendation` is `null` and the honest candidate list is still
 returned. Response shape: `{"recommendation": {...} | null, "candidates":
 [...]}`. Expect ~40–60s and ~$0.15–0.30 per request on the default model.
 
+### `POST /ingredients/from-photo`
+
+Send a photo, get back the food Claude can see in it — the mechanism
+behind the ask bar's **Add photo** action. The UI shows a thumbnail and
+the detected foods as removable chips, then combines the selected chips
+with any typed cravings or constraints only when the user searches. The
+pipeline itself never sees an image; a photo only ever becomes editable,
+reviewable words.
+
+```bash
+curl -s http://127.0.0.1:8000/ingredients/from-photo \
+  -H 'Content-Type: application/json' \
+  -d "{\"image_base64\": \"$(base64 < fridge.jpg | tr -d '\n')\", \"media_type\": \"image/jpeg\"}"
+```
+
+Request body: `image_base64` (bare base64, no `data:` prefix, at most
+5 MB decoded) and an optional `media_type` — `image/jpeg` (default),
+`image/png`, or `image/webp`. Every HTTP request body is capped at 8 MiB
+before FastAPI buffers or validates it.
+
+Response (`200`):
+
+```json
+{
+  "food_visible": true,
+  "ingredients": ["eggs", "cheddar", "kale", "milk"]
+}
+```
+
+Lowercase common names, most meal-worthy first, at most 40. A photo with
+no identifiable food is not an error: `200` with `"food_visible": false`
+and an empty list. The image is analyzed in memory and discarded — never
+stored, never logged. Errors follow the evaluation family (`413` request
+body too large, `422` undecodable/oversized/unsupported image, `429` rate
+limit, `500` missing/bad Anthropic key, `502`/`504` upstream trouble). One
+low-effort vision call: a few seconds and the cheapest request in the app.
+
 ### `GET /healthz`
 
 Liveness check, returns `{"status": "ok"}`.
@@ -207,10 +245,11 @@ uv run pytest
 ```
 
 Covers every endpoint's request/response behavior (including demo limits,
-off-topic refusals, and `/stats` auth), Exa request shape, normalization,
-and error mapping, Claude structured-output parsing and merging, pipeline
-retry and fallback behavior, and usage recording — all against in-process
-fakes, no network required.
+off-topic refusals, photo-ingredient identification, and `/stats` auth),
+Exa request shape, normalization, and error mapping, Claude
+structured-output parsing and merging, pipeline retry and fallback
+behavior, and usage recording — all against in-process fakes, no network
+required.
 
 ## Sharing it publicly (demo mode)
 

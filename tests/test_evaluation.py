@@ -7,6 +7,7 @@ import httpx
 import pytest
 
 from recipe_search.evaluation import (
+    _PHOTO_PROMPT,
     _PLANNER_PROMPT,
     _RECOMMENDER_PROMPT,
     EvaluationAPIError,
@@ -14,6 +15,7 @@ from recipe_search.evaluation import (
     EvaluationRateLimitError,
     EvaluationTimeoutError,
     MissingItem,
+    PhotoIngredients,
     RecipeCandidate,
     RecipeEvaluator,
     SearchPlan,
@@ -398,6 +400,74 @@ async def test_recommend_validates_inputs(evaluator):
         await evaluator.recommend("   ", [make_candidate(0)])
     with pytest.raises(ValueError):
         await evaluator.recommend("eggs", [])
+
+
+PHOTO_B64 = "ZmFrZS1qcGVnLWJ5dGVz"  # the fake client never decodes it
+
+
+def photo_response(**overrides):
+    fields = {"food_visible": True, "ingredients": ["eggs", "cheddar"]}
+    fields.update(overrides)
+    return SimpleNamespace(
+        parsed_output=PhotoIngredients(**fields), stop_reason="end_turn"
+    )
+
+
+async def test_identify_ingredients_sends_the_image_block(evaluator, fake_anthropic):
+    fake_anthropic.response = photo_response()
+
+    found = await evaluator.identify_ingredients(PHOTO_B64, media_type="image/png")
+
+    assert found == PhotoIngredients(food_visible=True, ingredients=["eggs", "cheddar"])
+    call = fake_anthropic.calls[0]
+    assert call["system"] is _PHOTO_PROMPT
+    assert call["output_format"] is PhotoIngredients
+    assert call["output_config"] == {"effort": "low"}
+    assert "thinking" not in call  # like the planner: a fast, cheap call
+    image_block, text_block = call["messages"][0]["content"]
+    assert image_block == {
+        "type": "image",
+        "source": {
+            "type": "base64",
+            "media_type": "image/png",
+            "data": PHOTO_B64,
+        },
+    }
+    assert text_block["type"] == "text"
+
+
+async def test_identify_ingredients_cleans_and_caps_the_list(
+    evaluator, fake_anthropic
+):
+    noisy = [" Eggs ", "eggs", "", "  "] + [f"item {i}" for i in range(45)]
+    fake_anthropic.response = photo_response(ingredients=noisy)
+
+    found = await evaluator.identify_ingredients(PHOTO_B64)
+
+    assert found.food_visible is True
+    assert len(found.ingredients) == 40
+    assert found.ingredients[:2] == ["eggs", "item 0"]  # deduped, lowercased
+
+
+@pytest.mark.parametrize(
+    ("food_visible", "ingredients"),
+    [(False, ["junk"]), (True, ["", "   "])],
+)
+async def test_identify_ingredients_returns_no_food_for_unusable_results(
+    evaluator, fake_anthropic, food_visible, ingredients
+):
+    fake_anthropic.response = photo_response(
+        food_visible=food_visible, ingredients=ingredients
+    )
+
+    found = await evaluator.identify_ingredients(PHOTO_B64)
+
+    assert found == PhotoIngredients(food_visible=False, ingredients=[])
+
+
+async def test_identify_ingredients_empty_image_raises(evaluator):
+    with pytest.raises(ValueError):
+        await evaluator.identify_ingredients("")
 
 
 def _status_error(cls, status: int):

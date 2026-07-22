@@ -13,7 +13,7 @@
     --bg-raised: #FFFDF8;
     --ink: #33261E;
     --ink-soft: #6E5D51;
-    --ink-faint: #9C8B7E;
+    --ink-faint: #7B6A5F;
     --line: #EADFCE;
     --accent: #C2552B;
     --accent-deep: #A34320;
@@ -32,7 +32,7 @@
       --bg-raised: #2A211B;
       --ink: #F2E7DC;
       --ink-soft: #C4B2A3;
-      --ink-faint: #8F7D6F;
+      --ink-faint: #A08D7E;
       --line: #3D3128;
       --accent: #E07A4B;
       --accent-deep: #EE9066;
@@ -56,6 +56,9 @@
     overflow-wrap: break-word;
   }
   .serif { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; }
+  button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 3px;
+  }
 
   .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px 96px; }
 
@@ -88,7 +91,9 @@
   /* While cooking or showing a result, the hero steps aside. */
   .hero.compact { padding: 30px 0 0; }
   .hero.compact h1 { font-size: clamp(24px, 3.4vw, 30px); }
-  .hero.compact .sub, .hero.compact .chips { display: none; }
+  .hero.compact .sub, .hero.compact .chips,
+  .hero.compact .photo-review, .hero.compact .photo-privacy { display: none; }
+  .hero.photo-active .chips { display: none; }
 
   /* ---------- ask bar ---------- */
   .askbar {
@@ -109,7 +114,7 @@
     max-height: 132px; overflow-y: auto; padding: 9px 0;
   }
   .askbar textarea::placeholder { color: var(--ink-faint); }
-  .askbar button {
+  .askbar .ask {
     border: 0; cursor: pointer;
     background: var(--accent); color: #FFF8F2;
     font: inherit; font-weight: 600; font-size: 15px;
@@ -117,8 +122,79 @@
     transition: background .2s ease, transform .15s ease;
     white-space: nowrap;
   }
-  .askbar button:hover { background: var(--accent-deep); transform: scale(1.02); }
-  .askbar button:disabled { opacity: .55; cursor: default; transform: none; }
+  .askbar .ask:hover { background: var(--accent-deep); transform: scale(1.02); }
+  .askbar .ask:disabled { opacity: .55; cursor: default; transform: none; }
+  .askbar .photo-btn {
+    flex: none; border: 0; cursor: pointer;
+    min-height: 44px; border-radius: 999px; padding: 0 14px;
+    background: var(--accent-soft); color: var(--ink-soft);
+    font: inherit; font-size: 13.5px; font-weight: 650; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    transition: transform .15s ease, background .2s ease;
+    white-space: nowrap;
+  }
+  .askbar .photo-btn:hover { transform: scale(1.06); }
+  .askbar .photo-btn:disabled { opacity: .55; cursor: default; transform: none; }
+  .askbar .photo-btn .photo-icon { font-size: 17px; }
+  /* While the photo is being read, only the camera simmers; the text stays legible. */
+  .askbar .photo-btn.busy { opacity: 1; }
+  .askbar .photo-btn.busy .photo-icon { animation: simmer 2.2s ease-in-out infinite; }
+
+  .photo-privacy {
+    margin: 9px auto 0; max-width: 640px; color: var(--ink-faint);
+    font-size: 12.5px; display: flex; justify-content: center; align-items: center; gap: 6px;
+  }
+  .photo-privacy .privacy-mark { color: var(--sage); font-weight: 700; }
+
+  .photo-review {
+    margin: 13px auto 0; max-width: 640px; padding: 15px;
+    display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 15px;
+    text-align: left; background: var(--bg-raised); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+  }
+  .photo-review[hidden] { display: none; }
+  .photo-review.error { border-color: var(--amber); border-color: color-mix(in srgb, var(--amber) 48%, var(--line)); }
+  .photo-thumb-wrap {
+    width: 72px; height: 72px; border-radius: 14px; overflow: hidden;
+    position: relative; background: var(--accent-soft); display: grid; place-items: center;
+  }
+  .photo-thumb-wrap::before { content: "📷"; font-size: 23px; }
+  .photo-thumb {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    background: var(--accent-soft);
+  }
+  .photo-review.busy .photo-thumb { opacity: .58; }
+  .photo-review.busy .photo-thumb-wrap::after {
+    content: ""; position: absolute; width: 25px; height: 25px; border-radius: 999px;
+    border: 3px solid rgba(255, 255, 255, .72); border-top-color: var(--accent);
+    animation: photo-spin .85s linear infinite;
+  }
+  @keyframes photo-spin { to { transform: rotate(360deg); } }
+  .photo-review-main { min-width: 0; }
+  .photo-review-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .photo-review-title { font-weight: 700; line-height: 1.3; }
+  .photo-review-copy { margin-top: 3px; color: var(--ink-soft); font-size: 13.5px; line-height: 1.45; }
+  .photo-text-action {
+    flex: none; border: 0; background: transparent; color: var(--accent);
+    font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; padding: 2px 1px;
+  }
+  .photo-text-action:hover { color: var(--accent-deep); }
+  .photo-tags { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 7px; }
+  .photo-tags:empty { display: none; }
+  .photo-tag {
+    border: 1px solid var(--line);
+    border-color: color-mix(in srgb, var(--sage) 36%, var(--line));
+    background: var(--sage-soft); color: var(--ink); border-radius: 999px;
+    padding: 5px 9px 5px 11px; font: inherit; font-size: 13px; line-height: 1.15;
+    display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  }
+  .photo-tag:hover { border-color: var(--sage); }
+  .photo-tag .remove { color: var(--ink-faint); font-size: 15px; line-height: 1; }
+  .photo-limit {
+    margin-top: 10px; color: var(--amber); font-size: 13px; font-weight: 600;
+  }
+  .photo-review-actions { margin-top: 11px; display: flex; align-items: center; gap: 14px; }
+  .photo-review-actions[hidden], .photo-limit[hidden] { display: none; }
 
   .chips { margin: 22px auto 0; max-width: 640px; display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; }
   .chips .lead { width: 100%; font-size: 12.5px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-faint); margin-bottom: 2px; }
@@ -260,13 +336,14 @@
   .cand .meta { color: var(--ink-faint); font-size: 12.5px; margin-left: 6px; }
   .cand .why { display: block; color: var(--ink-soft); font-size: 13px; margin-top: 2px; }
 
-  .again { margin-top: 44px; text-align: center; }
+  .again { margin-top: 44px; display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
   .again button {
     border: 1px solid var(--line); background: var(--bg-raised); color: var(--ink-soft);
     font: inherit; font-size: 14.5px; padding: 10px 22px; border-radius: 999px; cursor: pointer;
     transition: all .18s ease;
   }
   .again button:hover { border-color: var(--accent); color: var(--accent); }
+  .again button.refine { border-color: var(--accent); color: var(--accent); }
 
   /* ---------- empty / error ---------- */
   .notice {
@@ -286,10 +363,17 @@
     .hero { padding: 56px 0 6px; }
     /* Small enough that neither headline sentence orphans a word on phones. */
     .hero h1 { font-size: clamp(25px, 7.8vw, 33px); }
-    .askbar { border-radius: 22px; flex-direction: column; padding: 14px; gap: 12px; }
+    /* The bar wraps: textarea on its own line, then 📷 beside a stretched
+       submit — the camera keeps its circle instead of going full-width. */
+    .askbar { border-radius: 22px; flex-wrap: wrap; padding: 14px; gap: 12px; }
     /* Two lines minimum so the wrapped placeholder never clips mid-letter. */
-    .askbar textarea { width: 100%; min-height: 66px; }
-    .askbar button { width: 100%; padding: 13px 22px; }
+    .askbar textarea { flex-basis: 100%; min-height: 66px; }
+    .askbar .ask { flex: 1; padding: 13px 22px; }
+    .askbar .photo-btn { padding: 0 13px; }
+    .photo-privacy { text-align: center; line-height: 1.35; }
+    .photo-review { grid-template-columns: 56px minmax(0, 1fr); padding: 13px; gap: 12px; }
+    .photo-thumb-wrap { width: 56px; height: 56px; border-radius: 12px; }
+    .photo-review-head { gap: 8px; }
     .chip { padding: 9px 16px; font-size: 14px; }
     .dish-card { padding: 26px 22px; }
     .cand { grid-template-columns: 26px 1fr; }
@@ -317,8 +401,43 @@
       <textarea id="queryInput" rows="1" autocomplete="off" maxlength="500"
              placeholder="I have eggs, salsa, tortillas, and cheese…"
              aria-label="What do you want to cook?"></textarea>
-      <button type="submit" id="askBtn">Find my dish</button>
+      <button type="button" class="photo-btn" id="photoBtn"
+              aria-label="Add a photo of your ingredients"
+              aria-describedby="photoPrivacy"
+              title="Add a photo of your ingredients">
+        <span class="photo-icon" aria-hidden="true">📷</span>
+        <span id="photoBtnText">Add photo</span>
+      </button>
+      <button type="submit" class="ask" id="askBtn">Find my dish</button>
     </form>
+    <input type="file" id="photoInput" accept="image/*" hidden tabindex="-1">
+
+    <section class="photo-review" id="photoReview" role="status"
+             aria-live="polite" aria-atomic="false" hidden>
+      <div class="photo-thumb-wrap">
+        <img class="photo-thumb" id="photoPreview" alt="Selected ingredient photo">
+      </div>
+      <div class="photo-review-main">
+        <div class="photo-review-head">
+          <div>
+            <div class="photo-review-title" id="photoReviewTitle">Reading your photo…</div>
+            <div class="photo-review-copy" id="photoReviewCopy"></div>
+          </div>
+          <button type="button" class="photo-text-action" id="photoCancel">Cancel</button>
+        </div>
+        <div class="photo-tags" id="photoTags"></div>
+        <div class="photo-limit" id="photoLimit" aria-live="polite" hidden></div>
+        <div class="photo-review-actions" id="photoReviewActions" hidden>
+          <button type="button" class="photo-text-action" id="photoChange">Choose another photo</button>
+          <button type="button" class="photo-text-action" id="photoRemove">Remove photo</button>
+        </div>
+      </div>
+    </section>
+
+    <p class="photo-privacy" id="photoPrivacy">
+      <span class="privacy-mark" aria-hidden="true">✓</span>
+      Your photo is analyzed for ingredients. Simmer doesn't store it.
+    </p>
 
     <div class="chips" id="chips">
       <div class="lead">or try one of these</div>
@@ -343,7 +462,7 @@
 
   <section class="result" id="result" aria-live="polite"></section>
 
-  <section class="notice" id="notice">
+  <section class="notice" id="notice" role="alert" aria-live="assertive" tabindex="-1">
     <div class="face" id="noticeFace">🥲</div>
     <h3 id="noticeTitle"></h3>
     <p id="noticeBody"></p>
@@ -362,6 +481,19 @@
   var input = document.getElementById("queryInput");
   var btn = document.getElementById("askBtn");
   var chips = document.getElementById("chips");
+  var photoBtn = document.getElementById("photoBtn");
+  var photoBtnText = document.getElementById("photoBtnText");
+  var photoInput = document.getElementById("photoInput");
+  var photoReview = document.getElementById("photoReview");
+  var photoPreview = document.getElementById("photoPreview");
+  var photoReviewTitle = document.getElementById("photoReviewTitle");
+  var photoReviewCopy = document.getElementById("photoReviewCopy");
+  var photoTags = document.getElementById("photoTags");
+  var photoLimit = document.getElementById("photoLimit");
+  var photoCancel = document.getElementById("photoCancel");
+  var photoReviewActions = document.getElementById("photoReviewActions");
+  var photoChange = document.getElementById("photoChange");
+  var photoRemove = document.getElementById("photoRemove");
   var cooking = document.getElementById("cooking");
   var stepsEl = document.getElementById("steps");
   var patience = document.getElementById("patience");
@@ -371,7 +503,15 @@
 
   var stepTimer = null;
   var patienceTimer = null;
-  var controller = null;
+  var actionsBusy = false;
+  var photoIngredients = [];
+  var photoFoundCount = 0;
+  var photoPreviewUrl = null;
+  var activePhotoController = null;
+  var photoRun = 0;
+
+  var MAX_QUERY_CHARS = 500;
+  var DEFAULT_PLACEHOLDER = input.placeholder;
 
   var PATIENCE_LINES = [
     "Good decisions take a moment. Usually under a minute.",
@@ -403,13 +543,58 @@
     }
   }
 
+  function refreshActions() {
+    btn.disabled = actionsBusy || combinedQuery().length > MAX_QUERY_CHARS;
+    photoBtn.disabled = actionsBusy;
+  }
+
+  function setActionsDisabled(disabled) {
+    actionsBusy = disabled;
+    refreshActions();
+  }
+
+  function readJson(resp) {
+    return resp.json()
+      .catch(function () { return {}; })
+      .then(function (body) {
+        return { ok: resp.ok, status: resp.status, body: body };
+      });
+  }
+
+  function showApiError(response, fallback) {
+    var body = response.body || {};
+    var detail = typeof body.detail === "string" ? body.detail : null;
+    var notices = {
+      off_topic: ["🥕", "I only do dinner.",
+        "Tell me what's in your kitchen and I'll find you something great to cook."],
+      budget: ["🌙", "The kitchen is resting.",
+        "Today's demo budget is fully used. Come back tomorrow."],
+      rate_limit: ["🫖", "You've had a good run.",
+        "Give it a little while, then try again."]
+    };
+    var preset = notices[body.code];
+    if (preset) {
+      showNotice(preset[0], preset[1], detail || preset[2]);
+      return;
+    }
+    showNotice("🫠", "That didn't quite work.",
+      (detail || fallback) + " (HTTP " + response.status + ")");
+  }
+
+  function showConnectionError(error, timeoutMessage) {
+    showNotice("🔌", "I couldn't reach the kitchen.",
+      error.name === "AbortError"
+        ? timeoutMessage
+        : "The Simmer server isn't answering. Make sure it's running, then try again.");
+  }
+
   function startLoading() {
     hero.classList.add("compact");
     result.className = "result";
     result.innerHTML = "";
     notice.className = "notice";
     cooking.classList.add("on");
-    btn.disabled = true;
+    setActionsDisabled(true);
     btn.textContent = "Cooking…";
     setTimeout(function () {
       cooking.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -437,7 +622,7 @@
     clearInterval(stepTimer);
     clearInterval(patienceTimer);
     cooking.classList.remove("on");
-    btn.disabled = false;
+    setActionsDisabled(false);
     btn.textContent = "Find my dish";
   }
 
@@ -463,7 +648,7 @@
     return a;
   }
 
-  function renderResult(data, query) {
+  function renderResult(data) {
     var rec = data.recommendation;
     result.innerHTML = "";
 
@@ -566,20 +751,31 @@
       result.appendChild(det);
     }
 
-    // --- ask again ---
+    // --- refine or start over ---
     var again = el("div", "again reveal");
     again.style.animationDelay = (delay += 0.12) + "s";
-    var againBtn = el("button", null, "Ask about something else");
-    againBtn.addEventListener("click", function () {
+    var refineBtn = el("button", "refine", "Refine this request");
+    refineBtn.addEventListener("click", function () {
       hero.classList.remove("compact");
       result.className = "result";
       notice.className = "notice";
-      input.value = "";
-      autoGrow();
       input.focus();
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
-    again.appendChild(againBtn);
+    var startOverBtn = el("button", null, "Start over");
+    startOverBtn.addEventListener("click", function () {
+      hero.classList.remove("compact");
+      result.className = "result";
+      notice.className = "notice";
+      clearPhotoState();
+      input.value = "";
+      autoGrow();
+      refreshQueryLimit();
+      input.focus();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    again.appendChild(refineBtn);
+    again.appendChild(startOverBtn);
     result.appendChild(again);
 
     result.className = "result on";
@@ -587,16 +783,52 @@
   }
 
   // ------- submit -------
-  function ask(query) {
-    if (btn.disabled) return; // a request is already in flight
+  function combinedQuery() {
+    var typed = input.value.trim();
+    var fromPhoto = photoIngredients.length
+      ? "I have " + toSentence(photoIngredients) + "."
+      : "";
+    return (fromPhoto + (fromPhoto && typed ? "\n" : "") + typed).trim();
+  }
+
+  function refreshQueryLimit() {
+    var overBy = combinedQuery().length - MAX_QUERY_CHARS;
+    if (overBy > 0 && !photoReview.hidden && photoIngredients.length) {
+      photoLimit.textContent = "Your combined request is " + overBy +
+        " character" + (overBy === 1 ? "" : "s") +
+        " too long. Remove an ingredient or shorten your note.";
+      photoLimit.hidden = false;
+    } else {
+      photoLimit.hidden = true;
+      photoLimit.textContent = "";
+    }
+    refreshActions();
+  }
+
+  function submitCurrentAsk() {
+    var query = combinedQuery();
+    if (query.length > MAX_QUERY_CHARS) {
+      refreshQueryLimit();
+      photoReview.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    ask(query, false);
+  }
+
+  function ask(query, mirrorInInput) {
+    if (actionsBusy) return;
     query = (query || "").trim();
     if (!query) { input.focus(); return; }
-    input.value = query;
+    if (query.length > MAX_QUERY_CHARS) {
+      refreshQueryLimit();
+      return;
+    }
+    if (mirrorInInput !== false) input.value = query;
     autoGrow();
     input.blur(); // dismiss the mobile keyboard so the progress view is visible
     startLoading();
 
-    controller = new AbortController();
+    var controller = new AbortController();
     var timeout = setTimeout(function () { controller.abort(); }, 240000);
 
     fetch("/recipes/recommend", {
@@ -605,46 +837,269 @@
       body: JSON.stringify({ query: query, num_results: 8 }),
       signal: controller.signal
     })
-      .then(function (resp) {
-        return resp.json().then(function (body) { return { ok: resp.ok, status: resp.status, body: body }; });
-      })
+      .then(readJson)
       .then(function (r) {
         stopLoading();
         if (!r.ok) {
-          var body = r.body || {};
-          var detail = typeof body.detail === "string" ? body.detail : null;
-          if (body.code === "off_topic") {
-            showNotice("🥕", "I only do dinner.",
-              detail || "Tell me what's in your kitchen and I'll find you something great to cook.");
-          } else if (body.code === "budget") {
-            showNotice("🌙", "The kitchen is resting.",
-              detail || "Today's demo budget is fully used. Come back tomorrow.");
-          } else if (body.code === "rate_limit") {
-            showNotice("🫖", "You've had a good run.",
-              detail || "Give it a little while, then try again.");
-          } else {
-            showNotice("🫠", "That didn't quite work.",
-              (detail || "That request didn't look right. Try rephrasing it.") + " (HTTP " + r.status + ")");
-          }
+          showApiError(r, "That request didn't look right. Try rephrasing it.");
           return;
         }
-        renderResult(r.body, query);
+        renderResult(r.body);
       })
       .catch(function (err) {
         stopLoading();
-        showNotice("🔌", "I couldn't reach the kitchen.",
-          err.name === "AbortError"
-            ? "That took far longer than it should. Give it another go."
-            : "The Simmer server isn't answering. Make sure it's running, then try again.");
+        showConnectionError(err, "That took far longer than it should. Give it another go.");
       })
       .finally(function () { clearTimeout(timeout); });
   }
+
+  // ------- photo -------
+  function setPhotoBusy(busy) {
+    photoBtn.classList.toggle("busy", busy);
+    var hasPhoto = !photoReview.hidden;
+    var visible = busy ? "Reading…" : hasPhoto ? "Change photo" : "Add photo";
+    var label = busy
+      ? "Reading your photo"
+      : hasPhoto ? "Choose another ingredient photo" : "Add a photo of your ingredients";
+    photoBtnText.textContent = visible;
+    photoBtn.setAttribute("aria-label", label);
+    photoBtn.title = label;
+  }
+
+  function releasePhotoPreview() {
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    photoPreviewUrl = null;
+    photoPreview.removeAttribute("src");
+    photoPreview.style.display = "none";
+  }
+
+  function setPhotoPreview(file) {
+    releasePhotoPreview();
+    photoPreviewUrl = URL.createObjectURL(file);
+    photoPreview.style.display = "block";
+    photoPreview.src = photoPreviewUrl;
+  }
+
+  function showPhotoState(state, title, copy) {
+    photoReview.hidden = false;
+    photoReview.className = "photo-review " + state;
+    photoReview.setAttribute("role", state === "error" ? "alert" : "status");
+    photoReview.setAttribute("aria-live", state === "error" ? "assertive" : "polite");
+    photoReviewTitle.textContent = title;
+    photoReviewCopy.textContent = copy;
+    photoCancel.hidden = state !== "busy";
+    photoReviewActions.hidden = state === "busy";
+    // Keep examples out of the way while reading/reviewing, but bring them
+    // back on failure so "type your ingredients instead" has useful prompts.
+    hero.classList.toggle("photo-active", state !== "error");
+    setPhotoBusy(state === "busy");
+  }
+
+  function showPhotoError(title, copy) {
+    photoIngredients = [];
+    photoTags.innerHTML = "";
+    photoLimit.hidden = true;
+    showPhotoState("error", title, copy);
+    input.placeholder = DEFAULT_PLACEHOLDER;
+    refreshQueryLimit();
+  }
+
+  function clearPhotoState() {
+    photoRun += 1; // invalidate image decoding or a response already in flight
+    var wasReading = activePhotoController !== null;
+    if (activePhotoController) activePhotoController.abort();
+    activePhotoController = null;
+    photoIngredients = [];
+    photoFoundCount = 0;
+    releasePhotoPreview();
+    photoReview.hidden = true;
+    photoReview.className = "photo-review";
+    photoTags.innerHTML = "";
+    photoLimit.hidden = true;
+    photoLimit.textContent = "";
+    hero.classList.remove("photo-active");
+    input.placeholder = DEFAULT_PLACEHOLDER;
+    if (wasReading) actionsBusy = false;
+    setPhotoBusy(false);
+    refreshActions();
+  }
+
+  function photoToJpegBase64(file) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        try {
+          var scale = Math.min(1, 1568 / Math.max(img.naturalWidth, img.naturalHeight, 1));
+          var canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+          canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+          var ctx = canvas.getContext("2d");
+          if (!ctx) throw new Error("unreadable");
+          ctx.fillStyle = "#fff"; // JPEG has no alpha; flatten transparency onto white
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL("image/jpeg", 0.82).split(",")[1]);
+        } catch (error) {
+          reject(new Error("unreadable"));
+        }
+      };
+      img.onerror = function () {
+        URL.revokeObjectURL(url);
+        reject(new Error("unreadable"));
+      };
+      img.src = url;
+    });
+  }
+
+  function toSentence(items) {
+    if (items.length === 0) return "";
+    if (items.length === 1) return items[0];
+    return items.slice(0, -1).join(", ") +
+      (items.length > 2 ? ", and " : " and ") + items[items.length - 1];
+  }
+
+  function renderPhotoIngredients() {
+    var selected = photoIngredients.length;
+    var noun = selected === 1 ? "ingredient" : "ingredients";
+    var title = selected
+      ? (selected === photoFoundCount
+        ? "Found " + selected + " " + noun
+        : selected + " " + noun + " selected")
+      : "No ingredients selected";
+    var copy = selected
+      ? "Remove anything that doesn't look right, then add cravings or constraints above."
+      : "Choose another photo, or type what you have in the box above.";
+
+    showPhotoState("ready", title, copy);
+    photoTags.innerHTML = "";
+    photoIngredients.forEach(function (item, index) {
+      var tag = el("button", "photo-tag");
+      tag.type = "button";
+      tag.setAttribute("aria-label", "Remove " + item);
+      tag.appendChild(document.createTextNode(item));
+      tag.appendChild(el("span", "remove", "×"));
+      tag.addEventListener("click", function () {
+        photoIngredients.splice(index, 1);
+        renderPhotoIngredients();
+      });
+      photoTags.appendChild(tag);
+    });
+    input.placeholder = selected
+      ? "Add a craving or constraint: quick, spicy, vegetarian…"
+      : DEFAULT_PLACEHOLDER;
+    refreshQueryLimit();
+  }
+
+  function showPhotoApiError(response) {
+    var body = response.body || {};
+    var detail = typeof body.detail === "string" ? body.detail : null;
+    var presets = {
+      budget: ["The kitchen is resting.", "Today's demo budget is fully used. Come back tomorrow."],
+      rate_limit: ["You've had a good run.", "Give it a little while, then try again."]
+    };
+    var preset = presets[body.code];
+    showPhotoError(
+      preset ? preset[0] : "I couldn't read that photo.",
+      detail || (preset ? preset[1] : "Choose another image or type your ingredients instead. (HTTP " + response.status + ")")
+    );
+  }
+
+  function analyzePhoto(file) {
+    if (actionsBusy) return;
+    var run = ++photoRun;
+    // The ask bar remains visible above a result. If a user chooses a photo
+    // there, reopen the familiar composer so its review card cannot be hidden.
+    hero.classList.remove("compact");
+    result.className = "result";
+    setPhotoPreview(file);
+    photoIngredients = [];
+    photoFoundCount = 0;
+    photoTags.innerHTML = "";
+    showPhotoState("busy", "Reading your photo…",
+      "Finding the ingredients you can actually cook with. This usually takes a few seconds.");
+    setActionsDisabled(true);
+    notice.className = "notice";
+
+    var photoController = new AbortController();
+    activePhotoController = photoController;
+    var timeout = setTimeout(function () { photoController.abort(); }, 75000);
+
+    photoToJpegBase64(file)
+      .then(function (imageBase64) {
+        if (run !== photoRun) throw new Error("stale-photo");
+        return fetch("/ingredients/from-photo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image_base64: imageBase64, media_type: "image/jpeg" }),
+          signal: photoController.signal
+        });
+      })
+      .then(readJson)
+      .then(function (r) {
+        if (run !== photoRun) return;
+        if (!r.ok) {
+          showPhotoApiError(r);
+          return;
+        }
+        if (!r.body.food_visible || !r.body.ingredients.length) {
+          showPhotoError("I don't see food in that photo.",
+            "Try a clearer shot of your fridge shelf, pantry, or counter, with the food facing the camera.");
+          return;
+        }
+        photoIngredients = r.body.ingredients.slice();
+        photoFoundCount = photoIngredients.length;
+        renderPhotoIngredients();
+      })
+      .catch(function (err) {
+        if (run !== photoRun || (err && err.message === "stale-photo")) return;
+        if (err && err.message === "unreadable") {
+          showPhotoError("I couldn't open that file.",
+            "It doesn't look like a photo I can read. Try a regular image, like a JPEG or PNG.");
+        } else if (err && err.name === "AbortError") {
+          showPhotoError("That photo took too long to read.",
+            "Choose another image or give this one another try.");
+        } else {
+          showPhotoError("I couldn't reach the kitchen.",
+            "The Simmer server isn't answering. Try again in a moment or type your ingredients instead.");
+        }
+      })
+      .finally(function () {
+        clearTimeout(timeout);
+        if (run !== photoRun) return;
+        activePhotoController = null;
+        setActionsDisabled(false);
+        setPhotoBusy(false);
+        refreshQueryLimit();
+      });
+  }
+
+  photoBtn.addEventListener("click", function () { photoInput.click(); });
+  photoPreview.addEventListener("error", function () { photoPreview.style.display = "none"; });
+  photoChange.addEventListener("click", function () { photoInput.click(); });
+  photoRemove.addEventListener("click", function () {
+    clearPhotoState();
+    photoBtn.focus();
+  });
+  photoCancel.addEventListener("click", function () {
+    clearPhotoState();
+    photoBtn.focus();
+  });
+  photoInput.addEventListener("change", function () {
+    var file = photoInput.files && photoInput.files[0];
+    photoInput.value = ""; // so picking the same photo again re-fires change
+    if (file) analyzePhoto(file);
+  });
 
   function autoGrow() {
     input.style.height = "auto";
     input.style.height = Math.min(input.scrollHeight, 132) + "px";
   }
-  input.addEventListener("input", autoGrow);
+  input.addEventListener("input", function () {
+    autoGrow();
+    refreshQueryLimit();
+  });
   // Enter submits only where a hardware keyboard is the norm; on touch
   // devices Enter inserts a newline and the button submits. Checked per
   // keypress so plugging in a mouse is picked up live. Cmd/Ctrl+Enter
@@ -654,10 +1109,10 @@
   }
   input.addEventListener("keydown", function (e) {
     if (e.key !== "Enter" || e.shiftKey || e.isComposing) return;
-    if (e.metaKey || e.ctrlKey || enterSubmits()) { e.preventDefault(); ask(input.value); }
+    if (e.metaKey || e.ctrlKey || enterSubmits()) { e.preventDefault(); submitCurrentAsk(); }
   });
 
-  form.addEventListener("submit", function (e) { e.preventDefault(); ask(input.value); });
+  form.addEventListener("submit", function (e) { e.preventDefault(); submitCurrentAsk(); });
   chips.addEventListener("click", function (e) {
     if (e.target.classList.contains("chip")) ask(e.target.textContent);
   });

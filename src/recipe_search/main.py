@@ -1,18 +1,22 @@
 """FastAPI app exposing the Exa-backed search endpoint."""
 
 import asyncio
+import base64
 import hmac
 import logging
 import os
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncIterator
+from typing import AsyncIterator, Literal
 
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field, field_validator
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from recipe_search.config import Settings
 from recipe_search.evaluation import (
@@ -20,6 +24,7 @@ from recipe_search.evaluation import (
     EvaluationError,
     EvaluationRateLimitError,
     EvaluationTimeoutError,
+    PhotoIngredients,
     Recommendation,
     RecipeCandidate,
     RecipeEvaluator,
@@ -37,6 +42,62 @@ from recipe_search.pipeline import OffTopicQuery, find_recipe_candidates, recomm
 from recipe_search.usage import UsageRecorder
 
 logger = logging.getLogger(__name__)
+
+_MAX_REQUEST_BODY_BYTES = 8 * 1024 * 1024
+_BODY_TOO_LARGE_DETAIL = "Request body is too large."
+
+
+class RequestBodyLimitMiddleware:
+    """Reject oversized HTTP bodies before FastAPI buffers them in memory.
+
+    ``Content-Length`` provides an early fast path, while wrapping ``receive``
+    also covers chunked requests and clients that send more than they declare.
+    """
+
+    def __init__(self, app: ASGIApp, *, max_bytes: int) -> None:
+        if max_bytes < 1:
+            raise ValueError("max_bytes must be positive")
+        self.app = app
+        self.max_bytes = max_bytes
+
+    async def __call__(
+        self, scope: Scope, receive: Receive, send: Send
+    ) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        for name, value in scope["headers"]:
+            if name.lower() != b"content-length":
+                continue
+            try:
+                declared_bytes = int(value)
+            except ValueError:
+                break  # let the server/parser handle a malformed header
+            if declared_bytes > self.max_bytes:
+                response = JSONResponse(
+                    status_code=413, content={"detail": _BODY_TOO_LARGE_DETAIL}
+                )
+                await response(scope, receive, send)
+                return
+            break
+
+        received_bytes = 0
+
+        async def limited_receive() -> Message:
+            nonlocal received_bytes
+            message = await receive()
+            if message["type"] == "http.request":
+                received_bytes += len(message.get("body", b""))
+                if received_bytes > self.max_bytes:
+                    # FastAPI explicitly re-raises HTTPException when body
+                    # reading fails, so its normal exception layer returns 413.
+                    raise HTTPException(
+                        status_code=413, detail=_BODY_TOO_LARGE_DETAIL
+                    )
+            return message
+
+        await self.app(scope, limited_receive, send)
 
 
 @asynccontextmanager
@@ -112,6 +173,9 @@ app = FastAPI(
     docs_url=None if _DEMO_MODE else "/docs",
     redoc_url=None,
     openapi_url=None if _DEMO_MODE else "/openapi.json",
+)
+app.add_middleware(
+    RequestBodyLimitMiddleware, max_bytes=_MAX_REQUEST_BODY_BYTES
 )
 
 
@@ -194,6 +258,29 @@ class SearchRequest(BaseModel):
         return value
 
 
+_MAX_PHOTO_BYTES = 5 * 1024 * 1024
+
+
+class PhotoIngredientsRequest(BaseModel):
+    image_base64: str = Field(
+        min_length=1,
+        max_length=7_000_000,
+        description="The photo as bare base64 (no data: URL prefix)",
+    )
+    media_type: Literal["image/jpeg", "image/png", "image/webp"] = "image/jpeg"
+
+    @field_validator("image_base64")
+    @classmethod
+    def _decodable_and_sized(cls, value: str) -> str:
+        try:
+            decoded = base64.b64decode(value, validate=True)
+        except ValueError:
+            raise ValueError("image_base64 is not valid base64")
+        if len(decoded) > _MAX_PHOTO_BYTES:
+            raise ValueError("photo is larger than the 5 MB limit")
+        return value
+
+
 class SearchResponse(BaseModel):
     results: list[SearchResult]
 
@@ -234,10 +321,25 @@ async def handle_upstream_error(request: Request, exc: Exception) -> JSONRespons
     return JSONResponse(status_code=status, content={"detail": detail})
 
 
+@app.exception_handler(RequestValidationError)
+async def handle_validation_error(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    """Keep photo data out of 422 responses; use FastAPI's default elsewhere."""
+    if request.url.path != "/ingredients/from-photo":
+        return await request_validation_exception_handler(request, exc)
+    errors = [
+        {key: error.get(key) for key in ("type", "loc", "msg")}
+        for error in exc.errors()
+    ]
+    return JSONResponse(status_code=422, content={"detail": errors})
+
+
 @app.exception_handler(RateLimited)
 async def handle_rate_limited(request: Request, exc: RateLimited) -> JSONResponse:
-    # The body was never parsed (limits refuse before validation), so the
-    # refusal is recorded without query text.
+    # FastAPI has read and JSON-decoded the capped body at this point, but
+    # dependencies run before request-model validation. Record no query text
+    # because no validated SearchRequest exists.
     await _record_usage(
         request,
         endpoint=request.url.path.lstrip("/"),
@@ -372,6 +474,45 @@ async def recommend_recipes(
     return RecipeRecommendationResponse(
         recommendation=recommendation, candidates=candidates
     )
+
+
+@app.post(
+    "/ingredients/from-photo",
+    response_model=PhotoIngredients,
+    dependencies=[Depends(enforce_limits)],
+)
+async def ingredients_from_photo(
+    body: PhotoIngredientsRequest,
+    request: Request,
+    evaluator: RecipeEvaluator = Depends(get_evaluator),
+) -> PhotoIngredients:
+    """Name the food in a photo so the UI can present it for review.
+
+    The image is analyzed and discarded; only the outcome (never the
+    photo) is recorded to usage.
+    """
+    start = time.monotonic()
+    outcome = "cancelled"
+    try:
+        found = await evaluator.identify_ingredients(
+            body.image_base64, media_type=body.media_type
+        )
+        outcome = (
+            f"ingredients:{len(found.ingredients)}"
+            if found.food_visible
+            else "no_food"
+        )
+    except Exception as exc:
+        outcome = f"error:{type(exc).__name__}"
+        raise
+    finally:
+        await _record_usage(
+            request,
+            endpoint="ingredients/from-photo",
+            outcome=outcome,
+            duration_ms=int((time.monotonic() - start) * 1000),
+        )
+    return found
 
 
 _INDEX_HTML = Path(__file__).parent / "static" / "index.html"

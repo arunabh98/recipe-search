@@ -1,6 +1,9 @@
 """Endpoint tests for the /search API, with the Exa client faked out."""
 
+import base64
+
 import pytest
+from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
 
@@ -10,6 +13,7 @@ from recipe_search.evaluation import (
     EvaluationRateLimitError,
     EvaluationTimeoutError,
     MissingItem,
+    PhotoIngredients,
     Recommendation,
     RecipeCandidate,
     SearchPlan,
@@ -23,7 +27,13 @@ from recipe_search.exa_search import (
     SearchResult,
 )
 from recipe_search.limits import RateLimiter
-from recipe_search.main import app, get_evaluator, get_search_client
+from recipe_search.main import (
+    _MAX_REQUEST_BODY_BYTES,
+    RequestBodyLimitMiddleware,
+    app,
+    get_evaluator,
+    get_search_client,
+)
 from recipe_search.usage import UsageRecorder
 
 EXAMPLE_QUERY = "I have eggs, salsa, tortillas, and cheese. I want something quick."
@@ -47,10 +57,14 @@ class FakeEvaluator:
         self.candidates: list[RecipeCandidate] = []
         self.recommendation: Recommendation | None = None
         self.plan: SearchPlan | None = None
+        self.photo: PhotoIngredients = PhotoIngredients(
+            food_visible=True, ingredients=["eggs", "cheddar"]
+        )
         self.error: Exception | None = None
         self.calls: list[dict] = []
         self.plan_calls: list[dict] = []
         self.recommend_calls: list[dict] = []
+        self.photo_calls: list[dict] = []
 
     async def plan_searches(
         self, query: str, *, feedback: str | None = None
@@ -73,6 +87,16 @@ class FakeEvaluator:
     ) -> Recommendation:
         self.recommend_calls.append({"query": query, "candidates": candidates})
         return self.recommendation
+
+    async def identify_ingredients(
+        self, image_base64: str, *, media_type: str = "image/jpeg"
+    ) -> PhotoIngredients:
+        self.photo_calls.append(
+            {"image_base64": image_base64, "media_type": media_type}
+        )
+        if self.error is not None:
+            raise self.error
+        return self.photo
 
 
 @pytest.fixture
@@ -183,6 +207,10 @@ def test_home_serves_the_demo_ui(client):
     assert response.headers["content-type"].startswith("text/html")
     assert "Simmer" in response.text
     assert "/recipes/recommend" in response.text
+    assert "/ingredients/from-photo" in response.text
+    assert "Add photo" in response.text
+    assert 'id="photoReview"' in response.text
+    assert "Simmer doesn't store it" in response.text
 
 
 MIGAS_RESULT = SearchResult(
@@ -348,14 +376,142 @@ def test_off_topic_queries_get_a_friendly_422(client, fake_exa, fake_evaluator):
     assert fake_evaluator.calls == []
 
 
-@pytest.mark.parametrize("path", ["/search", "/recipes/recommend"])
+# --- /ingredients/from-photo -----------------------------------------------
+
+
+PHOTO_B64 = base64.b64encode(b"fake-jpeg-bytes").decode()
+
+
+def test_photo_returns_identified_ingredients(client, fake_evaluator):
+    response = client.post(
+        "/ingredients/from-photo",
+        json={"image_base64": PHOTO_B64, "media_type": "image/png"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "food_visible": True,
+        "ingredients": ["eggs", "cheddar"],
+    }
+    assert fake_evaluator.photo_calls == [
+        {"image_base64": PHOTO_B64, "media_type": "image/png"}
+    ]
+
+
+def test_photo_media_type_defaults_to_jpeg(client, fake_evaluator):
+    response = client.post(
+        "/ingredients/from-photo", json={"image_base64": PHOTO_B64}
+    )
+    assert response.status_code == 200
+    assert fake_evaluator.photo_calls[0]["media_type"] == "image/jpeg"
+
+
+def test_photo_with_no_food(client, fake_evaluator):
+    fake_evaluator.photo = PhotoIngredients(food_visible=False, ingredients=[])
+    response = client.post(
+        "/ingredients/from-photo", json={"image_base64": PHOTO_B64}
+    )
+    assert response.status_code == 200
+    assert response.json() == {"food_visible": False, "ingredients": []}
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        {},
+        {"image_base64": ""},
+        {"image_base64": "not!!valid@@base64"},
+        {"image_base64": PHOTO_B64, "media_type": "image/tiff"},
+        {"image_base64": base64.b64encode(b"\0" * (5 * 1024 * 1024 + 1)).decode()},
+        {"image_base64": "A" * 7_000_001},
+    ],
+)
+def test_photo_rejects_invalid_requests(client, fake_evaluator, body):
+    response = client.post("/ingredients/from-photo", json=body)
+
+    assert response.status_code == 422
+    assert fake_evaluator.photo_calls == []
+    assert len(response.content) < 10_000
+    for error in response.json()["detail"]:
+        assert set(error) == {"type", "loc", "msg"}
+    image_base64 = body.get("image_base64")
+    if image_base64:
+        assert image_base64[:80] not in response.text
+
+
+def test_body_limit_rejects_declared_oversize_before_the_route(
+    client, fake_evaluator
+):
+    response = client.post(
+        "/ingredients/from-photo",
+        content=b"{}",
+        headers={
+            "content-type": "application/json",
+            "content-length": str(_MAX_REQUEST_BODY_BYTES + 1),
+        },
+    )
+
+    assert response.status_code == 413
+    assert response.json() == {"detail": "Request body is too large."}
+    assert fake_evaluator.photo_calls == []
+
+
+def test_body_limit_counts_streamed_bytes_without_content_length():
+    limited_app = FastAPI()
+    limited_app.add_middleware(RequestBodyLimitMiddleware, max_bytes=5)
+
+    @limited_app.post("/")
+    async def consume_body(request: Request):
+        return {
+            "body": (await request.body()).decode(),
+            "content_length": request.headers.get("content-length"),
+        }
+
+    with TestClient(limited_app) as limited_client:
+        allowed = limited_client.post("/", content=iter([b"12", b"345"]))
+        refused = limited_client.post("/", content=iter([b"123", b"456"]))
+
+    assert allowed.status_code == 200
+    assert allowed.json() == {"body": "12345", "content_length": None}
+    assert refused.status_code == 413
+    assert refused.json() == {"detail": "Request body is too large."}
+
+
+def test_search_422_keeps_the_default_validation_shape(client):
+    response = client.post("/search", json={"query": "   "})
+
+    assert response.status_code == 422
+    (error,) = response.json()["detail"]
+    assert error["loc"] == ["body", "query"]
+    # The redacting handler is scoped to the photo route; everywhere else
+    # deliberately keeps FastAPI's default shape, echoed input included.
+    assert "input" in error
+
+
+def test_photo_maps_evaluation_errors(client, fake_evaluator):
+    fake_evaluator.error = EvaluationAPIError("boom")
+    response = client.post(
+        "/ingredients/from-photo", json={"image_base64": PHOTO_B64}
+    )
+    assert response.status_code == 502
+    assert "detail" in response.json()
+
+
+@pytest.mark.parametrize(
+    ("path", "body"),
+    [
+        ("/search", {"query": "eggs"}),
+        ("/recipes/recommend", {"query": "eggs"}),
+        ("/ingredients/from-photo", {"image_base64": PHOTO_B64}),
+    ],
+)
 def test_demo_ip_limits_apply_to_costly_endpoints(
-    client, fake_exa, fake_evaluator, path
+    client, fake_exa, fake_evaluator, path, body
 ):
     app.state.limiter = RateLimiter(per_hour=1, per_day=5, daily_budget=100)
     try:
-        first = client.post(path, json={"query": "eggs"})
-        second = client.post(path, json={"query": "eggs"})
+        first = client.post(path, json=body)
+        second = client.post(path, json=body)
     finally:
         app.state.limiter = None
     assert first.status_code == 200
@@ -375,16 +531,23 @@ def test_demo_budget_exhaustion(client, fake_exa):
     assert second.json()["code"] == "budget"
 
 
-def test_recipes_search_without_configured_evaluator(fake_exa, monkeypatch):
+@pytest.mark.parametrize(
+    ("path", "body"),
+    [
+        ("/recipes/search", {"query": "quick dinner"}),
+        ("/ingredients/from-photo", {"image_base64": PHOTO_B64}),
+    ],
+)
+def test_evaluation_endpoints_without_configured_evaluator(
+    fake_exa, monkeypatch, path, body
+):
     monkeypatch.setenv("EXA_API_KEY", "test-key")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
     app.dependency_overrides[get_search_client] = lambda: fake_exa
     try:
         with TestClient(app) as test_client:
             app.state.evaluator = None
-            response = test_client.post(
-                "/recipes/search", json={"query": "quick dinner"}
-            )
+            response = test_client.post(path, json=body)
     finally:
         app.dependency_overrides.clear()
     assert response.status_code == 500
@@ -426,6 +589,19 @@ def test_recommend_records_query_and_outcome(
     # The raw client address never lands in the database, only its hash.
     assert row["ip_hash"] == recorder.hash_ip("testclient")
     assert "testclient" not in row["ip_hash"]
+
+
+def test_photo_records_outcome_but_never_the_image(client, fake_evaluator, recorder):
+    response = client.post(
+        "/ingredients/from-photo", json={"image_base64": PHOTO_B64}
+    )
+
+    assert response.status_code == 200
+    (row,) = recorder.recent()
+    assert row["endpoint"] == "ingredients/from-photo"
+    assert row["outcome"] == "ingredients:2"
+    assert row["query"] is None  # the photo itself is analyzed and discarded
+    assert row["duration_ms"] >= 0
 
 
 def test_home_visits_are_recorded_with_referer(client, recorder):

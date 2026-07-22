@@ -2,7 +2,7 @@
 talks to Claude (https://platform.claude.com/docs). No FastAPI imports;
 reusable from CLIs, jobs, or other services.
 
-Three capabilities on one client:
+Four capabilities on one client:
 
 - ``plan_searches``: turn any user food request into 1-3 retrieval-ready
   Exa queries (fast, low-effort call).
@@ -12,6 +12,9 @@ Three capabilities on one client:
   objects.
 - ``recommend``: turn ranked candidates into a user-facing, source-linked
   cooking recommendation.
+- ``identify_ingredients``: name the food visible in a user's photo
+  (fridge, pantry, counter) so it can be reviewed beside the ask bar
+  (fast, low-effort vision call).
 
 Everywhere, the model refers to recipes only by index; titles, URLs, and
 sources are merged back from the original results server-side so the model
@@ -34,9 +37,11 @@ _MAX_SNIPPET_CHARS = 10_000
 _MAX_OUTPUT_TOKENS = 16_000
 _PLANNER_MAX_TOKENS = 1000
 _RECOMMENDER_MAX_TOKENS = 8_000
+_PHOTO_MAX_TOKENS = 1000
 _MAX_PLANNED_QUERIES = 3
 _MAX_PRIMARY_SOURCES = 2
 _MAX_ALTERNATIVES = 3
+_MAX_PHOTO_INGREDIENTS = 40
 
 Role = Literal["best_base_recipe", "backup", "ignore"]
 _ROLE_RANK = {"best_base_recipe": 0, "backup": 1, "ignore": 2}
@@ -152,6 +157,25 @@ Hard rules:
 - Your text helps the user decide and adapt — it must not replace the
   original recipe pages.
 """
+
+
+_PHOTO_PROMPT = """\
+Identify food in this fridge, pantry, countertop, or grocery photo.
+
+Set food_visible=false with no ingredients if no food or drink is
+identifiable. Otherwise list each distinct item with reasonable confidence:
+- Use short, lowercase common names; omit brands and duplicates.
+- Read recognizable packaging, but never guess inside opaque containers.
+- Skip non-food and uncertain items.
+- Put meal-worthy, prominent ingredients first.
+"""
+
+
+class PhotoIngredients(BaseModel):
+    """Food identified in a user's photo, most meal-worthy first."""
+
+    food_visible: bool = True  # false when nothing edible could be made out
+    ingredients: list[str]
 
 
 class RecipeCandidate(BaseModel):
@@ -380,6 +404,54 @@ class RecipeEvaluator:
             output_format=_RecommendationOutput,
         )
         return _build_recommendation(candidates, output)
+
+    async def identify_ingredients(
+        self, image_base64: str, *, media_type: str = "image/jpeg"
+    ) -> PhotoIngredients:
+        """Name the food visible in a photo (fridge, pantry, counter, haul).
+
+        ``image_base64`` is the bare base64 payload — no ``data:`` prefix.
+        Returns ``food_visible=False`` with an empty list when nothing
+        edible could be identified. Raises an ``EvaluationError`` subclass
+        on failure.
+        """
+        if not image_base64:
+            raise ValueError("image_base64 must not be empty")
+
+        found = await self._parse_structured(
+            max_tokens=_PHOTO_MAX_TOKENS,
+            output_config={"effort": "low"},
+            system=_PHOTO_PROMPT,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": media_type,
+                                "data": image_base64,
+                            },
+                        },
+                        {
+                            "type": "text",
+                            "text": "List the food you can identify in this photo.",
+                        },
+                    ],
+                }
+            ],
+            output_format=PhotoIngredients,
+        )
+        cleaned = (item.strip().lower() for item in found.ingredients)
+        ingredients = (
+            list(dict.fromkeys(filter(None, cleaned)))[:_MAX_PHOTO_INGREDIENTS]
+            if found.food_visible
+            else []
+        )
+        return PhotoIngredients(
+            food_visible=bool(ingredients), ingredients=ingredients
+        )
 
     async def _parse_structured(self, **request):
         """Call ``messages.parse`` and map every failure to a typed error."""
