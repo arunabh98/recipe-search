@@ -416,7 +416,7 @@ def photo_response(**overrides):
 async def test_identify_ingredients_sends_the_image_block(evaluator, fake_anthropic):
     fake_anthropic.response = photo_response()
 
-    found = await evaluator.identify_ingredients(PHOTO_B64, media_type="image/png")
+    found = await evaluator.identify_ingredients([(PHOTO_B64, "image/png")])
 
     assert found == PhotoIngredients(food_visible=True, ingredients=["eggs", "cheddar"])
     call = fake_anthropic.calls[0]
@@ -436,13 +436,32 @@ async def test_identify_ingredients_sends_the_image_block(evaluator, fake_anthro
     assert text_block["type"] == "text"
 
 
+async def test_identify_ingredients_sends_every_image_in_one_call(
+    evaluator, fake_anthropic
+):
+    fake_anthropic.response = photo_response()
+
+    await evaluator.identify_ingredients(
+        [(PHOTO_B64, "image/png"), ("c2Vjb25k", "image/jpeg")]
+    )
+
+    # One call, both photos in it, followed by a single text nudge.
+    assert len(fake_anthropic.calls) == 1
+    content = fake_anthropic.calls[0]["messages"][0]["content"]
+    assert [block["type"] for block in content] == ["image", "image", "text"]
+    assert content[0]["source"]["data"] == PHOTO_B64
+    assert content[0]["source"]["media_type"] == "image/png"
+    assert content[1]["source"]["data"] == "c2Vjb25k"
+    assert content[1]["source"]["media_type"] == "image/jpeg"
+
+
 async def test_identify_ingredients_cleans_and_caps_the_list(
     evaluator, fake_anthropic
 ):
     noisy = [" Eggs ", "eggs", "", "  "] + [f"item {i}" for i in range(45)]
     fake_anthropic.response = photo_response(ingredients=noisy)
 
-    found = await evaluator.identify_ingredients(PHOTO_B64)
+    found = await evaluator.identify_ingredients([(PHOTO_B64, "image/jpeg")])
 
     assert found.food_visible is True
     assert len(found.ingredients) == 40
@@ -460,14 +479,19 @@ async def test_identify_ingredients_returns_no_food_for_unusable_results(
         food_visible=food_visible, ingredients=ingredients
     )
 
-    found = await evaluator.identify_ingredients(PHOTO_B64)
+    found = await evaluator.identify_ingredients([(PHOTO_B64, "image/jpeg")])
 
     assert found == PhotoIngredients(food_visible=False, ingredients=[])
 
 
+async def test_identify_ingredients_empty_list_raises(evaluator):
+    with pytest.raises(ValueError):
+        await evaluator.identify_ingredients([])
+
+
 async def test_identify_ingredients_empty_image_raises(evaluator):
     with pytest.raises(ValueError):
-        await evaluator.identify_ingredients("")
+        await evaluator.identify_ingredients([("", "image/jpeg")])
 
 
 def _status_error(cls, status: int):

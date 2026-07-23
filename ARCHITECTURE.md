@@ -20,7 +20,7 @@ every route, every prompt, every failure path, every test.
 | HTTP routes | 7 — `GET /`, `POST /search`, `POST /recipes/search`, `POST /recipes/recommend`, `POST /ingredients/from-photo`, `GET /stats`, `GET /healthz` |
 | External services | 2 — Exa (retrieval), Anthropic Claude (judgment + photo vision). The browser UI additionally fetches favicons from Google's public favicon service. |
 | Source | 8 Python modules + 1 self-contained static page (`static/index.html`) |
-| Tests | 123 cases across 6 files — all offline, fakes at every boundary |
+| Tests | 129 cases across 6 files — all offline, fakes at every boundary |
 | Persistence | none by default; optional append-only SQLite usage log (`USAGE_DB_PATH`) |
 | Deployment | Railway (`railway.json`: Railpack build, uvicorn start command, `/healthz` healthcheck) |
 
@@ -62,9 +62,9 @@ last:
 | `POST /recipes/search` | The adaptive pipeline: plan → search → evaluate → adapt. Same request shape; the response is a ranked list of judged cooking candidates. |
 | `POST /recipes/recommend` | The product: the pipeline above, then one more Claude call that turns usable candidates into a warm, source-linked "here's what to cook" answer. This is what the UI calls. |
 
-`POST /ingredients/from-photo` is a sidecar vision route: Claude turns a
-base64 photo into editable ingredient text; the recipe pipeline stays
-text-in (§9, §12).
+`POST /ingredients/from-photo` is a sidecar vision route: Claude turns one
+to five base64 photos into one editable ingredient list; the recipe
+pipeline stays text-in (§9, §12).
 
 And three supporting routes: `GET /` serves the Simmer demo UI, `GET /stats`
 is a token-gated owner dashboard that masquerades as a 404, and
@@ -133,8 +133,8 @@ recipe-search/
 │   └── static/
 │       └── index.html           # the Simmer UI — one file, no build step
 └── tests/
-    ├── test_api.py              # 54 cases
-    ├── test_evaluation.py       # 34 cases
+    ├── test_api.py              # 58 cases
+    ├── test_evaluation.py       # 36 cases
     ├── test_exa_search.py       # 12 cases
     ├── test_limits.py           # 5 cases
     ├── test_pipeline.py         # 13 cases
@@ -327,15 +327,17 @@ client:
 
 | | `plan_searches()` | `evaluate()` | `recommend()` | `identify_ingredients()` |
 |---|---|---|---|---|
-| Job | user request → 1–3 Exa queries, plus the on-topic verdict | judge all results comparatively, rank them | ranked candidates → user-facing recommendation | user photo → the food visible in it, as an ingredient list |
+| Job | user request → 1–3 Exa queries, plus the on-topic verdict | judge all results comparatively, rank them | ranked candidates → user-facing recommendation | one to five user photos → the food visible across them, as one ingredient list |
 | `max_tokens` | 1,000 | 16,000 | 8,000 | 1,000 |
 | `thinking` | omitted entirely | `{"type": "adaptive"}` | `{"type": "adaptive"}` | omitted entirely |
 | `output_config.effort` | `"low"` (hardcoded) | settings, default `medium` | settings, default `medium` | `"low"` (hardcoded) |
 | `output_format` | `SearchPlan` | `_EvaluationOutput` | `_RecommendationOutput` | `PhotoIngredients` |
-| Skips the model call when… | never | results list is empty | — (raises on empty candidates: caller bug) | — (raises on empty image: caller bug) |
+| Skips the model call when… | never | results list is empty | — (raises on empty candidates: caller bug) | — (raises on empty image list: caller bug) |
 
-`identify_ingredients()` sends a base64 `image` block and short text
-instruction. Like the planner, it uses low effort and no thinking.
+`identify_ingredients()` takes a list of `(base64, media_type)` photos, sends
+every one as an `image` block in a single call followed by a short text
+instruction, and gets back one merged inventory. Like the planner, it uses
+low effort and no thinking.
 
 All four go through Claude's native structured-output mechanism —
 `messages.parse(..., output_format=SomePydanticModel)` — so the response is
@@ -470,11 +472,16 @@ Hard rules:
 **Photo identifier — `identify_ingredients()`:**
 
 ```text
-Identify food in this fridge, pantry, countertop, or grocery photo.
+Identify the food in the provided photos of a fridge, pantry, countertop,
+or grocery haul. There may be one photo or several; when there are several,
+treat them as different views of one kitchen and return a single combined
+inventory.
 
 Set food_visible=false with no ingredients if no food or drink is
-identifiable. Otherwise list each distinct item with reasonable confidence:
-- Use short, lowercase common names; omit brands and duplicates.
+identifiable in any photo. Otherwise list each distinct item with reasonable
+confidence:
+- Use short, lowercase common names; omit brands.
+- Merge duplicates, including the same item seen across photos, into one entry.
 - Read recognizable packaging, but never guess inside opaque containers.
 - Skip non-food and uncertain items.
 - Put meal-worthy, prominent ingredients first.
@@ -508,9 +515,10 @@ while preserving order, caps at 3 (`_MAX_PLANNED_QUERIES`), and raises
 `on_topic: false`, it returns `SearchPlan(on_topic=False, queries=[])` and
 lets the pipeline turn that into an `OffTopicQuery` (§7).
 
-`identify_ingredients` lowercases, trims, deduplicates, and caps the list
-at 40 while preserving order. A false verdict or empty cleaned list
-returns `food_visible: false` with no ingredients.
+`identify_ingredients` lowercases, trims, deduplicates (collapsing repeats
+across all the photos), and caps the list at 40 while preserving order. A
+false verdict or empty cleaned list returns `food_visible: false` with no
+ingredients.
 
 `evaluate` truncates any snippet above `_MAX_SNIPPET_CHARS = 10_000`
 with an ` …[truncated]` marker — a guardrail against pathological pages,
@@ -631,8 +639,11 @@ HTTP request body at 8 MiB. It rejects a declared oversized
 `Content-Length` immediately, then also counts the bytes yielded by
 `receive` so chunked requests and dishonest length headers cannot bypass
 the cap. Rejection is `413 {"detail": "Request body is too large."}` and
-the downstream route, dependencies, and usage recorder never run. The
-photo model's maximum valid JSON body fits below this transport limit.
+the downstream route, dependencies, and usage recorder never run. Each
+photo is capped at 5 MB, but a batch of up to five photos shares this
+8 MiB transport cap, so a full batch of max-size images is refused as a
+`413` before validation ever runs (decision #16); the browser resizes
+photos to well under this.
 
 The three text POST endpoints share one request model:
 
@@ -647,10 +658,12 @@ class SearchRequest(BaseModel):
 to 100 — API policy is deliberately narrower than client capability. A
 whitespace-only query is rejected `422` by the strip-validator.
 
-The photo model accepts bare base64 plus JPEG, PNG, or WebP media types.
-It rejects invalid base64, encoded payloads over 7 million characters,
-and decoded images over 5 MB. Its scoped validation handler omits the
-offending input from 422 responses so photo bytes are never echoed;
+The photo model takes an `images` list of one to five photos, each bare
+base64 plus a JPEG, PNG, or WebP media type. It rejects an empty or
+over-five list, invalid base64, encoded payloads over 7 million
+characters, and decoded images over 5 MB. Its scoped validation handler
+omits the offending input from 422 responses so photo bytes are never
+echoed (even the nested per-image errors carry only `type`/`loc`/`msg`);
 other routes retain FastAPI's default validation shape.
 
 ### Upstream failures: one ordered table, one handler
@@ -693,7 +706,7 @@ The frontend switches its notice states on that `code` field (§12).
 | `POST /search` | limits, exa | `endpoint="search"`, query, `outcome=results:N \| error:<Type> \| cancelled`, duration |
 | `POST /recipes/search` | limits, exa, evaluator | `endpoint="recipes/search"`, query, `outcome=candidates:N \| off_topic \| error:<Type> \| cancelled`, duration |
 | `POST /recipes/recommend` | limits, exa, evaluator | `endpoint="recipes/recommend"`, query, `outcome=recommended \| null_recommendation \| off_topic \| error:<Type> \| cancelled`, dish + first primary source on success, duration |
-| `POST /ingredients/from-photo` | limits, evaluator | `endpoint="ingredients/from-photo"`, `outcome=ingredients:N \| no_food \| error:<Type> \| cancelled`, duration — never the photo itself, and no query text |
+| `POST /ingredients/from-photo` | limits, evaluator | `endpoint="ingredients/from-photo"`, `outcome=ingredients:N \| no_food \| error:<Type> \| cancelled`, duration — never the photos themselves, and no query text |
 | `GET /` | — | `endpoint="home"`, user-agent, referer |
 | `GET /stats` | — | nothing |
 | `GET /healthz` | — | nothing |
@@ -776,19 +789,25 @@ usable was found. Status codes as `/recipes/search`. Expect ~40–60s and
 
 | Field | Type | Constraints |
 |---|---|---|
-| `image_base64` | string | required — the photo as bare base64, no `data:` prefix; must decode, ≤ 5 MB decoded |
-| `media_type` | string | optional — `image/jpeg` (default), `image/png`, or `image/webp` |
+| `images` | array | required — 1 to 5 photos, analyzed together in one call |
+| `images[].image_base64` | string | required — the photo as bare base64, no `data:` prefix; must decode, ≤ 5 MB decoded |
+| `images[].media_type` | string | optional — `image/jpeg` (default), `image/png`, or `image/webp` |
 
-`200` → `{"food_visible": bool, "ingredients": [str, …]}` — lowercase
-common names, most meal-worthy first, at most 40. `food_visible: false`
-always pairs with an empty list; it is a `200`, not an error — "no food
-in this photo" is a successful judgment. The photo is analyzed in memory
-and discarded: it is never written to disk, logs, or usage.
+`200` → `{"food_visible": bool, "ingredients": [str, …]}` — one merged
+inventory across every photo: lowercase common names, most meal-worthy
+first, deduplicated, at most 40. `food_visible: false` always pairs with an
+empty list; it is a `200`, not an error — "no food in these photos" is a
+successful judgment. The photos are analyzed in memory and discarded: they
+are never written to disk, logs, or usage.
 
-Failures use `413` when the raw HTTP body exceeds 8 MiB, `422` for invalid
-images, and the shared evaluation statuses: `429` (rate/demo limit), `500`
-(configuration/auth), `502` (upstream), and `504` (timeout). Exa is not
-involved.
+Batching every photo into one request is deliberate: it is a single Claude
+call and, in demo mode, a single rate-limit slot, so uploading several
+photos does not drain a visitor's small hourly allowance (§10).
+
+Failures use `413` when the raw HTTP body exceeds 8 MiB, `422` for an empty
+or over-five list or any invalid image, and the shared evaluation statuses:
+`429` (rate/demo limit), `500` (configuration/auth), `502` (upstream), and
+`504` (timeout). Exa is not involved.
 
 ### `GET /`
 
@@ -837,8 +856,8 @@ Only an admitted request appends a timestamp and consumes budget —
 **rejected requests consume nothing**, so a visitor at their limit can't
 burn the global budget by hammering. The clock is injectable for tests.
 
-All four POST endpoints share the counters; analyzing a photo and then
-asking for a dish consumes two slots.
+All four POST endpoints share the counters; analyzing a batch of photos
+(any number, one request) and then asking for a dish consumes two slots.
 
 `enforce_limits` in `main.py` maps refusals to `RateLimited(code,
 message)` with Simmer-voiced messages (budget: "Today's demo budget is
@@ -922,9 +941,10 @@ textarea with `maxlength="500"` — mirroring the API limit — auto-grows to
 fine)`, checked per keypress — Enter submits and Shift+Enter makes a
 newline, while on touch devices Enter makes a newline and the button
 submits; Cmd/Ctrl+Enter submits everywhere, and Enter during IME
-composition never submits); a labeled photo button backed by an image
-file picker (on phones it sits beside the submit below the textarea); an
-inline photo review card; four example chips under "or try one of these"
+composition never submits); a labeled photo button backed by a
+multi-select image file picker (on phones it sits beside the submit below
+the textarea); an inline photo review card with a thumbnail strip; four
+example chips under "or try one of these"
 (their exact strings are duplicated in the eval's query list and must stay
 in sync — `scripts/eval_recipes.py` carries the comment); a
 cooking/progress section; the result section; a notice section for
@@ -932,22 +952,27 @@ refusals and errors; a footer promising "every recommendation links to
 its original recipe". Dynamic photo, progress, result, and error regions
 are announced to assistive technology.
 
-**The photo flow.** The browser immediately shows the selected image in
-an inline review card, downscales it to a 1568px long edge, flattens
-transparency, and exports JPEG at quality 0.82 before posting bare base64
-with a 75-second timeout. Choosing a photo from the compact result header
-reopens the composer so that card remains visible. A visible reading
-state has a cancel action;
-photo analysis and recipe search otherwise disable both paid actions so
-they cannot overlap. Success becomes removable ingredient chips rather
-than silently changing the textarea. The textarea remains available for
-cravings and constraints; submission joins the selected chips into an “I
-have …” sentence and then appends that text. A live warning disables
-submission if the combined request exceeds 500 characters. Errors and
-no-food results stay inside the photo card with choose-another/remove
-recovery actions, while the example prompts return as an alternate path.
-The user must still submit; photo analysis never starts a search. A short
-privacy line states the server behavior: Simmer does not store the photo.
+**The photo flow.** The picker takes one to five photos at once. The
+browser shows each as a thumbnail in a strip, downscales each to a 1568px
+long edge, flattens transparency, and exports JPEG at quality 0.82, then
+posts every photo of the batch in a single `{images: [...]}` request with a
+90-second timeout — one request, so one demo-limit slot no matter the photo
+count. "Add more photos" runs another batch and merges its results into the
+list; a failed or cancelled add keeps everything gathered so far rather than
+wiping it (only a first batch with nothing yet gathered clears to an error
+card). Choosing photos from the compact result header reopens the composer
+so the card remains visible. A visible reading state has a cancel action;
+photo analysis and recipe search otherwise disable both paid actions so they
+cannot overlap. Results become removable, deduplicated ingredient chips
+(titled "N ingredients from M photos") rather than silently changing the
+textarea. The textarea remains available for cravings and constraints;
+submission joins the chips into an “I have …” sentence and then appends that
+text. A live warning disables submission if the combined request exceeds 500
+characters. First-batch errors and no-food results stay inside the photo
+card with choose-another/dismiss recovery actions, while the example prompts
+return as an alternate path. The user must still submit; photo analysis
+never starts a search. A short privacy line states the server behavior:
+Simmer does not store the photos.
 
 **The ask flow.** Submitting disables the button ("Cooking…", single
 request in flight), compacts the hero, and starts two timers: five
@@ -999,7 +1024,7 @@ its own commit (`1ed8b17`).
 
 ## 13. Test suite
 
-123 cases across 6 files; `uv run pytest -q` runs in ~5 seconds with zero
+129 cases across 6 files; `uv run pytest -q` runs in ~5 seconds with zero
 network. (The one warning — Starlette deprecating `httpx`-based
 `TestClient` in favor of `httpx2` — comes from FastAPI's testclient
 shim, not this codebase.) Every boundary is faked through a seam the
@@ -1007,8 +1032,8 @@ production code also uses, never mocked-at-a-distance:
 
 | File | Cases | Seam | What it proves |
 |---|---|---|---|
-| `test_api.py` | 54 | `app.dependency_overrides` + `app.state` monkeypatching, `TestClient` | Route shapes, validation and error mapping, declared/chunked request-body caps, demo limits, usage recording, `/stats` auth, plus photo size/type/privacy and no-food behavior. |
-| `test_evaluation.py` | 34 | hand-written fake Anthropic client via `RecipeEvaluator(client=...)` | Structured prompts and output cleanup, ranking/source invariants, SDK error mapping, and photo payload/normalization behavior. |
+| `test_api.py` | 58 | `app.dependency_overrides` + `app.state` monkeypatching, `TestClient` | Route shapes, validation and error mapping, declared/chunked request-body caps, demo limits, usage recording, `/stats` auth, plus multi-photo batching, photo count/size/type/privacy and no-food behavior. |
+| `test_evaluation.py` | 36 | hand-written fake Anthropic client via `RecipeEvaluator(client=...)` | Structured prompts and output cleanup, ranking/source invariants, SDK error mapping, and single- and multi-photo payload/normalization behavior. |
 | `test_exa_search.py` | 12 | `httpx.MockTransport` via the client's `transport=` parameter | The documented request shape (path, header, exact JSON body), normalization (malformed entries dropped, highlight joining, `www.` stripping), empty results, the status → error mapping, timeout/connection mapping, malformed-body rejection, and argument validation making no HTTP call. |
 | `test_pipeline.py` | 13 | scripted stub exa/evaluator objects | Fan-out/interleave/dedupe, the 12-result cap, first-attempt planner failure propagating (no search runs), retry planner failure falling back to the literal template, one-failed-variant tolerance, all-variants-failed raising, retry-with-feedback (real judgment text, seen URLs excluded), unusable-retry returning the *first* attempt, empty-pool feedback string, off-topic stopping before any search, recommend offering usable candidates only, null recommendation when nothing usable, and the no-retry fast path (exactly one plan + one evaluate). |
 | `test_limits.py` | 5 | injected fake clock | Hourly and daily rolling windows, per-IP independence, the UTC-day budget reset, and rejected requests consuming nothing. |
@@ -1153,11 +1178,12 @@ The choices that show up as behavior, gathered in one place.
 14. **Injection seams exist only for tests.** `ExaSearchClient(transport=)`
     and `RecipeEvaluator(client=)` are never passed by production code;
     they exist so 123 tests can run offline.
-15. **A photo becomes editable words, never an instant search.** The
-    vision call produces removable review chips beside the ask bar; only
-    confirmed chips are folded into the text request on submission. Images
-    are resized client-side, analyzed in memory, never persisted or logged,
-    and usage records only the outcome count.
+15. **Photos become editable words, never an instant search.** One to five
+    photos are analyzed together in a single vision call (one demo-limit
+    slot) and produce removable, deduplicated review chips beside the ask
+    bar; only confirmed chips are folded into the text request on
+    submission. Images are resized client-side, analyzed in memory, never
+    persisted or logged, and usage records only the outcome count.
 16. **Transport limits precede semantic validation.** Every HTTP body is
     capped at 8 MiB by a streaming-aware ASGI middleware before FastAPI can
     buffer it. Pydantic's narrower field limits still define what valid

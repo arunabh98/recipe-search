@@ -89,11 +89,9 @@ class FakeEvaluator:
         return self.recommendation
 
     async def identify_ingredients(
-        self, image_base64: str, *, media_type: str = "image/jpeg"
+        self, images: list[tuple[str, str]]
     ) -> PhotoIngredients:
-        self.photo_calls.append(
-            {"image_base64": image_base64, "media_type": media_type}
-        )
+        self.photo_calls.append({"images": list(images)})
         if self.error is not None:
             raise self.error
         return self.photo
@@ -210,7 +208,12 @@ def test_home_serves_the_demo_ui(client):
     assert "/ingredients/from-photo" in response.text
     assert "Add photo" in response.text
     assert 'id="photoReview"' in response.text
-    assert "Simmer doesn't store it" in response.text
+    # Multi-photo affordances: a multi-select picker, the thumbnail strip,
+    # and the "add more" action.
+    assert 'accept="image/*" multiple' in response.text
+    assert 'id="photoThumbs"' in response.text
+    assert "Add more photos" in response.text
+    assert "Simmer doesn't store them" in response.text
 
 
 MIGAS_RESULT = SearchResult(
@@ -380,12 +383,13 @@ def test_off_topic_queries_get_a_friendly_422(client, fake_exa, fake_evaluator):
 
 
 PHOTO_B64 = base64.b64encode(b"fake-jpeg-bytes").decode()
+OTHER_B64 = base64.b64encode(b"second-photo-bytes").decode()
 
 
 def test_photo_returns_identified_ingredients(client, fake_evaluator):
     response = client.post(
         "/ingredients/from-photo",
-        json={"image_base64": PHOTO_B64, "media_type": "image/png"},
+        json={"images": [{"image_base64": PHOTO_B64, "media_type": "image/png"}]},
     )
 
     assert response.status_code == 200
@@ -393,37 +397,64 @@ def test_photo_returns_identified_ingredients(client, fake_evaluator):
         "food_visible": True,
         "ingredients": ["eggs", "cheddar"],
     }
+    assert fake_evaluator.photo_calls == [{"images": [(PHOTO_B64, "image/png")]}]
+
+
+def test_photo_accepts_multiple_images_in_one_call(client, fake_evaluator):
+    fake_evaluator.photo = PhotoIngredients(
+        food_visible=True, ingredients=["eggs", "spinach", "cheddar"]
+    )
+
+    response = client.post(
+        "/ingredients/from-photo",
+        json={
+            "images": [
+                {"image_base64": PHOTO_B64, "media_type": "image/png"},
+                {"image_base64": OTHER_B64, "media_type": "image/jpeg"},
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["ingredients"] == ["eggs", "spinach", "cheddar"]
+    # Every photo reaches the evaluator, in order, in a single call.
     assert fake_evaluator.photo_calls == [
-        {"image_base64": PHOTO_B64, "media_type": "image/png"}
+        {"images": [(PHOTO_B64, "image/png"), (OTHER_B64, "image/jpeg")]}
     ]
 
 
 def test_photo_media_type_defaults_to_jpeg(client, fake_evaluator):
     response = client.post(
-        "/ingredients/from-photo", json={"image_base64": PHOTO_B64}
+        "/ingredients/from-photo", json={"images": [{"image_base64": PHOTO_B64}]}
     )
     assert response.status_code == 200
-    assert fake_evaluator.photo_calls[0]["media_type"] == "image/jpeg"
+    assert fake_evaluator.photo_calls[0]["images"] == [(PHOTO_B64, "image/jpeg")]
 
 
 def test_photo_with_no_food(client, fake_evaluator):
     fake_evaluator.photo = PhotoIngredients(food_visible=False, ingredients=[])
     response = client.post(
-        "/ingredients/from-photo", json={"image_base64": PHOTO_B64}
+        "/ingredients/from-photo", json={"images": [{"image_base64": PHOTO_B64}]}
     )
     assert response.status_code == 200
     assert response.json() == {"food_visible": False, "ingredients": []}
 
 
+BIG_IMAGE_B64 = base64.b64encode(b"\0" * (5 * 1024 * 1024 + 1)).decode()
+
+
 @pytest.mark.parametrize(
     "body",
     [
-        {},
-        {"image_base64": ""},
-        {"image_base64": "not!!valid@@base64"},
-        {"image_base64": PHOTO_B64, "media_type": "image/tiff"},
-        {"image_base64": base64.b64encode(b"\0" * (5 * 1024 * 1024 + 1)).decode()},
-        {"image_base64": "A" * 7_000_001},
+        {},  # images key missing entirely
+        {"images": []},  # at least one photo is required
+        {"images": [{}]},  # a photo with no base64
+        {"images": [{"image_base64": ""}]},
+        {"images": [{"image_base64": "not!!valid@@base64"}]},
+        {"images": [{"image_base64": PHOTO_B64, "media_type": "image/tiff"}]},
+        {"images": [{"image_base64": BIG_IMAGE_B64}]},
+        {"images": [{"image_base64": "A" * 7_000_001}]},
+        {"images": [{"image_base64": PHOTO_B64}] * 6},  # more than five photos
     ],
 )
 def test_photo_rejects_invalid_requests(client, fake_evaluator, body):
@@ -434,9 +465,11 @@ def test_photo_rejects_invalid_requests(client, fake_evaluator, body):
     assert len(response.content) < 10_000
     for error in response.json()["detail"]:
         assert set(error) == {"type", "loc", "msg"}
-    image_base64 = body.get("image_base64")
-    if image_base64:
-        assert image_base64[:80] not in response.text
+    # No image bytes are ever echoed back in the redacted photo 422.
+    for image in body.get("images", []):
+        payload = image.get("image_base64")
+        if payload:
+            assert payload[:80] not in response.text
 
 
 def test_body_limit_rejects_declared_oversize_before_the_route(
@@ -491,7 +524,7 @@ def test_search_422_keeps_the_default_validation_shape(client):
 def test_photo_maps_evaluation_errors(client, fake_evaluator):
     fake_evaluator.error = EvaluationAPIError("boom")
     response = client.post(
-        "/ingredients/from-photo", json={"image_base64": PHOTO_B64}
+        "/ingredients/from-photo", json={"images": [{"image_base64": PHOTO_B64}]}
     )
     assert response.status_code == 502
     assert "detail" in response.json()
@@ -502,7 +535,7 @@ def test_photo_maps_evaluation_errors(client, fake_evaluator):
     [
         ("/search", {"query": "eggs"}),
         ("/recipes/recommend", {"query": "eggs"}),
-        ("/ingredients/from-photo", {"image_base64": PHOTO_B64}),
+        ("/ingredients/from-photo", {"images": [{"image_base64": PHOTO_B64}]}),
     ],
 )
 def test_demo_ip_limits_apply_to_costly_endpoints(
@@ -535,7 +568,7 @@ def test_demo_budget_exhaustion(client, fake_exa):
     ("path", "body"),
     [
         ("/recipes/search", {"query": "quick dinner"}),
-        ("/ingredients/from-photo", {"image_base64": PHOTO_B64}),
+        ("/ingredients/from-photo", {"images": [{"image_base64": PHOTO_B64}]}),
     ],
 )
 def test_evaluation_endpoints_without_configured_evaluator(
@@ -593,14 +626,17 @@ def test_recommend_records_query_and_outcome(
 
 def test_photo_records_outcome_but_never_the_image(client, fake_evaluator, recorder):
     response = client.post(
-        "/ingredients/from-photo", json={"image_base64": PHOTO_B64}
+        "/ingredients/from-photo",
+        json={"images": [{"image_base64": PHOTO_B64}, {"image_base64": OTHER_B64}]},
     )
 
     assert response.status_code == 200
     (row,) = recorder.recent()
     assert row["endpoint"] == "ingredients/from-photo"
     assert row["outcome"] == "ingredients:2"
-    assert row["query"] is None  # the photo itself is analyzed and discarded
+    assert row["query"] is None  # the photos themselves are analyzed and discarded
+    # Neither photo's bytes are recorded anywhere on the row.
+    assert PHOTO_B64 not in str(row) and OTHER_B64 not in str(row)
     assert row["duration_ms"] >= 0
 
 

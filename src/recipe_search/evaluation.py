@@ -12,9 +12,9 @@ Four capabilities on one client:
   objects.
 - ``recommend``: turn ranked candidates into a user-facing, source-linked
   cooking recommendation.
-- ``identify_ingredients``: name the food visible in a user's photo
-  (fridge, pantry, counter) so it can be reviewed beside the ask bar
-  (fast, low-effort vision call).
+- ``identify_ingredients``: name the food visible across one or more of a
+  user's photos (fridge, pantry, counter) so it can be reviewed beside the
+  ask bar (fast, low-effort vision call).
 
 Everywhere, the model refers to recipes only by index; titles, URLs, and
 sources are merged back from the original results server-side so the model
@@ -160,11 +160,16 @@ Hard rules:
 
 
 _PHOTO_PROMPT = """\
-Identify food in this fridge, pantry, countertop, or grocery photo.
+Identify the food in the provided photos of a fridge, pantry, countertop,
+or grocery haul. There may be one photo or several; when there are several,
+treat them as different views of one kitchen and return a single combined
+inventory.
 
 Set food_visible=false with no ingredients if no food or drink is
-identifiable. Otherwise list each distinct item with reasonable confidence:
-- Use short, lowercase common names; omit brands and duplicates.
+identifiable in any photo. Otherwise list each distinct item with reasonable
+confidence:
+- Use short, lowercase common names; omit brands.
+- Merge duplicates, including the same item seen across photos, into one entry.
 - Read recognizable packaging, but never guess inside opaque containers.
 - Skip non-food and uncertain items.
 - Put meal-worthy, prominent ingredients first.
@@ -406,41 +411,43 @@ class RecipeEvaluator:
         return _build_recommendation(candidates, output)
 
     async def identify_ingredients(
-        self, image_base64: str, *, media_type: str = "image/jpeg"
+        self, images: list[tuple[str, str]]
     ) -> PhotoIngredients:
-        """Name the food visible in a photo (fridge, pantry, counter, haul).
+        """Name the food visible across one or more photos of a kitchen.
 
-        ``image_base64`` is the bare base64 payload — no ``data:`` prefix.
-        Returns ``food_visible=False`` with an empty list when nothing
-        edible could be identified. Raises an ``EvaluationError`` subclass
-        on failure.
+        ``images`` is a list of ``(image_base64, media_type)`` pairs, each a
+        bare base64 payload with no ``data:`` prefix. All photos are analyzed
+        together in a single call as one kitchen inventory, so an item seen in
+        more than one photo collapses into a single entry. Returns
+        ``food_visible=False`` with an empty list when nothing edible could be
+        identified. Raises an ``EvaluationError`` subclass on failure.
         """
-        if not image_base64:
-            raise ValueError("image_base64 must not be empty")
+        if not images:
+            raise ValueError("images must not be empty")
+
+        content: list[dict] = []
+        for image_base64, media_type in images:
+            if not image_base64:
+                raise ValueError("image_base64 must not be empty")
+            content.append(
+                {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": media_type,
+                        "data": image_base64,
+                    },
+                }
+            )
+        content.append(
+            {"type": "text", "text": "List the food you can identify in these photos."}
+        )
 
         found = await self._parse_structured(
             max_tokens=_PHOTO_MAX_TOKENS,
             output_config={"effort": "low"},
             system=_PHOTO_PROMPT,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": media_type,
-                                "data": image_base64,
-                            },
-                        },
-                        {
-                            "type": "text",
-                            "text": "List the food you can identify in this photo.",
-                        },
-                    ],
-                }
-            ],
+            messages=[{"role": "user", "content": content}],
             output_format=PhotoIngredients,
         )
         cleaned = (item.strip().lower() for item in found.ingredients)

@@ -259,9 +259,10 @@ class SearchRequest(BaseModel):
 
 
 _MAX_PHOTO_BYTES = 5 * 1024 * 1024
+_MAX_PHOTOS = 5
 
 
-class PhotoIngredientsRequest(BaseModel):
+class PhotoInput(BaseModel):
     image_base64: str = Field(
         min_length=1,
         max_length=7_000_000,
@@ -279,6 +280,17 @@ class PhotoIngredientsRequest(BaseModel):
         if len(decoded) > _MAX_PHOTO_BYTES:
             raise ValueError("photo is larger than the 5 MB limit")
         return value
+
+
+class PhotoIngredientsRequest(BaseModel):
+    # Each photo is capped at 5 MB, but the 8 MiB transport cap (§8) bounds the
+    # aggregate, so a full batch of five max-size photos is refused as 413
+    # before validation. Real photos are resized client-side to well under this.
+    images: list[PhotoInput] = Field(
+        min_length=1,
+        max_length=_MAX_PHOTOS,
+        description="One to five ingredient photos, analyzed together",
+    )
 
 
 class SearchResponse(BaseModel):
@@ -486,16 +498,16 @@ async def ingredients_from_photo(
     request: Request,
     evaluator: RecipeEvaluator = Depends(get_evaluator),
 ) -> PhotoIngredients:
-    """Name the food in a photo so the UI can present it for review.
+    """Name the food across one or more photos so the UI can present it for review.
 
-    The image is analyzed and discarded; only the outcome (never the
-    photo) is recorded to usage.
+    The images are analyzed and discarded; only the outcome (never the
+    photos) is recorded to usage.
     """
     start = time.monotonic()
     outcome = "cancelled"
     try:
         found = await evaluator.identify_ingredients(
-            body.image_base64, media_type=body.media_type
+            [(image.image_base64, image.media_type) for image in body.images]
         )
         outcome = (
             f"ingredients:{len(found.ingredients)}"

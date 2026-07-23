@@ -148,14 +148,16 @@
 
   .photo-review {
     margin: 13px auto 0; max-width: 640px; padding: 15px;
-    display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 15px;
     text-align: left; background: var(--bg-raised); border: 1px solid var(--line);
     border-radius: var(--radius); box-shadow: var(--shadow);
   }
   .photo-review[hidden] { display: none; }
   .photo-review.error { border-color: var(--amber); border-color: color-mix(in srgb, var(--amber) 48%, var(--line)); }
+  /* A row of photo thumbnails, one per uploaded image; wraps on narrow cards. */
+  .photo-thumbs { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 14px; }
+  .photo-thumbs:empty { display: none; }
   .photo-thumb-wrap {
-    width: 72px; height: 72px; border-radius: 14px; overflow: hidden;
+    width: 72px; height: 72px; border-radius: 14px; overflow: hidden; flex: none;
     position: relative; background: var(--accent-soft); display: grid; place-items: center;
   }
   .photo-thumb-wrap::before { content: "📷"; font-size: 23px; }
@@ -163,8 +165,9 @@
     position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
     background: var(--accent-soft);
   }
-  .photo-review.busy .photo-thumb { opacity: .58; }
-  .photo-review.busy .photo-thumb-wrap::after {
+  /* Only the photos still being read spin; already-read thumbnails stay solid. */
+  .photo-thumb-wrap.loading .photo-thumb { opacity: .5; }
+  .photo-thumb-wrap.loading::after {
     content: ""; position: absolute; width: 25px; height: 25px; border-radius: 999px;
     border: 3px solid rgba(255, 255, 255, .72); border-top-color: var(--accent);
     animation: photo-spin .85s linear infinite;
@@ -371,7 +374,8 @@
     .askbar .ask { flex: 1; padding: 13px 22px; }
     .askbar .photo-btn { padding: 0 13px; }
     .photo-privacy { text-align: center; line-height: 1.35; }
-    .photo-review { grid-template-columns: 56px minmax(0, 1fr); padding: 13px; gap: 12px; }
+    .photo-review { padding: 13px; }
+    .photo-thumbs { gap: 8px; margin-bottom: 12px; }
     .photo-thumb-wrap { width: 56px; height: 56px; border-radius: 12px; }
     .photo-review-head { gap: 8px; }
     .chip { padding: 9px 16px; font-size: 14px; }
@@ -410,17 +414,15 @@
       </button>
       <button type="submit" class="ask" id="askBtn">Find my dish</button>
     </form>
-    <input type="file" id="photoInput" accept="image/*" hidden tabindex="-1">
+    <input type="file" id="photoInput" accept="image/*" multiple hidden tabindex="-1">
 
     <section class="photo-review" id="photoReview" role="status"
              aria-live="polite" aria-atomic="false" hidden>
-      <div class="photo-thumb-wrap">
-        <img class="photo-thumb" id="photoPreview" alt="Selected ingredient photo">
-      </div>
+      <div class="photo-thumbs" id="photoThumbs"></div>
       <div class="photo-review-main">
         <div class="photo-review-head">
           <div>
-            <div class="photo-review-title" id="photoReviewTitle">Reading your photo…</div>
+            <div class="photo-review-title" id="photoReviewTitle">Reading your photos…</div>
             <div class="photo-review-copy" id="photoReviewCopy"></div>
           </div>
           <button type="button" class="photo-text-action" id="photoCancel">Cancel</button>
@@ -428,15 +430,15 @@
         <div class="photo-tags" id="photoTags"></div>
         <div class="photo-limit" id="photoLimit" aria-live="polite" hidden></div>
         <div class="photo-review-actions" id="photoReviewActions" hidden>
-          <button type="button" class="photo-text-action" id="photoChange">Choose another photo</button>
-          <button type="button" class="photo-text-action" id="photoRemove">Remove photo</button>
+          <button type="button" class="photo-text-action" id="photoChange">Add more photos</button>
+          <button type="button" class="photo-text-action" id="photoRemove">Remove all</button>
         </div>
       </div>
     </section>
 
     <p class="photo-privacy" id="photoPrivacy">
       <span class="privacy-mark" aria-hidden="true">✓</span>
-      Your photo is analyzed for ingredients. Simmer doesn't store it.
+      Your photos are analyzed for ingredients. Simmer doesn't store them.
     </p>
 
     <div class="chips" id="chips">
@@ -485,7 +487,7 @@
   var photoBtnText = document.getElementById("photoBtnText");
   var photoInput = document.getElementById("photoInput");
   var photoReview = document.getElementById("photoReview");
-  var photoPreview = document.getElementById("photoPreview");
+  var photoThumbsEl = document.getElementById("photoThumbs");
   var photoReviewTitle = document.getElementById("photoReviewTitle");
   var photoReviewCopy = document.getElementById("photoReviewCopy");
   var photoTags = document.getElementById("photoTags");
@@ -504,13 +506,14 @@
   var stepTimer = null;
   var patienceTimer = null;
   var actionsBusy = false;
-  var photoIngredients = [];
-  var photoFoundCount = 0;
-  var photoPreviewUrl = null;
+  var photoIngredients = [];      // merged, curated ingredient names
+  var photoThumbs = [];           // committed (successfully read) photos: [{url}]
+  var pendingThumbs = [];         // photos being read right now: [{url}]
   var activePhotoController = null;
   var photoRun = 0;
 
   var MAX_QUERY_CHARS = 500;
+  var MAX_PHOTOS = 5;             // mirrors the API's per-request photo cap
   var DEFAULT_PLACEHOLDER = input.placeholder;
 
   var PATIENCE_LINES = [
@@ -856,28 +859,52 @@
   // ------- photo -------
   function setPhotoBusy(busy) {
     photoBtn.classList.toggle("busy", busy);
-    var hasPhoto = !photoReview.hidden;
-    var visible = busy ? "Reading…" : hasPhoto ? "Change photo" : "Add photo";
+    var hasPhoto = photoThumbs.length > 0;
+    var visible = busy ? "Reading…" : hasPhoto ? "Add more" : "Add photo";
     var label = busy
-      ? "Reading your photo"
-      : hasPhoto ? "Choose another ingredient photo" : "Add a photo of your ingredients";
+      ? "Reading your photos"
+      : hasPhoto ? "Add more photos of your ingredients" : "Add a photo of your ingredients";
     photoBtnText.textContent = visible;
     photoBtn.setAttribute("aria-label", label);
     photoBtn.title = label;
   }
 
-  function releasePhotoPreview() {
-    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
-    photoPreviewUrl = null;
-    photoPreview.removeAttribute("src");
-    photoPreview.style.display = "none";
+  // Thumbnails: photoThumbs holds photos already read; pendingThumbs holds the
+  // batch being read right now (rendered with a spinner). Every object URL is
+  // revoked when its thumb leaves, so nothing leaks across sessions.
+  function makeThumb(file) {
+    return { url: URL.createObjectURL(file) };
   }
 
-  function setPhotoPreview(file) {
-    releasePhotoPreview();
-    photoPreviewUrl = URL.createObjectURL(file);
-    photoPreview.style.display = "block";
-    photoPreview.src = photoPreviewUrl;
+  function releaseThumbs(thumbs) {
+    thumbs.forEach(function (thumb) {
+      if (thumb.url) URL.revokeObjectURL(thumb.url);
+    });
+  }
+
+  function discardPending() {
+    releaseThumbs(pendingThumbs);
+    pendingThumbs = [];
+  }
+
+  function commitPending() {
+    photoThumbs = photoThumbs.concat(pendingThumbs);
+    pendingThumbs = [];
+  }
+
+  function renderThumbs() {
+    photoThumbsEl.innerHTML = "";
+    function add(thumb, loading) {
+      var wrap = el("div", "photo-thumb-wrap" + (loading ? " loading" : ""));
+      var img = el("img", "photo-thumb");
+      img.alt = "";
+      img.addEventListener("error", function () { img.style.display = "none"; });
+      img.src = thumb.url;
+      wrap.appendChild(img);
+      photoThumbsEl.appendChild(wrap);
+    }
+    photoThumbs.forEach(function (thumb) { add(thumb, false); });
+    pendingThumbs.forEach(function (thumb) { add(thumb, true); });
   }
 
   function showPhotoState(state, title, copy) {
@@ -895,10 +922,17 @@
     setPhotoBusy(state === "busy");
   }
 
+  // A first-batch failure with nothing gathered yet: clear out and show the
+  // error card. Appending failures keep prior state and are handled inline.
   function showPhotoError(title, copy) {
     photoIngredients = [];
+    releaseThumbs(photoThumbs);
+    photoThumbs = [];
+    renderThumbs();
     photoTags.innerHTML = "";
     photoLimit.hidden = true;
+    photoChange.textContent = "Choose a photo";
+    photoRemove.textContent = "Dismiss";
     showPhotoState("error", title, copy);
     input.placeholder = DEFAULT_PLACEHOLDER;
     refreshQueryLimit();
@@ -910,8 +944,11 @@
     if (activePhotoController) activePhotoController.abort();
     activePhotoController = null;
     photoIngredients = [];
-    photoFoundCount = 0;
-    releasePhotoPreview();
+    releaseThumbs(photoThumbs);
+    releaseThumbs(pendingThumbs);
+    photoThumbs = [];
+    pendingThumbs = [];
+    renderThumbs();
     photoReview.hidden = true;
     photoReview.className = "photo-review";
     photoTags.innerHTML = "";
@@ -960,19 +997,31 @@
       (items.length > 2 ? ", and " : " and ") + items[items.length - 1];
   }
 
-  function renderPhotoIngredients() {
-    var selected = photoIngredients.length;
-    var noun = selected === 1 ? "ingredient" : "ingredients";
-    var title = selected
-      ? (selected === photoFoundCount
-        ? "Found " + selected + " " + noun
-        : selected + " " + noun + " selected")
-      : "No ingredients selected";
-    var copy = selected
-      ? "Remove anything that doesn't look right, then add cravings or constraints above."
-      : "Choose another photo, or type what you have in the box above.";
+  function mergeIngredients(incoming) {
+    // The server already lowercases and trims; dedupe against what we have.
+    incoming.forEach(function (item) {
+      if (photoIngredients.indexOf(item) === -1) photoIngredients.push(item);
+    });
+  }
 
+  function renderPhotoIngredients(note) {
+    var selected = photoIngredients.length;
+    var photos = photoThumbs.length;
+    var ingWord = selected === 1 ? "ingredient" : "ingredients";
+    var photoWord = photos === 1 ? "photo" : "photos";
+    var title = selected
+      ? selected + " " + ingWord + " from " + photos + " " + photoWord
+      : (photos ? "No ingredients from " + photos + " " + photoWord
+                : "No ingredients selected");
+    var copy = note || (selected
+      ? "Remove anything that doesn't look right, then add cravings or constraints above."
+      : "Add another photo, or type what you have in the box above.");
+
+    photoChange.textContent = "Add more photos";
+    photoRemove.textContent = "Remove all";
     showPhotoState("ready", title, copy);
+    renderThumbs();
+
     photoTags.innerHTML = "";
     photoIngredients.forEach(function (item, index) {
       var tag = el("button", "photo-tag");
@@ -992,78 +1041,188 @@
     refreshQueryLimit();
   }
 
-  function showPhotoApiError(response) {
+  // Both return [title, copy]; used for the error card (fresh batch) or as an
+  // inline note that keeps prior ingredients (when adding more).
+  function photoApiErrorInfo(response) {
     var body = response.body || {};
     var detail = typeof body.detail === "string" ? body.detail : null;
+    if (response.status === 413) {
+      return ["Those photos are too large.",
+        "Try again with fewer or smaller photos."];
+    }
     var presets = {
       budget: ["The kitchen is resting.", "Today's demo budget is fully used. Come back tomorrow."],
       rate_limit: ["You've had a good run.", "Give it a little while, then try again."]
     };
     var preset = presets[body.code];
-    showPhotoError(
-      preset ? preset[0] : "I couldn't read that photo.",
-      detail || (preset ? preset[1] : "Choose another image or type your ingredients instead. (HTTP " + response.status + ")")
-    );
+    return [
+      preset ? preset[0] : "I couldn't read those photos.",
+      detail || (preset ? preset[1] : "Choose other images or type your ingredients instead. (HTTP " + response.status + ")")
+    ];
   }
 
-  function analyzePhoto(file) {
+  function photoLocalErrorInfo(err, count) {
+    if (err && err.message === "unreadable") {
+      return [count === 1 ? "I couldn't open that file." : "I couldn't open any of those files.",
+        "It doesn't look like a photo I can read. Try regular images, like JPEG or PNG."];
+    }
+    if (err && err.name === "AbortError") {
+      return [count === 1 ? "That photo took too long to read." : "Those photos took too long to read.",
+        "Try again with fewer images, or give it another go."];
+    }
+    return ["I couldn't reach the kitchen.",
+      "The Simmer server isn't answering. Try again in a moment or type your ingredients instead."];
+  }
+
+  function handlePhotoFailure(appending, info) {
+    discardPending();
+    if (appending) {
+      // Keep every ingredient gathered so far; just report the failed batch.
+      renderPhotoIngredients(info[1] + " Your ingredients so far are kept.");
+    } else {
+      showPhotoError(info[0], info[1]);
+    }
+  }
+
+  function handleNoFood(appending, count) {
+    discardPending();
+    if (appending) {
+      renderPhotoIngredients(
+        (count === 1 ? "I didn't spot any new food in that photo."
+                     : "I didn't spot any new food in those photos.") +
+        " Your ingredients so far are kept.");
+    } else {
+      showPhotoError(
+        count === 1 ? "I don't see food in that photo." : "I don't see food in those photos.",
+        "Try a clearer shot of your fridge shelf, pantry, or counter, with the food facing the camera.");
+    }
+  }
+
+  // Decode/downscale photos one at a time rather than all at once: a
+  // full-resolution decode of several high-megapixel phone photos in parallel
+  // can exhaust a mobile tab's memory. Returns Promise.allSettled-shaped
+  // results in the original order, and stops early if the run is superseded.
+  function convertPhotosSequentially(files, run) {
+    var results = [];
+    return files.reduce(function (chain, file) {
+      return chain.then(function () {
+        if (run !== photoRun) return;
+        return photoToJpegBase64(file).then(
+          function (b64) { results.push({ status: "fulfilled", value: b64 }); },
+          function () { results.push({ status: "rejected" }); }
+        );
+      });
+    }, Promise.resolve()).then(function () { return results; });
+  }
+
+  function analyzePhotos(fileList) {
     if (actionsBusy) return;
-    var run = ++photoRun;
-    // The ask bar remains visible above a result. If a user chooses a photo
-    // there, reopen the familiar composer so its review card cannot be hidden.
+    // Take the files as chosen. Anything the picker let through that isn't a
+    // real image fails at decode below with a clear message, rather than being
+    // dropped silently (which could also drop valid images with no MIME type).
+    var files = Array.prototype.slice.call(fileList);
+    if (!files.length) return;
+    // The ask bar stays visible above a result; reopen the composer up front so
+    // the review card is never hidden behind a prior recommendation, including
+    // the at-capacity message below (which .hero.compact would otherwise hide).
     hero.classList.remove("compact");
     result.className = "result";
-    setPhotoPreview(file);
-    photoIngredients = [];
-    photoFoundCount = 0;
-    photoTags.innerHTML = "";
-    showPhotoState("busy", "Reading your photo…",
-      "Finding the ingredients you can actually cook with. This usually takes a few seconds.");
-    setActionsDisabled(true);
     notice.className = "notice";
+    // Whether this batch adds to an existing selection or starts a fresh one.
+    var appending = photoThumbs.length > 0 || photoIngredients.length > 0;
+    var remaining = MAX_PHOTOS - photoThumbs.length;
 
-    var photoController = new AbortController();
-    activePhotoController = photoController;
-    var timeout = setTimeout(function () { photoController.abort(); }, 75000);
+    if (remaining <= 0) {
+      renderPhotoIngredients("That's the most I can read at once (" + MAX_PHOTOS +
+        " photos). Search with these, or use Remove all to start over.");
+      return;
+    }
+    var overflow = files.length - remaining;
+    files = files.slice(0, remaining);
 
-    photoToJpegBase64(file)
-      .then(function (imageBase64) {
+    var run = ++photoRun;
+    pendingThumbs = files.map(makeThumb);
+    if (!appending) {
+      photoIngredients = [];
+      releaseThumbs(photoThumbs);
+      photoThumbs = [];
+      photoTags.innerHTML = "";
+    }
+    if (appending) {
+      showPhotoState("busy", "Reading more photos…",
+        "Adding what I find to your list. This usually takes a few seconds.");
+    } else {
+      showPhotoState("busy",
+        files.length === 1 ? "Reading your photo…" : "Reading your photos…",
+        "Finding the ingredients you can actually cook with. This usually takes a few seconds.");
+    }
+    renderThumbs();
+    setActionsDisabled(true);
+
+    var overflowNote = overflow > 0
+      ? "I can read up to " + MAX_PHOTOS + " photos, so I used the first " + files.length + "."
+      : "";
+    var unreadableCount = 0;
+
+    var controller = new AbortController();
+    activePhotoController = controller;
+    var timeout = setTimeout(function () { controller.abort(); }, 90000);
+
+    convertPhotosSequentially(files, run)
+      .then(function (settled) {
         if (run !== photoRun) throw new Error("stale-photo");
+        // Keep every photo that decoded and drop (releasing) the ones that
+        // didn't, so a single unreadable file can't sink the whole batch.
+        var b64list = [];
+        var readable = [];
+        settled.forEach(function (outcome, i) {
+          if (outcome.status === "fulfilled") {
+            b64list.push(outcome.value);
+            readable.push(pendingThumbs[i]);
+          } else if (pendingThumbs[i] && pendingThumbs[i].url) {
+            URL.revokeObjectURL(pendingThumbs[i].url);
+          }
+        });
+        unreadableCount = files.length - b64list.length;
+        pendingThumbs = readable;
+        if (!b64list.length) throw new Error("unreadable"); // every photo failed
         return fetch("/ingredients/from-photo", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image_base64: imageBase64, media_type: "image/jpeg" }),
-          signal: photoController.signal
+          body: JSON.stringify({
+            images: b64list.map(function (b64) {
+              return { image_base64: b64, media_type: "image/jpeg" };
+            })
+          }),
+          signal: controller.signal
         });
       })
       .then(readJson)
       .then(function (r) {
         if (run !== photoRun) return;
-        if (!r.ok) {
-          showPhotoApiError(r);
-          return;
-        }
+        if (!r.ok) { handlePhotoFailure(appending, photoApiErrorInfo(r)); return; }
         if (!r.body.food_visible || !r.body.ingredients.length) {
-          showPhotoError("I don't see food in that photo.",
-            "Try a clearer shot of your fridge shelf, pantry, or counter, with the food facing the camera.");
+          handleNoFood(appending, pendingThumbs.length);
           return;
         }
-        photoIngredients = r.body.ingredients.slice();
-        photoFoundCount = photoIngredients.length;
-        renderPhotoIngredients();
+        var before = photoIngredients.length;
+        var added = pendingThumbs.length;
+        commitPending();
+        mergeIngredients(r.body.ingredients);
+        var note = "";
+        if (unreadableCount > 0) {
+          note = "I couldn't read " + unreadableCount + " of those, so I used the " +
+            (added === 1 ? "other one." : "other " + added + ".");
+        } else if (appending && photoIngredients.length === before) {
+          note = "Those photos didn't add anything new to your list.";
+        } else if (overflowNote) {
+          note = overflowNote;
+        }
+        renderPhotoIngredients(note || undefined);
       })
       .catch(function (err) {
         if (run !== photoRun || (err && err.message === "stale-photo")) return;
-        if (err && err.message === "unreadable") {
-          showPhotoError("I couldn't open that file.",
-            "It doesn't look like a photo I can read. Try a regular image, like a JPEG or PNG.");
-        } else if (err && err.name === "AbortError") {
-          showPhotoError("That photo took too long to read.",
-            "Choose another image or give this one another try.");
-        } else {
-          showPhotoError("I couldn't reach the kitchen.",
-            "The Simmer server isn't answering. Try again in a moment or type your ingredients instead.");
-        }
+        handlePhotoFailure(appending, photoLocalErrorInfo(err, files.length));
       })
       .finally(function () {
         clearTimeout(timeout);
@@ -1075,21 +1234,38 @@
       });
   }
 
+  // Cancel a read in progress. A fresh batch clears everything; an appending
+  // batch stops only the new photos and keeps the list gathered so far.
+  function cancelActiveRead() {
+    var appending = photoThumbs.length > 0 || photoIngredients.length > 0;
+    if (!appending) {
+      clearPhotoState();
+      photoBtn.focus();
+      return;
+    }
+    photoRun += 1;
+    if (activePhotoController) activePhotoController.abort();
+    activePhotoController = null;
+    discardPending();
+    setPhotoBusy(false);
+    setActionsDisabled(false);
+    renderPhotoIngredients("Okay, I stopped there. Your ingredients so far are kept.");
+    // renderPhotoIngredients hides the Cancel button the user just activated;
+    // move focus back to a visible control so keyboard/SR focus isn't lost.
+    photoBtn.focus();
+  }
+
   photoBtn.addEventListener("click", function () { photoInput.click(); });
-  photoPreview.addEventListener("error", function () { photoPreview.style.display = "none"; });
   photoChange.addEventListener("click", function () { photoInput.click(); });
   photoRemove.addEventListener("click", function () {
     clearPhotoState();
     photoBtn.focus();
   });
-  photoCancel.addEventListener("click", function () {
-    clearPhotoState();
-    photoBtn.focus();
-  });
+  photoCancel.addEventListener("click", cancelActiveRead);
   photoInput.addEventListener("change", function () {
-    var file = photoInput.files && photoInput.files[0];
-    photoInput.value = ""; // so picking the same photo again re-fires change
-    if (file) analyzePhoto(file);
+    var files = photoInput.files ? Array.prototype.slice.call(photoInput.files) : [];
+    photoInput.value = ""; // so re-picking the same files fires change again
+    if (files.length) analyzePhotos(files);
   });
 
   function autoGrow() {

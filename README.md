@@ -164,23 +164,26 @@ returned. Response shape: `{"recommendation": {...} | null, "candidates":
 
 ### `POST /ingredients/from-photo`
 
-Send a photo, get back the food Claude can see in it — the mechanism
-behind the ask bar's **Add photo** action. The UI shows a thumbnail and
-the detected foods as removable chips, then combines the selected chips
+Send one to five photos, get back the food Claude can see across them —
+the mechanism behind the ask bar's **Add photo** action. The UI shows a
+thumbnail strip and the detected foods as removable chips (and lets you
+**Add more photos** to a running list), then combines the selected chips
 with any typed cravings or constraints only when the user searches. The
-pipeline itself never sees an image; a photo only ever becomes editable,
+pipeline itself never sees an image; photos only ever become editable,
 reviewable words.
 
 ```bash
 curl -s http://127.0.0.1:8000/ingredients/from-photo \
   -H 'Content-Type: application/json' \
-  -d "{\"image_base64\": \"$(base64 < fridge.jpg | tr -d '\n')\", \"media_type\": \"image/jpeg\"}"
+  -d "{\"images\": [{\"image_base64\": \"$(base64 < fridge.jpg | tr -d '\n')\", \"media_type\": \"image/jpeg\"}]}"
 ```
 
-Request body: `image_base64` (bare base64, no `data:` prefix, at most
-5 MB decoded) and an optional `media_type` — `image/jpeg` (default),
-`image/png`, or `image/webp`. Every HTTP request body is capped at 8 MiB
-before FastAPI buffers or validates it.
+Request body: `images`, a list of 1 to 5 photos. Each has `image_base64`
+(bare base64, no `data:` prefix, at most 5 MB decoded) and an optional
+`media_type` — `image/jpeg` (default), `image/png`, or `image/webp`. All
+the photos are analyzed together in a single call, so several photos cost
+one request. Every HTTP request body is capped at 8 MiB before FastAPI
+buffers or validates it, which also bounds the whole batch.
 
 Response (`200`):
 
@@ -191,13 +194,15 @@ Response (`200`):
 }
 ```
 
-Lowercase common names, most meal-worthy first, at most 40. A photo with
-no identifiable food is not an error: `200` with `"food_visible": false`
-and an empty list. The image is analyzed in memory and discarded — never
-stored, never logged. Errors follow the evaluation family (`413` request
-body too large, `422` undecodable/oversized/unsupported image, `429` rate
-limit, `500` missing/bad Anthropic key, `502`/`504` upstream trouble). One
-low-effort vision call: a few seconds and the cheapest request in the app.
+One merged list across every photo: lowercase common names, most
+meal-worthy first, deduplicated, at most 40. Photos with no identifiable
+food are not an error: `200` with `"food_visible": false` and an empty
+list. The images are analyzed in memory and discarded — never stored,
+never logged. Errors follow the evaluation family (`413` request body too
+large, `422` empty/oversized list or undecodable/oversized/unsupported
+image, `429` rate limit, `500` missing/bad Anthropic key, `502`/`504`
+upstream trouble). One low-effort vision call: a few seconds and the
+cheapest request in the app.
 
 ### `GET /healthz`
 
