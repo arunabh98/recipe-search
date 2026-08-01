@@ -18,6 +18,9 @@
     --accent: #C2552B;
     --accent-deep: #A34320;
     --accent-soft: #F7E3D7;
+    /* Text sitting on --accent. The dark theme's accent is a light orange, so
+       what reads there is ink, not paper. */
+    --on-accent: #FFF8F2;
     --sage: #6F7F5C;
     --sage-soft: #EDF0E4;
     --amber: #B07C1F;
@@ -37,6 +40,7 @@
       --accent: #E07A4B;
       --accent-deep: #EE9066;
       --accent-soft: #40261A;
+      --on-accent: #2A1A12;
       --sage: #9FB183;
       --sage-soft: #28301F;
       --amber: #D9A648;
@@ -92,11 +96,15 @@
   .hero.compact { padding: 30px 0 0; }
   .hero.compact h1 { font-size: clamp(24px, 3.4vw, 30px); }
   .hero.compact .sub, .hero.compact .chips,
-  .hero.compact .photo-review, .hero.compact .photo-privacy { display: none; }
-  .hero.photo-active .chips { display: none; }
+  .hero.compact .photo-review, .hero.compact .photo-hint { display: none; }
+  /* Once photos are attached, the review card says everything the hint did. */
+  .hero.photo-active .chips, .hero.photo-active .photo-hint { display: none; }
 
   /* ---------- ask bar ---------- */
   .askbar {
+    /* One height for every control in the bar, so nothing sits short of
+       the submit button. */
+    --ctl: 48px;
     margin: 34px auto 0; max-width: 640px;
     background: var(--bg-raised);
     border: 1px solid var(--line);
@@ -104,9 +112,16 @@
     box-shadow: var(--shadow);
     display: flex; align-items: flex-end; gap: 8px;
     padding: 9px 9px 9px 22px;
-    transition: box-shadow .25s ease, transform .25s ease;
+    transition: box-shadow .25s ease, transform .25s ease,
+                border-color .2s ease, background .2s ease;
   }
   .askbar:focus-within { box-shadow: var(--shadow-lift); transform: translateY(-1px); }
+  /* An image dragged anywhere over the page lights up the bar it lands in. */
+  .askbar.dragging {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent-soft) 45%, var(--bg-raised));
+    box-shadow: var(--shadow-lift);
+  }
   .askbar textarea {
     flex: 1; border: 0; outline: 0; background: transparent;
     font: inherit; font-size: 16.5px; color: var(--ink);
@@ -116,35 +131,67 @@
   .askbar textarea::placeholder { color: var(--ink-faint); }
   .askbar .ask {
     border: 0; cursor: pointer;
-    background: var(--accent); color: #FFF8F2;
+    background: var(--accent); color: var(--on-accent);
     font: inherit; font-weight: 600; font-size: 15px;
-    padding: 12px 22px; border-radius: 999px;
+    height: var(--ctl); padding: 0 22px; border-radius: 999px;
+    display: inline-flex; align-items: center; justify-content: center;
     transition: background .2s ease, transform .15s ease;
     white-space: nowrap;
   }
   .askbar .ask:hover { background: var(--accent-deep); transform: scale(1.02); }
   .askbar .ask:disabled { opacity: .55; cursor: default; transform: none; }
+  /* Deliberately a quiet circle at exactly the submit button's height. Search
+     is the page's one call to action; the camera is a shortcut beside it, and
+     the line under the bar is what explains the feature. */
   .askbar .photo-btn {
-    flex: none; border: 0; cursor: pointer;
-    min-height: 44px; border-radius: 999px; padding: 0 14px;
+    flex: none; cursor: pointer; position: relative;
+    width: var(--ctl); height: var(--ctl); border-radius: 999px; padding: 0;
+    border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
     background: var(--accent-soft); color: var(--ink-soft);
-    font: inherit; font-size: 13.5px; font-weight: 650; line-height: 1;
-    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-    transition: transform .15s ease, background .2s ease;
-    white-space: nowrap;
+    font: inherit;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: transform .15s ease, background .2s ease, border-color .2s ease;
   }
-  .askbar .photo-btn:hover { transform: scale(1.06); }
+  .askbar .photo-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
   .askbar .photo-btn:disabled { opacity: .55; cursor: default; transform: none; }
-  .askbar .photo-btn .photo-icon { font-size: 17px; }
-  /* While the photo is being read, only the camera simmers; the text stays legible. */
+  .askbar .photo-btn .photo-icon { font-size: 20px; line-height: 1; }
+  /* How many photos are attached. The badge is the only such cue in the
+     compact result header, where the review card is hidden. */
+  .askbar .photo-btn .photo-count {
+    position: absolute; top: -3px; right: -3px;
+    min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px;
+    background: var(--accent); color: var(--on-accent);
+    border: 2px solid var(--bg-raised);
+    font-size: 11px; font-weight: 700;
+    display: grid; place-items: center;
+  }
+  .askbar .photo-btn .photo-count[hidden] { display: none; }
+  /* While the photos are being read, the camera simmers. */
   .askbar .photo-btn.busy { opacity: 1; }
   .askbar .photo-btn.busy .photo-icon { animation: simmer 2.2s ease-in-out infinite; }
 
-  .photo-privacy {
-    margin: 9px auto 0; max-width: 640px; color: var(--ink-faint);
-    font-size: 12.5px; display: flex; justify-content: center; align-items: center; gap: 6px;
+  /* The at-rest explanation of the camera: what to shoot, what happens to it. */
+  .photo-hint {
+    margin: 12px auto 0; max-width: 560px; text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
   }
-  .photo-privacy .privacy-mark { color: var(--sage); font-weight: 700; }
+  .photo-hint-link {
+    border: 0; background: none; padding: 3px 2px; cursor: pointer;
+    font: inherit; font-size: 14.5px; font-weight: 650; color: var(--accent);
+    text-decoration: underline; text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
+    transition: color .18s ease, text-decoration-color .18s ease;
+  }
+  .photo-hint-link:hover { color: var(--accent-deep); text-decoration-color: currentColor; }
+  .photo-hint-note {
+    color: var(--ink-faint); font-size: 12.5px; line-height: 1.45;
+    text-wrap: pretty;
+  }
+  .photo-hint-note .privacy-mark { color: var(--sage); font-weight: 700; }
+  /* Dragging needs a pointer to drag with. */
+  .drop-hint { display: none; }
+  @media (hover: hover) and (pointer: fine) { .drop-hint { display: inline; } }
 
   .photo-review {
     margin: 13px auto 0; max-width: 640px; padding: 15px;
@@ -366,14 +413,14 @@
     .hero { padding: 56px 0 6px; }
     /* Small enough that neither headline sentence orphans a word on phones. */
     .hero h1 { font-size: clamp(25px, 7.8vw, 33px); }
-    /* The bar wraps: textarea on its own line, then 📷 beside a stretched
-       submit — the camera keeps its circle instead of going full-width. */
-    .askbar { border-radius: 22px; flex-wrap: wrap; padding: 14px; gap: 12px; }
+    /* The bar wraps: textarea on its own line, then the camera circle beside
+       a stretched submit, both on the one control height. */
+    .askbar { --ctl: 50px; border-radius: 22px; flex-wrap: wrap; padding: 14px; gap: 12px; }
     /* Two lines minimum so the wrapped placeholder never clips mid-letter. */
     .askbar textarea { flex-basis: 100%; min-height: 66px; }
-    .askbar .ask { flex: 1; padding: 13px 22px; }
-    .askbar .photo-btn { padding: 0 13px; }
-    .photo-privacy { text-align: center; line-height: 1.35; }
+    .askbar .ask { flex: 1; }
+    /* A comfortable tap target for the hint, which is the main way in on a phone. */
+    .photo-hint-link { padding: 5px 4px; }
     .photo-review { padding: 13px; }
     .photo-thumbs { gap: 8px; margin-bottom: 12px; }
     .photo-thumb-wrap { width: 56px; height: 56px; border-radius: 12px; }
@@ -407,10 +454,10 @@
              aria-label="What do you want to cook?"></textarea>
       <button type="button" class="photo-btn" id="photoBtn"
               aria-label="Add a photo of your ingredients"
-              aria-describedby="photoPrivacy"
+              aria-describedby="photoHint"
               title="Add a photo of your ingredients">
         <span class="photo-icon" aria-hidden="true">📷</span>
-        <span id="photoBtnText">Add photo</span>
+        <span class="photo-count" id="photoCount" aria-hidden="true" hidden></span>
       </button>
       <button type="submit" class="ask" id="askBtn">Find my dish</button>
     </form>
@@ -436,9 +483,13 @@
       </div>
     </section>
 
-    <p class="photo-privacy" id="photoPrivacy">
-      <span class="privacy-mark" aria-hidden="true">✓</span>
-      Your photos are analyzed for ingredients. Simmer doesn't store them.
+    <p class="photo-hint" id="photoHint">
+      <button type="button" class="photo-hint-link" id="photoHintBtn">Add a photo of your fridge or pantry</button>
+      <span class="photo-hint-note">
+        <span class="privacy-mark" aria-hidden="true">✓</span>
+        I'll read the ingredients off it. Simmer never stores your photos.<span
+          class="drop-hint"> Or drag one onto the box above.</span>
+      </span>
     </p>
 
     <div class="chips" id="chips">
@@ -484,7 +535,8 @@
   var btn = document.getElementById("askBtn");
   var chips = document.getElementById("chips");
   var photoBtn = document.getElementById("photoBtn");
-  var photoBtnText = document.getElementById("photoBtnText");
+  var photoCount = document.getElementById("photoCount");
+  var photoHintBtn = document.getElementById("photoHintBtn");
   var photoInput = document.getElementById("photoInput");
   var photoReview = document.getElementById("photoReview");
   var photoThumbsEl = document.getElementById("photoThumbs");
@@ -857,14 +909,19 @@
   }
 
   // ------- photo -------
+  // The camera carries no text, so the count badge and the label are how it
+  // reports state — including in the compact header, where the card is hidden.
   function setPhotoBusy(busy) {
     photoBtn.classList.toggle("busy", busy);
-    var hasPhoto = photoThumbs.length > 0;
-    var visible = busy ? "Reading…" : hasPhoto ? "Add more" : "Add photo";
+    var count = photoThumbs.length;
+    photoCount.textContent = count ? String(count) : "";
+    photoCount.hidden = count === 0;
     var label = busy
       ? "Reading your photos"
-      : hasPhoto ? "Add more photos of your ingredients" : "Add a photo of your ingredients";
-    photoBtnText.textContent = visible;
+      : count
+        ? "Add more photos of your ingredients (" + count +
+          (count === 1 ? " photo" : " photos") + " added)"
+        : "Add a photo of your ingredients";
     photoBtn.setAttribute("aria-label", label);
     photoBtn.title = label;
   }
@@ -1256,6 +1313,7 @@
   }
 
   photoBtn.addEventListener("click", function () { photoInput.click(); });
+  photoHintBtn.addEventListener("click", function () { photoInput.click(); });
   photoChange.addEventListener("click", function () { photoInput.click(); });
   photoRemove.addEventListener("click", function () {
     clearPhotoState();
@@ -1266,6 +1324,67 @@
     var files = photoInput.files ? Array.prototype.slice.call(photoInput.files) : [];
     photoInput.value = ""; // so re-picking the same files fires change again
     if (files.length) analyzePhotos(files);
+  });
+
+  // ------- drag, drop, paste -------
+  // A file picker is not the only way people hand over a photo. On a desktop,
+  // dropping an image on the page or pasting one into the box does the same
+  // thing, and preventing the default stops the browser navigating to the file.
+  function carriesFiles(transfer) {
+    return !!transfer && !!transfer.types &&
+      Array.prototype.indexOf.call(transfer.types, "Files") !== -1;
+  }
+
+  // Same policy as the picker: anything plausibly an image is passed along, and
+  // the decode is the real check, so a valid image with no MIME type survives.
+  function imagesFrom(list, unwrap) {
+    var files = [];
+    Array.prototype.forEach.call(list || [], function (entry) {
+      var file = unwrap ? unwrap(entry) : entry;
+      if (file && (!file.type || file.type.indexOf("image/") === 0)) files.push(file);
+    });
+    return files;
+  }
+
+  // dragenter/dragleave fire for every element crossed, so count depth rather
+  // than toggling per event; otherwise the highlight flickers.
+  var dragDepth = 0;
+  function setDragging(on) {
+    if (!on) dragDepth = 0;
+    form.classList.toggle("dragging", on);
+  }
+
+  document.addEventListener("dragenter", function (e) {
+    if (!carriesFiles(e.dataTransfer)) return;
+    dragDepth += 1;
+    setDragging(true);
+  });
+  document.addEventListener("dragover", function (e) {
+    if (!carriesFiles(e.dataTransfer)) return;
+    e.preventDefault(); // without this the browser refuses the drop outright
+    e.dataTransfer.dropEffect = "copy";
+  });
+  document.addEventListener("dragleave", function (e) {
+    if (!carriesFiles(e.dataTransfer)) return;
+    dragDepth -= 1;
+    if (dragDepth <= 0) setDragging(false);
+  });
+  document.addEventListener("dragend", function () { setDragging(false); });
+  document.addEventListener("drop", function (e) {
+    if (!carriesFiles(e.dataTransfer)) return;
+    e.preventDefault();
+    setDragging(false);
+    var files = imagesFrom(e.dataTransfer.files);
+    if (files.length) analyzePhotos(files);
+  });
+
+  input.addEventListener("paste", function (e) {
+    var files = imagesFrom(e.clipboardData && e.clipboardData.items, function (item) {
+      return item.kind === "file" ? item.getAsFile() : null;
+    });
+    if (!files.length) return; // an ordinary text paste; leave it alone
+    e.preventDefault();
+    analyzePhotos(files);
   });
 
   function autoGrow() {

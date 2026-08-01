@@ -929,7 +929,7 @@ lives on a mounted volume (§16).
 ## 12. The Simmer frontend
 
 `src/recipe_search/static/index.html` — the entire frontend in one file
-(~1,100 lines): markup, CSS, and vanilla JS. No build step, no CDN, no
+(~1,400 lines): markup, CSS, and vanilla JS. No build step, no CDN, no
 framework. The only network calls the page makes are `POST
 /recipes/recommend`, `POST /ingredients/from-photo`, and favicon images
 from `https://www.google.com/s2/favicons` (removed via `onerror` if they
@@ -941,10 +941,14 @@ textarea with `maxlength="500"` — mirroring the API limit — auto-grows to
 fine)`, checked per keypress — Enter submits and Shift+Enter makes a
 newline, while on touch devices Enter makes a newline and the button
 submits; Cmd/Ctrl+Enter submits everywhere, and Enter during IME
-composition never submits); a labeled photo button backed by a
-multi-select image file picker (on phones it sits beside the submit below
-the textarea); an inline photo review card with a thumbnail strip; four
-example chips under "or try one of these"
+composition never submits); a camera button backed by a multi-select
+image file picker, sized to the submit button's exact height by the
+bar's `--ctl` variable and carrying a count badge rather than a label (on
+phones it sits beside the submit below the textarea); a line under the
+bar naming the feature, saying what to point a camera at, and stating the
+privacy behavior, whose link opens the same picker; an inline photo
+review card with a thumbnail strip; four example chips under "or try one
+of these"
 (their exact strings are duplicated in the eval's query list and must stay
 in sync — `scripts/eval_recipes.py` carries the comment); a
 cooking/progress section; the result section; a notice section for
@@ -952,7 +956,15 @@ refusals and errors; a footer promising "every recommendation links to
 its original recipe". Dynamic photo, progress, result, and error regions
 are announced to assistive technology.
 
-**The photo flow.** The picker takes one to five photos at once. The
+**The photo flow.** Photos arrive three ways, all landing in the same
+`analyzePhotos()`: the picker (from the camera button, the line under the
+bar, or "Add more photos"), a file dropped anywhere on the page, or an
+image pasted into the textarea. The last two are document- and
+textarea-level listeners that `preventDefault` so the browser does not
+navigate to the dropped file or paste a filename; a drag carrying files
+highlights the ask bar via a depth-counted `.dragging` class, and the
+line under the bar advertises dropping only under `(hover: hover) and
+(pointer: fine)`. The picker takes one to five photos at once. The
 browser shows each as a thumbnail in a strip, downscales each to a 1568px
 long edge, flattens transparency, and exports JPEG at quality 0.82, then
 posts every photo of the batch in a single `{images: [...]}` request with a
@@ -961,7 +973,9 @@ count. "Add more photos" runs another batch and merges its results into the
 list; a failed or cancelled add keeps everything gathered so far rather than
 wiping it (only a first batch with nothing yet gathered clears to an error
 card). Choosing photos from the compact result header reopens the composer
-so the card remains visible. A visible reading state has a cancel action;
+so the card remains visible; the camera's count badge is what says photos
+are still attached while that header hides the card. A visible reading
+state has a cancel action;
 photo analysis and recipe search otherwise disable both paid actions so they
 cannot overlap. Results become removable, deduplicated ingredient chips
 (titled "N ingredients from M photos") rather than silently changing the
@@ -971,8 +985,10 @@ text. A live warning disables submission if the combined request exceeds 500
 characters. First-batch errors and no-food results stay inside the photo
 card with choose-another/dismiss recovery actions, while the example prompts
 return as an alternate path. The user must still submit; photo analysis
-never starts a search. A short privacy line states the server behavior:
-Simmer does not store the photos.
+never starts a search. The line under the ask bar states the server
+behavior before anyone uploads anything: Simmer does not store the
+photos. It is hidden once a photo is attached, since the review card then
+says the same things better.
 
 **The ask flow.** Submitting disables the button ("Cooking…", single
 request in flight), compacts the hero, and starts two timers: five

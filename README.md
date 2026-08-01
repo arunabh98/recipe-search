@@ -7,8 +7,9 @@ source-linked cooking recommendation.
 
 Run the server and open **http://127.0.0.1:8000/** for the demo UI — a
 single self-contained page (`src/recipe_search/static/index.html`, no build
-step, no CDN) with example queries, an **Add photo** action that turns a
-fridge photo into a thumbnail-backed list of removable ingredient chips,
+step, no CDN) with example queries, a camera button beside the submit
+(with drag-and-drop and paste on a desktop) that turns fridge photos into
+a thumbnail-backed list of removable ingredient chips,
 a staged progress view while the pipeline runs, and the full
 recommendation experience: the dish, why it fits, essential vs
 nice-to-have missing items, cook-from source cards, and alternatives.
@@ -165,7 +166,7 @@ returned. Response shape: `{"recommendation": {...} | null, "candidates":
 ### `POST /ingredients/from-photo`
 
 Send one to five photos, get back the food Claude can see across them —
-the mechanism behind the ask bar's **Add photo** action. The UI shows a
+the mechanism behind the ask bar's camera button. The UI shows a
 thumbnail strip and the detected foods as removable chips (and lets you
 **Add more photos** to a running list), then combines the selected chips
 with any typed cravings or constraints only when the user searches. The

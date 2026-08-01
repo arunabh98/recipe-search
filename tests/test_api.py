@@ -206,14 +206,19 @@ def test_home_serves_the_demo_ui(client):
     assert "Simmer" in response.text
     assert "/recipes/recommend" in response.text
     assert "/ingredients/from-photo" in response.text
-    assert "Add photo" in response.text
+    assert 'id="photoBtn"' in response.text
     assert 'id="photoReview"' in response.text
+    # The camera carries no label, so the line under the ask bar is what names
+    # the feature and says what to point it at.
+    assert "Add a photo of your fridge or pantry" in response.text
     # Multi-photo affordances: a multi-select picker, the thumbnail strip,
     # and the "add more" action.
     assert 'accept="image/*" multiple' in response.text
     assert 'id="photoThumbs"' in response.text
     assert "Add more photos" in response.text
-    assert "Simmer doesn't store them" in response.text
+    # Scoped to Simmer on purpose: the photos do reach Anthropic's vision API,
+    # so only Simmer's own handling is ours to promise.
+    assert "Simmer never stores your photos" in response.text
 
 
 MIGAS_RESULT = SearchResult(
