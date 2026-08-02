@@ -7,7 +7,7 @@ the answer comes back as a source-linked cooking plan — or an honest
 "nothing fit." This is the module-by-module account of how that happens:
 every route, every prompt, every failure path, every test.
 
-> **Accurate as of commit `9116ae2` (2026-08-01).** This file describes
+> **Accurate as of commit `d61474c` (2026-08-02).** This file describes
 > behavior. When a change alters behavior, update the matching section in
 > the same change — a stale line-by-line account is worse than none.
 
