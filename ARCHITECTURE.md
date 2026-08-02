@@ -937,10 +937,15 @@ fail).
 
 **Anatomy.** A wordmark header; a hero with the pitch and the ask bar (a
 textarea with `maxlength="500"` — mirroring the API limit — auto-grows to
-132px; on hardware-keyboard devices — `(hover: hover) and (pointer:
-fine)`, checked per keypress — Enter submits and Shift+Enter makes a
-newline, while on touch devices Enter makes a newline and the button
-submits; Cmd/Ctrl+Enter submits everywhere, and Enter during IME
+132px; the bar centers its controls on the text and only bottom-aligns
+them once the text outgrows two lines, through a `tall` class that
+`autoGrow()` sets from the height it already measures and that a resize
+listener rechecks, since a control bottom-aligned beside one or two lines
+reads as sitting low against text that is the same height as it is; on
+hardware-keyboard devices — `(hover: hover) and (pointer: fine)`, checked
+per keypress — Enter submits and Shift+Enter makes a newline, while on
+touch devices Enter makes a newline and the button submits;
+Cmd/Ctrl+Enter submits everywhere, and Enter during IME
 composition never submits); a camera button backed by a multi-select
 image file picker, sized to the submit button's exact height by the
 bar's `--ctl` variable and carrying a count badge rather than a label (on

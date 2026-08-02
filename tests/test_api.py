@@ -219,6 +219,14 @@ def test_home_serves_the_demo_ui(client):
     # Scoped to Simmer on purpose: the photos do reach Anthropic's vision API,
     # so only Simmer's own handling is ours to promise.
     assert "Simmer never stores your photos" in response.text
+    # The ask bar centers its controls until the query outgrows two lines. The
+    # CSS rule and the autoGrow() toggle below it agree on one class name;
+    # renaming either alone would strand the bar in a single alignment with
+    # nothing to show for it, so pin the pair rather than the styling. The
+    # brace matters: the selector is also named in a comment, which would keep
+    # this green with the rule itself renamed out from under it.
+    assert ".askbar.tall {" in response.text
+    assert 'classList.toggle("tall"' in response.text
 
 
 MIGAS_RESULT = SearchResult(

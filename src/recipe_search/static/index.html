@@ -110,11 +110,17 @@
     border: 1px solid var(--line);
     border-radius: 28px;
     box-shadow: var(--shadow);
-    display: flex; align-items: flex-end; gap: 8px;
+    display: flex; align-items: center; gap: 8px;
     padding: 9px 9px 9px 22px;
     transition: box-shadow .25s ease, transform .25s ease,
                 border-color .2s ease, background .2s ease;
   }
+  /* Centered while the query is short, which is nearly every query: at two
+     lines the text is exactly one control tall, so the buttons bracket it.
+     Once it grows past that the bar is a paragraph, and controls floating in
+     the middle of one look adrift, so they drop beside the last line. The
+     `tall` class comes from autoGrow(), which already measures the text. */
+  .askbar.tall { align-items: flex-end; }
   .askbar:focus-within { box-shadow: var(--shadow-lift); transform: translateY(-1px); }
   /* An image dragged anywhere over the page lights up the bar it lands in. */
   .askbar.dragging {
@@ -1387,10 +1393,45 @@
     analyzePhotos(files);
   });
 
+  // The height past which the ask bar stops being a line and becomes a
+  // paragraph, and its controls bottom-align (see `.askbar.tall`). Read off the
+  // textarea rather than written down, so restyling the type or the padding
+  // cannot strand it, and read per call so text zoom cannot either. The switch
+  // sits halfway between a two-line box and a three-line one, the widest
+  // margin available. Any unreadable metric leaves NaN, so fall back.
+  function askbarTallPx() {
+    var style = getComputedStyle(input);
+    // Pixels or nothing: `normal` is not a number at all, and a bare ratio is
+    // one small enough to drop the switch under a single line, stranding the
+    // bar tall.
+    var lineHeight = style.lineHeight;
+    var line = lineHeight.indexOf("px") > 0 ? parseFloat(lineHeight) : NaN;
+    var padding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+    return padding + line * 2.5 || 78; // 78px at the metrics in force today
+  }
+
   function autoGrow() {
     input.style.height = "auto";
-    input.style.height = Math.min(input.scrollHeight, 132) + "px";
+    // Measured while the box is still auto-sized; once a height is set, a short
+    // box reports that height back rather than the height of its text.
+    var content = input.scrollHeight;
+    input.style.height = Math.min(content, 132) + "px";
+    form.classList.toggle("tall", content > askbarTallPx());
   }
+  // Line count depends on how wide the bar is, so a resize can turn three lines
+  // into two with the text untouched. Without this the box keeps a height and
+  // an alignment measured against a width that is gone. One measurement per
+  // frame: autoGrow() forces layout, and a dragged window fires resize faster
+  // than it paints.
+  var resizeQueued = false;
+  window.addEventListener("resize", function () {
+    if (resizeQueued) return;
+    resizeQueued = true;
+    requestAnimationFrame(function () {
+      resizeQueued = false;
+      autoGrow();
+    });
+  });
   input.addEventListener("input", function () {
     autoGrow();
     refreshQueryLimit();
@@ -1411,6 +1452,10 @@
   chips.addEventListener("click", function (e) {
     if (e.target.classList.contains("chip")) ask(e.target.textContent);
   });
+
+  // A reload can hand back a query the browser kept, before any event has
+  // fired to size the box around it.
+  autoGrow();
 })();
 </script>
 </body>
