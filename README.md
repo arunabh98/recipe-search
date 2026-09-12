@@ -10,9 +10,16 @@ single self-contained page (`src/recipe_search/static/index.html`, no build
 step, no CDN) with example queries, a camera button beside the submit
 (with drag-and-drop and paste on a desktop) that turns fridge photos into
 a thumbnail-backed list of removable ingredient chips,
-a staged progress view while the pipeline runs, and the full
+live progress within the input card while the pipeline runs, and the full
 recommendation experience: the dish, why it fits, essential vs
 nice-to-have missing items, cook-from source cards, and alternatives.
+The original input becomes “Ask a question or change your request…” after
+the first recommendation and stays visible as you scroll. It remembers
+your ingredients and preferences, with the original request shown above it.
+Cooking answers appear directly below the input; refinements such as
+“Something quicker?” replace the recipe cards and bring the updated dish
+into view, without a duplicate summary. Conversation context stays in
+browser memory. The secondary “New search” action clears it immediately.
 
 ## Setup
 
@@ -163,6 +170,108 @@ found, `recommendation` is `null` and the honest candidate list is still
 returned. Response shape: `{"recommendation": {...} | null, "candidates":
 [...]}`. Expect ~40–60s and ~$0.15–0.30 per request on the default model.
 
+### `POST /recipes/follow-up`
+
+Continue after a recommendation with either a practical question (“Can I
+substitute yogurt?”) or a refinement (“Something quicker?”). Existing
+search and recommendation endpoints keep their request and response shapes.
+
+Request body:
+
+| field | type | notes |
+| --- | --- | --- |
+| `message` | string | required, 1–500 characters; whitespace-only messages rejected |
+| `context.current_request` | string | accumulated ingredients and preferences, 1–4,000 characters |
+| `context.recommendation_query` | string | request that produced the displayed recommendation, 1–4,000 characters |
+| `context.recommendation` | object | displayed recommendation, including its sources and alternatives, in the existing `/recipes/recommend` format |
+| `context.exchanges` | array | last 0–6 `{message, reply}` exchanges; messages ≤500 and replies ≤1,000 characters |
+| `num_results` | int | optional, 1–10 (default **8**) |
+
+The serialized context is limited to 32,768 UTF-8 bytes. Oversized context
+is rejected rather than silently dropping ingredients or constraints.
+To start a conversation, set both request fields to the original query,
+copy the returned recommendation, and use an empty exchanges list. On
+each successful follow-up, send the returned `context` with the next message.
+
+Response (`200`, abbreviated context):
+
+```json
+{
+  "action": "answer",
+  "reply": "Plain yogurt can work; check the linked recipe for the amount and when to add it.",
+  "context": {
+    "current_request": "…",
+    "recommendation_query": "…",
+    "recommendation": {"…": "existing recommendation fields"},
+    "exchanges": [{"message": "Can I substitute yogurt?", "reply": "…"}]
+  },
+  "result": null
+}
+```
+
+One low-effort structured Claude call checks the latest message's topic,
+resolves references to the current dish or an alternative, and chooses
+`answer` or `search`. Direct answers make no web searches, leave the
+recommendation unchanged, and offer concise general cooking advice; exact
+amounts and methods remain on the linked recipe pages. Hypothetical
+substitution questions do not change the ingredient inventory; explicit
+facts such as “I don't have cheese” can update it even in a direct answer.
+
+For `action: "search"`, `result` has the existing
+`{"recommendation": {...} | null, "candidates": [...]}` shape. The
+recommendation pipeline runs with the accumulated request and retains its
+server-side source validation. Earlier constraints remain unless the user
+changes them. If no new recommendation fits, context retains the revised
+request alongside the earlier recommendation and the request that produced
+it; the UI labels that dish as the earlier recommendation.
+
+Only the latest six exchanges are retained as model context. The UI displays
+the latest practical answer, or the updated recipe itself for a successful
+refinement. It keeps the current dish visible while loading, shows errors
+beside the shared input, and preserves the draft and prior context for retry.
+“New search” clears the conversation, recipe, draft, and photos immediately,
+and prevents any pending response from restoring them. Photos are available
+when starting a new search; their ingredients are included only in that
+initial request.
+
+Statuses follow `/recipes/recommend`, including `422` for invalid context
+or an off-topic latest message and `429` for demo/provider limits. Each
+follow-up consumes one demo-limit slot and records one usage event, using
+only the latest message as query text, without the supplied conversation.
+
+### Live progress (optional)
+
+Both `/recipes/recommend` and `/recipes/follow-up` accept
+`Accept: application/x-ndjson`. Without that header their JSON responses
+and HTTP status codes stay unchanged. The browser opts into this stream:
+
+```text
+{"type":"progress","stage":"planning"}
+{"type":"progress","stage":"searching"}
+{"type":"progress","stage":"evaluating"}
+{"type":"progress","stage":"recommending"}
+{"type":"result","data":<normal endpoint response>}
+```
+
+The final `data` contains the endpoint's normal JSON response object. Progress stages
+come from actual pipeline transitions: `understanding` for the follow-up
+decision, then `planning`, `searching`, `evaluating`, optional `retrying`,
+and `recommending` when a usable recipe is found. A direct answer only
+emits `understanding` before its result; it does not claim to search.
+
+Validation and demo-limit failures still return ordinary JSON with their
+HTTP status. Failures after streaming begins end with
+`{"type":"error","status":502,"data":{"detail":"…"}}` instead of a result.
+Clients must wait for a terminal result before committing conversation state;
+an interrupted stream is a failed request. Disconnecting cancels pending
+work. Streaming uses the same single limit admission and usage event.
+
+The input, “New search” control, errors, and progress share one card aligned
+with the recipe. The current step includes elapsed time and the latest two
+completed steps; slow steps get a gentle explanatory note. No timers invent
+progress or claim a percentage complete. Recommendation labels live inside
+the dish card, with spacing in place of decorative divider lines.
+
 ### `POST /ingredients/from-photo`
 
 Send one to five photos, get back the food Claude can see across them —
@@ -251,11 +360,17 @@ uv run pytest
 ```
 
 Covers every endpoint's request/response behavior (including demo limits,
-off-topic refusals, photo-ingredient identification, and `/stats` auth),
+contextual follow-ups, off-topic refusals, photo-ingredient identification,
+and `/stats` auth),
 Exa request shape, normalization, and error mapping, Claude
 structured-output parsing and merging, pipeline retry and fallback
 behavior, and usage recording — all against in-process fakes, no network
 required.
+
+Follow-up tests cover direct answers without retrieval, replacement and
+no-match searches, bounded context, retained preferences and earlier
+recipes, prompt rules for references and hypothetical substitutions,
+failure handling, and one usage/limit event per request.
 
 ## Sharing it publicly (demo mode)
 
@@ -267,11 +382,14 @@ Set `DEMO_MODE=true` in `.env` before exposing the demo. It turns on:
   defaults 4/8) to stop casual scripting;
 - **hidden API docs** (`/docs` and `/openapi.json` return 404).
 
-Independent of demo mode, the planner now gates topics: requests that
+Independent of demo mode, the planner gates topics: requests that
 clearly aren't about food (code, homework, general chat) are refused after
 one cheap planning call, before any search or evaluation spend. Every
 refusal renders as a warm, on-brand state in the UI (off-topic, personal
 limit, daily budget), not a raw error.
+Follow-ups apply the same limits once per submission, and their lightweight
+decision call checks the latest message even inside an existing cooking
+conversation. Off-topic follow-ups make no web searches.
 
 Limits are in-memory (single process; they reset on restart). If you deploy
 behind a proxy, set `TRUST_PROXY_HEADERS=true` so per-IP limits see real

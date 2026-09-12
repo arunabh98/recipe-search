@@ -1,6 +1,7 @@
 """Endpoint tests for the /search API, with the Exa client faked out."""
 
 import base64
+import json
 
 import pytest
 from fastapi import FastAPI, Request
@@ -12,6 +13,8 @@ from recipe_search.evaluation import (
     EvaluationAuthError,
     EvaluationRateLimitError,
     EvaluationTimeoutError,
+    FollowUpContext,
+    FollowUpDecision,
     MissingItem,
     PhotoIngredients,
     Recommendation,
@@ -65,6 +68,19 @@ class FakeEvaluator:
         self.plan_calls: list[dict] = []
         self.recommend_calls: list[dict] = []
         self.photo_calls: list[dict] = []
+        self.follow_up_calls: list[dict] = []
+        self.follow_up_decision: FollowUpDecision | None = None
+
+    async def follow_up(self, message: str, context: FollowUpContext) -> FollowUpDecision:
+        self.follow_up_calls.append({"message": message, "context": context})
+        if self.error is not None:
+            raise self.error
+        return self.follow_up_decision or FollowUpDecision(
+            on_topic=True,
+            action="answer",
+            current_request=context.current_request,
+            reply="Yogurt will add tang. Follow the linked recipe for exact amounts.",
+        )
 
     async def plan_searches(
         self, query: str, *, feedback: str | None = None
@@ -710,6 +726,175 @@ def test_stats_is_hidden_when_no_token_is_configured(client, recorder):
     assert client.get("/stats", headers={"X-Stats-Token": "guess"}).status_code == 404
 
 
+# --- contextual follow-ups -------------------------------------------------
+
+
+@pytest.fixture
+def follow_up_body():
+    return {
+        "message": "Can I use yogurt?",
+        "context": {
+            "current_request": EXAMPLE_QUERY,
+            "recommendation_query": EXAMPLE_QUERY,
+            "recommendation": MIGAS_RECOMMENDATION.model_dump(),
+            "exchanges": [],
+        },
+    }
+
+
+def test_follow_up_answer_returns_context_without_search(
+    client, fake_exa, fake_evaluator, follow_up_body
+):
+    follow_up_body["message"] = "  Can I use yogurt?  "
+    response = client.post("/recipes/follow-up", json=follow_up_body)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["action"] == "answer"
+    assert body["result"] is None
+    assert body["context"]["recommendation"] == follow_up_body["context"]["recommendation"]
+    assert body["context"]["exchanges"] == [{"message": "Can I use yogurt?", "reply": body["reply"]}]
+    assert fake_exa.calls == fake_evaluator.plan_calls == []
+
+
+def test_follow_up_search_returns_existing_recipe_payload(
+    client, fake_exa, fake_evaluator, follow_up_body
+):
+    updated = EXAMPLE_QUERY + " Ready in 10 minutes."
+    fake_evaluator.follow_up_decision = FollowUpDecision(
+        on_topic=True, action="search", current_request=updated, reply="I will look."
+    )
+    fake_exa.results = [MIGAS_RESULT]
+    fake_evaluator.candidates = [MIGAS_CANDIDATE]
+    fake_evaluator.recommendation = MIGAS_RECOMMENDATION
+    follow_up_body["num_results"] = 3
+    response = client.post("/recipes/follow-up", json=follow_up_body)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["action"] == "search"
+    assert body["result"]["recommendation"] == MIGAS_RECOMMENDATION.model_dump()
+    assert body["result"]["candidates"] == [MIGAS_CANDIDATE.model_dump()]
+    assert body["context"]["current_request"] == body["context"]["recommendation_query"] == updated
+    assert fake_exa.calls[0]["num_results"] == 3
+
+
+def test_follow_up_no_matches_can_be_followed_by_an_answer(
+    client, fake_evaluator, follow_up_body
+):
+    updated = EXAMPLE_QUERY + " No stove."
+    fake_evaluator.follow_up_decision = FollowUpDecision(
+        on_topic=True, action="search", current_request=updated, reply="I will look."
+    )
+    first = client.post("/recipes/follow-up", json=follow_up_body)
+    assert first.status_code == 200
+    body = first.json()
+    assert body["result"] == {"recommendation": None, "candidates": []}
+    assert body["context"]["current_request"] == updated
+    assert body["context"]["recommendation_query"] == EXAMPLE_QUERY
+    fake_evaluator.follow_up_decision = None
+    second = client.post("/recipes/follow-up", json={
+        "message": "Why did you pick this dish?", "context": body["context"]
+    })
+    assert second.status_code == 200
+    assert second.json()["context"]["recommendation"] == MIGAS_RECOMMENDATION.model_dump()
+    assert len(second.json()["context"]["exchanges"]) == 2
+
+
+@pytest.mark.parametrize("field,value", [
+    ("message", ""), ("message", "  "), ("message", "x" * 501),
+    ("num_results", 0), ("num_results", 11), ("context", {}),
+])
+def test_follow_up_rejects_invalid_requests(
+    client, fake_evaluator, follow_up_body, field, value
+):
+    follow_up_body[field] = value
+    assert client.post("/recipes/follow-up", json=follow_up_body).status_code == 422
+    assert fake_evaluator.follow_up_calls == []
+
+
+@pytest.mark.parametrize("field,value", [
+    ("current_request", "x" * 4001), ("recommendation_query", "x" * 4001),
+    ("current_request", "  "),
+    ("exchanges", [{"message": "m", "reply": "r"}] * 7),
+    ("exchanges", [{"message": "x" * 501, "reply": "r"}]),
+    ("exchanges", [{"message": "m", "reply": "x" * 1001}]),
+])
+def test_follow_up_rejects_oversized_context_fields(
+    client, fake_evaluator, follow_up_body, field, value
+):
+    follow_up_body["context"][field] = value
+    assert client.post("/recipes/follow-up", json=follow_up_body).status_code == 422
+    assert fake_evaluator.follow_up_calls == []
+
+
+def test_follow_up_rejects_oversized_recipe_context(client, follow_up_body):
+    follow_up_body["context"]["recommendation"]["headline"] = "🍲" * 9000
+    assert client.post("/recipes/follow-up", json=follow_up_body).status_code == 422
+
+
+def test_follow_up_allows_long_cumulative_request_without_changing_search_limit(
+    client, follow_up_body
+):
+    follow_up_body["context"]["current_request"] = "a" * 4000
+    response = client.post("/recipes/follow-up", json=follow_up_body)
+    assert response.status_code == 200
+    assert len(response.json()["context"]["current_request"]) == 4000
+    assert client.post("/recipes/recommend", json={"query": "a" * 501}).status_code == 422
+
+
+def test_follow_up_off_topic_gate_and_usage(
+    client, fake_exa, fake_evaluator, follow_up_body, recorder
+):
+    fake_evaluator.follow_up_decision = FollowUpDecision(
+        on_topic=False, action="answer", current_request=EXAMPLE_QUERY,
+        reply="I help with cooking.",
+    )
+    response = client.post("/recipes/follow-up", json=follow_up_body)
+    assert response.status_code == 422
+    assert response.json()["code"] == "off_topic"
+    assert fake_exa.calls == []
+    assert recorder.recent()[0]["outcome"] == "off_topic"
+
+
+@pytest.mark.parametrize("error,status", [
+    (EvaluationAPIError("bad response"), 502),
+    (EvaluationTimeoutError("timeout"), 504),
+    (EvaluationRateLimitError("limit"), 429),
+    (EvaluationAuthError("bad key"), 500),
+])
+def test_follow_up_maps_errors(client, fake_evaluator, follow_up_body, error, status):
+    fake_evaluator.error = error
+    response = client.post("/recipes/follow-up", json=follow_up_body)
+    assert response.status_code == status
+    assert "detail" in response.json()
+
+
+@pytest.mark.parametrize("stream", [False, True])
+@pytest.mark.parametrize("search", [False, True])
+def test_follow_up_counts_one_limit_slot_and_usage_event(
+    client, fake_evaluator, follow_up_body, recorder, search, stream
+):
+    if search:
+        fake_evaluator.follow_up_decision = FollowUpDecision(
+            on_topic=True, action="search", current_request=EXAMPLE_QUERY,
+            reply="I will look.",
+        )
+    app.state.limiter = RateLimiter(per_hour=1, per_day=5, daily_budget=100)
+    try:
+        headers = {"Accept": "application/x-ndjson"} if stream else {}
+        first = client.post("/recipes/follow-up", json=follow_up_body, headers=headers)
+        second = client.post("/recipes/follow-up", json=follow_up_body, headers=headers)
+    finally:
+        app.state.limiter = None
+    assert first.status_code == 200
+    assert second.status_code == 429
+    assert len(fake_evaluator.follow_up_calls) == 1
+    refused, completed = recorder.recent()
+    assert refused["outcome"] == "rate_limited:rate_limit"
+    assert completed["endpoint"] == "recipes/follow-up"
+    assert completed["query"] == follow_up_body["message"]
+    assert completed["outcome"] == ("null_recommendation" if search else "answered")
+
+
 def test_stats_requires_the_exact_token(client, recorder):
     app.state.stats_token = SecretStr("owner-token")
     try:
@@ -737,3 +922,106 @@ def test_stats_reports_when_recording_is_off(client):
 
     assert response.status_code == 200
     assert response.json() == {"recording_enabled": False, "stats": {}, "recent": []}
+
+
+# The browser opts into real progress; existing API clients still receive JSON.
+STREAM_HEADERS = {"Accept": "application/x-ndjson"}
+
+
+@pytest.mark.parametrize("followup", [False, True])
+def test_streamed_recommendation_matches_json(
+    client, fake_exa, fake_evaluator, follow_up_body, recorder, followup
+):
+    fake_exa.results = [MIGAS_RESULT]
+    fake_evaluator.candidates = [MIGAS_CANDIDATE]
+    fake_evaluator.recommendation = MIGAS_RECOMMENDATION
+    fake_evaluator.follow_up_decision = FollowUpDecision(
+        on_topic=True, action="search", current_request=EXAMPLE_QUERY, reply="Looking."
+    )
+    endpoint = "/recipes/follow-up" if followup else "/recipes/recommend"
+    body = follow_up_body if followup else {"query": EXAMPLE_QUERY}
+    response = client.post(endpoint, json=body, headers=STREAM_HEADERS)
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("application/x-ndjson")
+    events = [json.loads(line) for line in response.text.splitlines()]
+    stages = [event["stage"] for event in events[:-1]]
+    assert stages == (["understanding"] if followup else []) + [
+        "planning", "searching", "evaluating", "recommending"
+    ]
+    assert events[-1]["type"] == "result"
+    assert len(recorder.recent()) == 1
+    assert recorder.recent()[0]["outcome"] == "recommended"
+    assert events[-1]["data"] == client.post(endpoint, json=body).json()
+
+
+def test_streamed_answer_does_not_claim_to_search(
+    client, fake_exa, follow_up_body, recorder
+):
+    response = client.post("/recipes/follow-up", json=follow_up_body, headers=STREAM_HEADERS)
+    events = [json.loads(line) for line in response.text.splitlines()]
+    assert [event["type"] for event in events] == ["progress", "result"]
+    assert events[0]["stage"] == "understanding"
+    assert events[1]["data"]["action"] == "answer"
+    assert fake_exa.calls == []
+    assert len(recorder.recent()) == 1
+
+
+def test_streamed_no_matches_reports_retry_and_preserves_recipe(
+    client, fake_evaluator, follow_up_body
+):
+    fake_evaluator.follow_up_decision = FollowUpDecision(
+        on_topic=True, action="search", current_request=EXAMPLE_QUERY + " No dairy.",
+        reply="Looking.",
+    )
+    response = client.post("/recipes/follow-up", json=follow_up_body, headers=STREAM_HEADERS)
+    events = [json.loads(line) for line in response.text.splitlines()]
+    assert [event["stage"] for event in events[:-1]] == [
+        "understanding", "planning", "searching", "evaluating",
+        "retrying", "searching", "evaluating",
+    ]
+    data = events[-1]["data"]
+    assert data["result"]["recommendation"] is None
+    assert data["context"]["recommendation"] == follow_up_body["context"]["recommendation"]
+    assert data["context"]["current_request"].endswith("No dairy.")
+
+
+@pytest.mark.parametrize("error,status", [
+    (EvaluationTimeoutError("private upstream detail"), 504),
+    (EvaluationAPIError("private upstream detail"), 502),
+    (RuntimeError("private upstream detail"), 500),
+])
+def test_streamed_errors_are_terminal_and_recorded_once(
+    client, fake_evaluator, follow_up_body, recorder, error, status
+):
+    fake_evaluator.error = error
+    response = client.post("/recipes/follow-up", json=follow_up_body, headers=STREAM_HEADERS)
+    events = [json.loads(line) for line in response.text.splitlines()]
+    assert [event["type"] for event in events] == ["progress", "error"]
+    assert events[-1]["status"] == status
+    assert "private upstream detail" not in response.text
+    assert len(recorder.recent()) == 1
+    assert recorder.recent()[0]["outcome"] == "error:" + type(error).__name__
+
+
+def test_streamed_off_topic_stops_before_search(
+    client, fake_exa, fake_evaluator, follow_up_body
+):
+    fake_evaluator.follow_up_decision = FollowUpDecision(
+        on_topic=False, action="answer", current_request=EXAMPLE_QUERY, reply="Cooking only."
+    )
+    response = client.post("/recipes/follow-up", json=follow_up_body, headers=STREAM_HEADERS)
+    events = [json.loads(line) for line in response.text.splitlines()]
+    assert events[-1]["type"] == "error"
+    assert events[-1]["status"] == 422
+    assert events[-1]["data"]["code"] == "off_topic"
+    assert fake_exa.calls == []
+
+
+def test_stream_validation_stays_json_and_never_starts_work(
+    client, fake_evaluator, follow_up_body
+):
+    follow_up_body["message"] = "a" * 501
+    response = client.post("/recipes/follow-up", json=follow_up_body, headers=STREAM_HEADERS)
+    assert response.status_code == 422
+    assert response.headers["content-type"] == "application/json"
+    assert fake_evaluator.follow_up_calls == []

@@ -4,6 +4,9 @@ import pytest
 
 from recipe_search.evaluation import (
     EvaluationAPIError,
+    FollowUpContext,
+    FollowUpDecision,
+    FollowUpExchange,
     Recommendation,
     RecipeCandidate,
     SearchPlan,
@@ -13,6 +16,7 @@ from recipe_search.exa_search import ExaRateLimitError, SearchResult
 from recipe_search.pipeline import (
     OffTopicQuery,
     find_recipe_candidates,
+    follow_up_recipe,
     recommend_recipe,
 )
 
@@ -73,6 +77,15 @@ class StubEvaluator:
         self.plan_calls: list[dict] = []
         self.evaluate_calls: list[dict] = []
         self.recommend_calls: list[dict] = []
+        self.follow_up_calls: list[dict] = []
+        self.decisions: list[FollowUpDecision | Exception] = []
+
+    async def follow_up(self, message: str, context: FollowUpContext):
+        self.follow_up_calls.append({"message": message, "context": context.model_copy(deep=True)})
+        decision = self.decisions.pop(0)
+        if isinstance(decision, Exception):
+            raise decision
+        return decision
 
     async def recommend(self, query: str, candidates: list[RecipeCandidate]):
         self.recommend_calls.append({"query": query, "candidates": list(candidates)})
@@ -277,3 +290,158 @@ async def test_no_retry_when_first_attempt_is_usable(exa, evaluator):
 
     assert len(evaluator.plan_calls) == 1
     assert len(evaluator.evaluate_calls) == 1
+
+
+@pytest.fixture
+def follow_context():
+    return FollowUpContext(
+        current_request=QUERY,
+        recommendation_query=QUERY,
+        recommendation=RECOMMENDATION,
+    )
+
+
+def decision(action="answer", query=QUERY, reply="Yogurt adds tang.", on_topic=True):
+    return FollowUpDecision(
+        on_topic=on_topic, action=action, current_request=query, reply=reply
+    )
+
+
+async def follow(exa, evaluator, context, message="Can I use yogurt?"):
+    return await follow_up_recipe(
+        message, context, num_results=5, exa=exa, evaluator=evaluator
+    )
+
+
+async def test_follow_up_answer_preserves_recipe_without_search(exa, evaluator, follow_context):
+    original = follow_context.model_dump()
+    evaluator.decisions = [decision()]
+
+    turn = await follow(exa, evaluator, follow_context)
+
+    assert turn.action == "answer"
+    assert turn.candidates is None
+    assert turn.recommendation is None
+    assert turn.context.recommendation == RECOMMENDATION
+    assert turn.context.current_request == QUERY
+    assert turn.context.exchanges[-1].message == "Can I use yogurt?"
+    assert follow_context.model_dump() == original
+    assert exa.calls == evaluator.plan_calls == evaluator.evaluate_calls == []
+
+
+async def test_follow_up_refinement_uses_accumulated_request_at_every_stage(
+    exa, evaluator, follow_context
+):
+    updated = QUERY + "; vegetarian and ready in 10 minutes"
+    evaluator.decisions = [decision("search", updated, "Not a search result yet.")]
+    evaluator.plans = [SearchPlan(queries=["fast vegetarian migas"])]
+    exa.default = [result("https://fresh")]
+    good = candidate("best_base_recipe", "https://fresh")
+    evaluator.evaluations = [[good]]
+
+    turn = await follow(exa, evaluator, follow_context, "Make it vegetarian and quicker")
+
+    assert turn.context.current_request == turn.context.recommendation_query == updated
+    assert turn.reply == RECOMMENDATION.headline
+    assert turn.candidates == [good]
+    assert evaluator.plan_calls[0]["query"] == updated
+    assert evaluator.evaluate_calls[0]["query"] == updated
+    assert evaluator.recommend_calls[0]["query"] == updated
+    assert exa.calls[0]["num_results"] == 5
+
+
+async def test_follow_up_no_matches_keeps_earlier_recipe_for_next_question(
+    exa, evaluator, follow_context
+):
+    updated = QUERY + "; no stove"
+    evaluator.decisions = [decision("search", updated), decision("answer", updated)]
+    evaluator.plans = [SearchPlan(queries=["q1"]), SearchPlan(queries=["q2"])]
+    evaluator.evaluations = [[], []]
+
+    missed = await follow(exa, evaluator, follow_context, "I have no stove")
+    answered = await follow(exa, evaluator, missed.context, "Can I use yogurt in that dish?")
+
+    assert missed.recommendation is None
+    assert missed.candidates == []
+    assert "earlier recommendation" in missed.reply
+    assert answered.context.current_request == updated
+    assert answered.context.recommendation_query == QUERY
+    assert answered.context.recommendation == RECOMMENDATION
+    assert len(answered.context.exchanges) == 2
+    assert evaluator.follow_up_calls[1]["context"] == missed.context
+    assert len(exa.calls) == 2  # only the unsuccessful search and its retry
+
+
+async def test_follow_up_discards_old_exchanges_without_losing_cumulative_request(
+    exa, evaluator, follow_context
+):
+    updated = QUERY + "; no nuts, no oven, serves four"
+    follow_context.current_request = updated
+    follow_context.exchanges = [
+        FollowUpExchange(message=f"question {i}", reply=f"reply {i}") for i in range(6)
+    ]
+    evaluator.decisions = [decision(query=updated)]
+
+    turn = await follow(exa, evaluator, follow_context)
+
+    assert len(turn.context.exchanges) == 6
+    assert turn.context.exchanges[0].message == "question 1"
+    assert turn.context.current_request == updated
+    assert len(follow_context.exchanges) == 6
+
+
+async def test_follow_up_explicit_preference_can_change_during_practical_answer(
+    exa, evaluator, follow_context
+):
+    updated = QUERY + "; no yogurt available"
+    evaluator.decisions = [decision(query=updated, reply="Try a little sour cream instead.")]
+
+    turn = await follow(exa, evaluator, follow_context, "I have no yogurt. What can I use?")
+
+    assert turn.context.current_request == updated
+    assert turn.context.recommendation_query == QUERY
+    assert exa.calls == []
+
+
+async def test_follow_up_off_topic_is_refused_despite_food_history(exa, evaluator, follow_context):
+    evaluator.decisions = [decision(on_topic=False)]
+    with pytest.raises(OffTopicQuery):
+        await follow(exa, evaluator, follow_context, "Write me a program")
+    assert exa.calls == evaluator.plan_calls == []
+    assert follow_context.exchanges == []
+
+
+@pytest.mark.parametrize("stage", ["router", "search"])
+async def test_follow_up_failure_leaves_original_state_untouched(
+    exa, evaluator, follow_context, stage
+):
+    original = follow_context.model_dump()
+    evaluator.decisions = (
+        [EvaluationAPIError("unavailable")]
+        if stage == "router"
+        else [decision("search", QUERY + "; no oven")]
+    )
+    evaluator.plans = [SearchPlan(queries=["q1"])]
+    exa.default = ExaRateLimitError("rate limited")
+    with pytest.raises((EvaluationAPIError, ExaRateLimitError)):
+        await follow(exa, evaluator, follow_context)
+    assert follow_context.model_dump() == original
+
+
+async def test_follow_up_search_still_runs_existing_topic_gate(exa, evaluator, follow_context):
+    evaluator.decisions = [decision("search")]
+    evaluator.plans = [SearchPlan(on_topic=False, queries=[])]
+    with pytest.raises(OffTopicQuery):
+        await follow(exa, evaluator, follow_context)
+    assert exa.calls == []
+
+
+async def test_follow_up_rejects_oversized_generated_context(exa, evaluator, follow_context):
+    evaluator.decisions = [decision("search")]
+    evaluator.plans = [SearchPlan(queries=["q1"])]
+    exa.default = [result("https://a")]
+    evaluator.evaluations = [[candidate("backup")]]
+    evaluator.recommendation = RECOMMENDATION.model_copy(update={"why_it_fits": "x" * 33000})
+    with pytest.raises(EvaluationAPIError, match="context"):
+        await follow(exa, evaluator, follow_context)
+    assert follow_context.recommendation == RECOMMENDATION

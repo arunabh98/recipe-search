@@ -17,9 +17,17 @@ No FastAPI imports; reusable from CLIs, jobs, or other services.
 import asyncio
 import itertools
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Literal
+
+from pydantic import ValidationError
 
 from recipe_search.evaluation import (
+    EvaluationAPIError,
     EvaluationError,
+    FollowUpContext,
+    FollowUpExchange,
     Recommendation,
     RecipeCandidate,
     RecipeEvaluator,
@@ -32,8 +40,89 @@ _FALLBACK_QUERY_TEMPLATE = "Here is a great home-cooked recipe: {}"
 _MAX_POOL_SIZE = 12
 
 
+Progress = Callable[[str], None]
+
+
+def ignore_progress(stage: str) -> None:
+    """Default for callers that only need the final result."""
+
+
 class OffTopicQuery(Exception):
     """The planner judged the request to be not about food or cooking."""
+
+
+@dataclass
+class FollowUpResult:
+    """One committed conversation turn, with a recipe payload only for searches."""
+
+    action: Literal["answer", "search"]
+    reply: str
+    context: FollowUpContext
+    recommendation: Recommendation | None = None
+    candidates: list[RecipeCandidate] | None = None
+
+
+async def follow_up_recipe(
+    message: str,
+    context: FollowUpContext,
+    *,
+    num_results: int,
+    exa: ExaSearchClient,
+    evaluator: RecipeEvaluator,
+    progress: Progress = ignore_progress,
+) -> FollowUpResult:
+    """Answer briefly or search again without changing the caller's prior state."""
+    progress("understanding")
+    decision = await evaluator.follow_up(message, context)
+    if not decision.on_topic:
+        raise OffTopicQuery(message)
+
+    recommendation = None
+    candidates = None
+    visible_recommendation = context.recommendation
+    recommendation_query = context.recommendation_query
+    reply = decision.reply
+    if decision.action == "search":
+        recommendation, candidates = await recommend_recipe(
+            decision.current_request,
+            num_results=num_results,
+            exa=exa,
+            evaluator=evaluator,
+            progress=progress,
+        )
+        if recommendation is not None:
+            visible_recommendation = recommendation
+            recommendation_query = decision.current_request
+            # The router has not seen the search results. Only announce a new
+            # dish after retrieval succeeds, using the grounded recommendation.
+            reply = recommendation.headline[:1000]
+        else:
+            reply = (
+                "I couldn't find a recipe that fits that change. "
+                "Your earlier recommendation is still here. "
+                "Try another adjustment."
+            )
+
+    try:
+        updated_context = FollowUpContext(
+            current_request=decision.current_request,
+            recommendation_query=recommendation_query,
+            recommendation=visible_recommendation,
+            exchanges=[
+                *context.exchanges[-5:],
+                FollowUpExchange(message=message, reply=reply),
+            ],
+        )
+    except ValidationError as exc:
+        # Do not return an unusable context or silently clip dietary constraints.
+        raise EvaluationAPIError("Follow-up context exceeds the supported limits") from exc
+    return FollowUpResult(
+        action=decision.action,
+        reply=reply,
+        context=updated_context,
+        recommendation=recommendation,
+        candidates=candidates,
+    )
 
 
 async def find_recipe_candidates(
@@ -42,6 +131,7 @@ async def find_recipe_candidates(
     num_results: int,
     exa: ExaSearchClient,
     evaluator: RecipeEvaluator,
+    progress: Progress = ignore_progress,
 ) -> list[RecipeCandidate]:
     """Search the web and rank cooking candidates for a natural-language query.
 
@@ -50,7 +140,7 @@ async def find_recipe_candidates(
     is returned.
     """
     first, seen_urls = await _attempt(
-        query, num_results=num_results, exa=exa, evaluator=evaluator
+        query, num_results=num_results, exa=exa, evaluator=evaluator, progress=progress
     )
     if _has_usable(first):
         return first
@@ -63,6 +153,7 @@ async def find_recipe_candidates(
         exa=exa,
         evaluator=evaluator,
         feedback=feedback,
+        progress=progress,
         exclude_urls=seen_urls,
     )
     return retry if _has_usable(retry) else first
@@ -74,6 +165,7 @@ async def recommend_recipe(
     num_results: int,
     exa: ExaSearchClient,
     evaluator: RecipeEvaluator,
+    progress: Progress = ignore_progress,
 ) -> tuple[Recommendation | None, list[RecipeCandidate]]:
     """Run the candidate pipeline, then write the user-facing recommendation.
 
@@ -82,12 +174,13 @@ async def recommend_recipe(
     candidate list is still returned.
     """
     candidates = await find_recipe_candidates(
-        query, num_results=num_results, exa=exa, evaluator=evaluator
+        query, num_results=num_results, exa=exa, evaluator=evaluator, progress=progress
     )
     usable = [c for c in candidates if c.role != "ignore"]
     if not usable:
         logger.info("No usable candidates; skipping recommendation")
         return None, candidates
+    progress("recommending")
     recommendation = await evaluator.recommend(query, usable)
     return recommendation, candidates
 
@@ -98,13 +191,17 @@ async def _attempt(
     num_results: int,
     exa: ExaSearchClient,
     evaluator: RecipeEvaluator,
+    progress: Progress = ignore_progress,
     feedback: str | None = None,
     exclude_urls: frozenset[str] = frozenset(),
 ) -> tuple[list[RecipeCandidate], frozenset[str]]:
+    progress("retrying" if feedback is not None else "planning")
     queries = await _plan_queries(evaluator, query, feedback)
     logger.info("Planned search queries: %s", queries)
+    progress("searching")
     pools = await _run_searches(exa, queries, num_results)
     pool = _merge_pools(pools, exclude_urls=exclude_urls)
+    progress("evaluating")
     candidates = await evaluator.evaluate(query, pool)
     return candidates, exclude_urls | {result.url for result in pool}
 

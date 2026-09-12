@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field, field_validator
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
@@ -24,6 +24,7 @@ from recipe_search.evaluation import (
     EvaluationError,
     EvaluationRateLimitError,
     EvaluationTimeoutError,
+    FollowUpContext,
     PhotoIngredients,
     Recommendation,
     RecipeCandidate,
@@ -38,7 +39,15 @@ from recipe_search.exa_search import (
     SearchResult,
 )
 from recipe_search.limits import RateLimited, RateLimiter
-from recipe_search.pipeline import OffTopicQuery, find_recipe_candidates, recommend_recipe
+from recipe_search.pipeline import (
+    OffTopicQuery,
+    Progress,
+    ignore_progress,
+    find_recipe_candidates,
+    follow_up_recipe,
+    recommend_recipe,
+)
+from recipe_search.streaming import stream_response
 from recipe_search.usage import UsageRecorder
 
 logger = logging.getLogger(__name__)
@@ -306,6 +315,27 @@ class RecipeRecommendationResponse(BaseModel):
     candidates: list[RecipeCandidate]
 
 
+class FollowUpRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=500)
+    context: FollowUpContext
+    num_results: int = Field(default=8, ge=1, le=10)
+
+    @field_validator("message")
+    @classmethod
+    def _strip_message(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("message must not be empty or whitespace")
+        return value
+
+
+class FollowUpResponse(BaseModel):
+    action: Literal["answer", "search"]
+    reply: str
+    context: FollowUpContext
+    result: RecipeRecommendationResponse | None
+
+
 # Upstream failure → HTTP response policy. Walked in order with isinstance,
 # so each family's specific errors must precede its base class.
 _UPSTREAM_ERRORS: list[tuple[type[Exception], int, str]] = [
@@ -441,6 +471,16 @@ async def search_recipes(
     return RecipeSearchResponse(candidates=candidates)
 
 
+async def recipe_stream_error(request: Request, exc: Exception) -> JSONResponse:
+    """Share public error messages across JSON and streaming recipe requests."""
+    if isinstance(exc, OffTopicQuery):
+        return await handle_off_topic(request, exc)
+    if isinstance(exc, (ExaSearchError, EvaluationError)):
+        return await handle_upstream_error(request, exc)
+    logger.error("Unexpected recipe stream failure", exc_info=exc)
+    return JSONResponse(status_code=500, content={"detail": "That request failed. Try again."})
+
+
 @app.post(
     "/recipes/recommend",
     response_model=RecipeRecommendationResponse,
@@ -451,41 +491,120 @@ async def recommend_recipes(
     request: Request,
     exa: ExaSearchClient = Depends(get_search_client),
     evaluator: RecipeEvaluator = Depends(get_evaluator),
-) -> RecipeRecommendationResponse:
+) -> RecipeRecommendationResponse | StreamingResponse:
     """Search, rank, and answer 'what should I cook?' with source links."""
-    start = time.monotonic()
-    outcome = "cancelled"
-    dish = source = None
-    try:
-        recommendation, candidates = await recommend_recipe(
-            body.query, num_results=body.num_results, exa=exa, evaluator=evaluator
+
+    async def run(progress: Progress = ignore_progress) -> RecipeRecommendationResponse:
+        start = time.monotonic()
+        outcome = "cancelled"
+        dish = source = None
+        try:
+            recommendation, candidates = await recommend_recipe(
+                body.query,
+                num_results=body.num_results,
+                exa=exa,
+                evaluator=evaluator,
+                progress=progress,
+            )
+            if recommendation is None:
+                outcome = "null_recommendation"
+            else:
+                outcome = "recommended"
+                dish = recommendation.dish_name
+                if recommendation.primary_sources:
+                    source = recommendation.primary_sources[0].source
+        except OffTopicQuery:
+            outcome = "off_topic"
+            raise
+        except Exception as exc:
+            outcome = f"error:{type(exc).__name__}"
+            raise
+        finally:
+            await _record_usage(
+                request,
+                endpoint="recipes/recommend",
+                query=body.query,
+                outcome=outcome,
+                dish=dish,
+                source=source,
+                duration_ms=int((time.monotonic() - start) * 1000),
+            )
+        return RecipeRecommendationResponse(
+            recommendation=recommendation, candidates=candidates
         )
-        if recommendation is None:
-            outcome = "null_recommendation"
-        else:
-            outcome = "recommended"
-            dish = recommendation.dish_name
-            if recommendation.primary_sources:
-                source = recommendation.primary_sources[0].source
-    except OffTopicQuery:
-        outcome = "off_topic"
-        raise
-    except Exception as exc:
-        outcome = f"error:{type(exc).__name__}"
-        raise
-    finally:
-        await _record_usage(
-            request,
-            endpoint="recipes/recommend",
-            query=body.query,
-            outcome=outcome,
-            dish=dish,
-            source=source,
-            duration_ms=int((time.monotonic() - start) * 1000),
-        )
-    return RecipeRecommendationResponse(
-        recommendation=recommendation, candidates=candidates
-    )
+
+    if "application/x-ndjson" in request.headers.get("accept", ""):
+        return stream_response(run, lambda exc: recipe_stream_error(request, exc))
+    return await run()
+
+
+@app.post(
+    "/recipes/follow-up",
+    response_model=FollowUpResponse,
+    dependencies=[Depends(enforce_limits)],
+)
+async def follow_up_recipes(
+    body: FollowUpRequest,
+    request: Request,
+    exa: ExaSearchClient = Depends(get_search_client),
+    evaluator: RecipeEvaluator = Depends(get_evaluator),
+) -> FollowUpResponse | StreamingResponse:
+    """Answer a cooking follow-up or refine the current recommendation."""
+
+    async def run(progress: Progress = ignore_progress) -> FollowUpResponse:
+        start = time.monotonic()
+        outcome = "cancelled"
+        dish = source = None
+        try:
+            turn = await follow_up_recipe(
+                body.message,
+                body.context,
+                num_results=body.num_results,
+                exa=exa,
+                evaluator=evaluator,
+                progress=progress,
+            )
+            if turn.action == "answer":
+                outcome = "answered"
+            elif turn.recommendation is None:
+                outcome = "null_recommendation"
+            else:
+                outcome = "recommended"
+                dish = turn.recommendation.dish_name
+                if turn.recommendation.primary_sources:
+                    source = turn.recommendation.primary_sources[0].source
+            return FollowUpResponse(
+                action=turn.action,
+                reply=turn.reply,
+                context=turn.context,
+                result=(
+                    RecipeRecommendationResponse(
+                        recommendation=turn.recommendation, candidates=turn.candidates
+                    )
+                    if turn.action == "search"
+                    else None
+                ),
+            )
+        except OffTopicQuery:
+            outcome = "off_topic"
+            raise
+        except Exception as exc:
+            outcome = f"error:{type(exc).__name__}"
+            raise
+        finally:
+            await _record_usage(
+                request,
+                endpoint="recipes/follow-up",
+                query=body.message,
+                outcome=outcome,
+                dish=dish,
+                source=source,
+                duration_ms=int((time.monotonic() - start) * 1000),
+            )
+
+    if "application/x-ndjson" in request.headers.get("accept", ""):
+        return stream_response(run, lambda exc: recipe_stream_error(request, exc))
+    return await run()
 
 
 @app.post(
