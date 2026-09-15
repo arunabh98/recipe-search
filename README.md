@@ -15,7 +15,8 @@ recommendation experience: the dish, why it fits, essential vs
 nice-to-have missing items, cook-from source cards, and alternatives.
 The original input becomes “Ask a question or change your request…” after
 the first recommendation and stays visible as you scroll. It remembers
-your ingredients and preferences, with the original request shown above it.
+your ingredients and preferences, and shows the request as it currently
+understands it above the input, so refinements are visible as they add up.
 Cooking answers appear directly below the input; refinements such as
 “Something quicker?” replace the recipe cards and bring the updated dish
 into view, without a duplicate summary. Conversation context stays in
@@ -227,9 +228,13 @@ it; the UI labels that dish as the earlier recommendation.
 
 Only the latest six exchanges are retained as model context. The UI displays
 the latest practical answer, or the updated recipe itself for a successful
-refinement. It keeps the current dish visible while loading, shows errors
+refinement, and keeps the exchanges before it in a collapsed “earlier
+questions” list, so advice stays readable while cooking. It keeps the
+current dish visible while loading, shows errors
 beside the shared input, and preserves the draft and prior context for retry.
-“New search” clears the conversation, recipe, draft, and photos immediately,
+A “Cancel” beside the progress timer stops a request in flight and keeps
+your draft and conversation. “New search” clears the conversation, recipe,
+draft, and photos immediately,
 and prevents any pending response from restoring them. Photos are available
 when starting a new search; their ingredients are included only in that
 initial request.
@@ -264,12 +269,16 @@ HTTP status. Failures after streaming begins end with
 `{"type":"error","status":502,"data":{"detail":"…"}}` instead of a result.
 Clients must wait for a terminal result before committing conversation state;
 an interrupted stream is a failed request. Disconnecting cancels pending
-work. Streaming uses the same single limit admission and usage event.
+work, which is what the page's Cancel button does. Streaming uses the same
+single limit admission and usage event.
 
 The input, “New search” control, errors, and progress share one card aligned
-with the recipe. The current step includes elapsed time and the latest two
-completed steps; slow steps get a gentle explanatory note. No timers invent
-progress or claim a percentage complete. Recommendation labels live inside
+with the recipe. Beside a simmering pan, the current step shows its label, a
+line in Simmer's voice that holds true while that step runs (“Spam and
+content farms get shown the door.” during judging), elapsed time, and the
+latest two completed steps. “Usually under a minute” opens every search, and
+nothing suggests giving up on a slow step. No timers invent progress or
+claim a percentage complete. Recommendation labels live inside
 the dish card, with spacing in place of decorative divider lines.
 
 ### `POST /ingredients/from-photo`

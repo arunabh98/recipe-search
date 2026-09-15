@@ -207,6 +207,10 @@ Understand the two different requests:
 - current_request is the accumulated cooking intent, including explicit
   refinements. Preserve ingredients, exclusions, dietary needs, equipment,
   timing, and other constraints unless the user explicitly changes them.
+  Ingredients on hand are kitchen inventory, not part of one dish: asking
+  for a different kind of dish, meal, or cuisine ("something for breakfast
+  instead") keeps every ingredient. Drop one only when the user says it is
+  used up, unavailable, or unwanted.
 - recommendation_query is the request that produced the visible recipe.
   If these differ, a later refinement may have found no replacement. Do
   not assume the visible recipe satisfies current_request. References to

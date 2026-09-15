@@ -124,9 +124,10 @@
     cursor: pointer; transition: color .2s, background .2s;
   }
   .new-search:hover { color: var(--accent-deep); background: var(--accent-soft); }
-  /* Only these two set an explicit display, so the UA [hidden] rule alone
-     would not hide them. */
-  .composer-meta[hidden], .askbar .photo-btn[hidden] { display: none; }
+  /* These set an explicit display, so the UA [hidden] rule alone would not
+     hide them. */
+  .composer-meta[hidden], .askbar .photo-btn[hidden],
+  .request-progress[hidden] { display: none; }
   .composer-message { margin: 0; font-size: 14px; }
   .request-error:not(:empty) { margin: 0 18px 16px; }
   .request-error { color: var(--accent-deep); }
@@ -291,18 +292,35 @@
   }
   .chip:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
 
-  /* Actual server progress lives in the same card as the request. */
-  .request-progress { margin: 0 10px 10px; padding: 12px 14px; border-radius: 14px; background: var(--bg); }
-  .progress-current { display: flex; align-items: center; gap: 9px; }
-  .progress-current::before {
-    content: ""; width: 7px; height: 7px; flex: none; border-radius: 50%;
-    background: var(--accent); animation: blink 1.4s ease-in-out infinite;
+  /* Actual server progress lives in the same card as the request, beside
+     the simmering pan. Each stage carries a line in Simmer's voice. */
+  .request-progress {
+    display: flex; align-items: flex-start; gap: 11px;
+    margin: 0 10px 10px; padding: 12px 14px; border-radius: 14px; background: var(--bg);
   }
-  .request-status { flex: 1; color: var(--ink); font-size: 13px; font-weight: 550; }
+  .request-progress .pan {
+    flex: none; font-size: 26px; line-height: 1;
+    animation: simmer 2.2s ease-in-out infinite;
+  }
+  @keyframes simmer {
+    0%, 100% { transform: rotate(-4deg) translateY(0); }
+    50% { transform: rotate(4deg) translateY(-4px); }
+  }
+  .progress-body { flex: 1; min-width: 0; }
+  .progress-current { display: flex; align-items: baseline; gap: 9px; }
+  .progress-text { flex: 1; min-width: 0; }
+  .request-status { color: var(--ink); font-size: 13px; font-weight: 550; }
+  .progress-note { margin-top: 3px; font-size: 13px; color: var(--ink-soft); font-style: italic; }
   .progress-elapsed { color: var(--ink-faint); font-size: 12px; font-variant-numeric: tabular-nums; }
-  .progress-history, .progress-hint { margin: 5px 0 0 16px; font-size: 12px; color: var(--ink-soft); }
-  .progress-history:empty, .progress-hint:empty { display: none; }
-  @keyframes blink { 50% { opacity: .3; } }
+  /* Stops this request only; the draft (and any conversation) stays. */
+  .progress-cancel {
+    border: 0; background: none; padding: 0; margin-left: 2px;
+    color: var(--ink-faint); font: inherit; font-size: 12px; cursor: pointer;
+    text-decoration: underline; text-underline-offset: 3px; transition: color .2s;
+  }
+  .progress-cancel:hover { color: var(--accent-deep); }
+  .progress-history { margin-top: 6px; font-size: 12px; color: var(--ink-faint); }
+  .progress-note:empty, .progress-history:empty { display: none; }
 
   /* ---------- result ---------- */
   .result { display: none; margin-top: 54px; }
@@ -376,12 +394,12 @@
   .alt .reason { margin-top: 4px; color: var(--ink-soft); font-size: 14.5px; }
 
   details.considered { margin-top: 40px; border-top: 1px dashed var(--line); padding-top: 18px; }
-  details.considered summary {
+  details.considered summary, .earlier-exchanges summary {
     cursor: pointer; color: var(--ink-faint); font-size: 14px;
     list-style: none; display: flex; align-items: center; gap: 8px;
   }
-  details.considered summary::before { content: "▸"; transition: transform .2s ease; }
-  details.considered[open] summary::before { transform: rotate(90deg); }
+  details.considered summary::before, .earlier-exchanges summary::before { content: "▸"; transition: transform .2s ease; }
+  details.considered[open] summary::before, .earlier-exchanges[open] summary::before { transform: rotate(90deg); }
   .cand-list { margin-top: 16px; display: grid; gap: 9px; }
   .cand {
     display: grid; grid-template-columns: 34px 92px 1fr; gap: 12px; align-items: baseline;
@@ -408,6 +426,12 @@
   .reply-text { margin-top: 7px; font-size: 16px; }
   .reply-question, .reply-text { white-space: pre-wrap; }
   .reply-panel:focus, .dish-card h2:focus { outline: none; }
+  /* Earlier exchanges stay reachable but collapsed, so the dish keeps the focus. */
+  .earlier-exchanges { margin-top: 14px; padding: 0 6px; }
+  .exchange { margin-top: 12px; padding: 8px 14px; border-left: 2px solid var(--line); }
+  .exchange-question { color: var(--ink-soft); font-size: 13px; font-weight: 600; }
+  .exchange-reply { margin-top: 4px; font-size: 14px; }
+  .exchange-question, .exchange-reply { white-space: pre-wrap; }
 
   footer { margin-top: 90px; text-align: center; font-size: 12.5px; color: var(--ink-faint); }
   footer .dot { margin: 0 8px; }
@@ -464,8 +488,8 @@
   <section class="composer" id="composer" aria-label="Ask Simmer">
     <div class="composer-shell">
       <div class="composer-meta" id="composerMeta" hidden>
-        <details class="request-context" id="requestContext" hidden>
-          <summary>Started with: <span id="originalRequest"></span></summary>
+        <details class="request-context" id="requestContext">
+          <summary>Your request: <span id="currentRequest"></span></summary>
         </details>
         <button type="button" class="new-search" id="newSearchBtn">New search</button>
       </div>
@@ -483,12 +507,18 @@
         <button type="submit" class="ask" id="askBtn">Find my dish</button>
       </form>
       <div class="request-progress" id="requestProgress" hidden>
-        <div class="progress-current">
-          <p class="request-status" id="requestStatus" role="status"></p>
-          <span class="progress-elapsed" id="progressElapsed" aria-hidden="true"></span>
+        <div class="pan" aria-hidden="true">🍲</div>
+        <div class="progress-body">
+          <div class="progress-current">
+            <div class="progress-text" role="status">
+              <p class="request-status" id="requestStatus"></p>
+              <p class="progress-note" id="progressNote"></p>
+            </div>
+            <span class="progress-elapsed" id="progressElapsed" aria-hidden="true"></span>
+            <button type="button" class="progress-cancel" id="cancelBtn">Cancel</button>
+          </div>
+          <p class="progress-history" id="progressHistory"></p>
         </div>
-        <p class="progress-history" id="progressHistory"></p>
-        <p class="progress-hint" id="progressHint"></p>
       </div>
       <p class="composer-message request-error" id="requestError" role="alert"></p>
     </div>
@@ -540,6 +570,11 @@
     <p class="reply-text" id="replyText"></p>
   </section>
 
+  <details class="earlier-exchanges" id="earlierExchanges" hidden>
+    <summary id="earlierSummary"></summary>
+    <div id="exchangeList"></div>
+  </details>
+
   <section class="result" id="result"></section>
 
   <footer>
@@ -556,13 +591,16 @@
   var composer = document.getElementById("composer");
   var composerMeta = document.getElementById("composerMeta");
   var requestContext = document.getElementById("requestContext");
-  var originalRequest = document.getElementById("originalRequest");
+  var currentRequest = document.getElementById("currentRequest");
   var searchExtras = document.getElementById("searchExtras");
   var requestStatus = document.getElementById("requestStatus");
   var requestError = document.getElementById("requestError");
   var replyPanel = document.getElementById("replyPanel");
   var replyQuestion = document.getElementById("replyQuestion");
   var replyText = document.getElementById("replyText");
+  var earlierExchanges = document.getElementById("earlierExchanges");
+  var earlierSummary = document.getElementById("earlierSummary");
+  var exchangeList = document.getElementById("exchangeList");
   var input = document.getElementById("queryInput");
   var btn = document.getElementById("askBtn");
   var chips = document.getElementById("chips");
@@ -582,15 +620,15 @@
   var photoRemove = document.getElementById("photoRemove");
   var requestProgress = document.getElementById("requestProgress");
   var progressElapsed = document.getElementById("progressElapsed");
+  var cancelBtn = document.getElementById("cancelBtn");
   var progressHistory = document.getElementById("progressHistory");
-  var progressHint = document.getElementById("progressHint");
+  var progressNote = document.getElementById("progressNote");
   var result = document.getElementById("result");
   var hero = document.getElementById("hero");
 
   var progressTimer = null;
   var completedStages = [];
   var currentStage = null;
-  var stageStarted = 0;
   var actionsBusy = false;
   var conversation = null;       // browser-memory only; New search resets it
   var activeRecipeController = null;  // a recipe request in flight; photo reads have their own
@@ -603,16 +641,19 @@
 
   var MAX_QUERY_CHARS = 500;
   var MAX_PHOTOS = 5;             // mirrors the API's per-request photo cap
+  var CANCELLED = "cancelled";    // abort reason for a user cancel, as opposed to the timeout
   var DEFAULT_PLACEHOLDER = input.placeholder;
   var FOLLOWUP_PLACEHOLDER = "Ask a question or change your request…";
 
+  // Each stage the server reports: its label, a line in Simmer's voice that
+  // holds true while that stage runs, and how it reads once done.
   var PROGRESS_STAGES = {
-    understanding: ["Reading your question in context", "Request understood"],
-    planning: ["Planning a search around your ingredients", "Search planned"],
-    searching: ["Searching recipe sites", "Search complete"],
-    evaluating: ["Checking recipes against your preferences", "Results checked"],
-    retrying: ["Looking for a better match", "Search adjusted"],
-    recommending: ["Putting your recommendation together", "Recommendation ready"]
+    understanding: ["Reading your question", "With tonight's dish and your earlier messages in mind.", "Question understood"],
+    planning: ["Planning where to look", "Good decisions take a moment. Usually under a minute.", "Search planned"],
+    searching: ["Searching trusted recipe sites", "Pulling real excerpts from each page, not just titles.", "Sites searched"],
+    evaluating: ["Judging every candidate: ingredients, timing, trust", "Spam and content farms get shown the door.", "Candidates judged"],
+    retrying: ["Trying a different angle", "Nothing good enough yet. Replanning with what the first pass learned.", "Search replanned"],
+    recommending: ["Writing your recommendation", "Almost there, matching everything to your exact words.", "Recommendation written"]
   };
 
   // ------- helpers -------
@@ -637,14 +678,34 @@
     btn.textContent = conversation ? "Ask" : "Find my dish";
     photoBtn.disabled = actionsBusy;
     input.readOnly = activeRecipeController !== null;
-    composerMeta.hidden = !conversation && activeRecipeController === null;
   }
 
-  function syncComposer() {
+  // Every exchange before the latest one, whose answer is already on screen
+  // (in the reply panel, or as the recipe it produced). The list is exactly
+  // what the model still remembers.
+  function renderEarlierExchanges() {
+    var earlier = conversation ? conversation.exchanges.slice(0, -1) : [];
+    exchangeList.innerHTML = "";
+    earlier.forEach(function (exchange) {
+      var item = el("div", "exchange");
+      item.appendChild(el("p", "exchange-question", exchange.message));
+      item.appendChild(el("p", "exchange-reply", exchange.reply));
+      exchangeList.appendChild(item);
+    });
+    earlierSummary.textContent = earlier.length + " earlier " + (earlier.length === 1 ? "question" : "questions");
+    earlierExchanges.open = false;
+    earlierExchanges.hidden = earlier.length === 0;
+  }
+
+  // Reflect the conversation state onto the composer and the panels around it.
+  function syncConversation() {
     page.classList.toggle("has-conversation", !!conversation);
     searchExtras.hidden = !!conversation;
     photoBtn.hidden = !!conversation;
-    requestContext.hidden = !conversation;
+    composerMeta.hidden = !conversation;
+    // The cumulative request as the server now understands it, not the first message.
+    currentRequest.textContent = conversation ? conversation.current_request : "";
+    renderEarlierExchanges();
     input.placeholder = conversation ? FOLLOWUP_PLACEHOLDER : DEFAULT_PLACEHOLDER;
     input.setAttribute("aria-label", conversation ? "Ask a question or change your request" : "What do you want to cook?");
     autoGrow();
@@ -696,12 +757,11 @@
 
   function updateProgress(stage) {
     if (!PROGRESS_STAGES[stage] || stage === currentStage) return;
-    if (currentStage) completedStages.push(PROGRESS_STAGES[currentStage][1]);
+    if (currentStage) completedStages.push(PROGRESS_STAGES[currentStage][2]);
     currentStage = stage;
-    stageStarted = Date.now();
     requestStatus.textContent = PROGRESS_STAGES[stage][0];
+    progressNote.textContent = PROGRESS_STAGES[stage][1];
     progressHistory.textContent = completedStages.slice(-2).map(function (label) { return "✓ " + label; }).join(" · ");
-    progressHint.textContent = "";
   }
 
   function startLoading() {
@@ -711,17 +771,14 @@
     }
     completedStages = [];
     currentStage = null;
+    progressNote.textContent = "";
     progressHistory.textContent = "";
-    progressHint.textContent = "";
     requestStatus.textContent = "Connecting to the kitchen…";
     requestProgress.hidden = false;
-    var started = stageStarted = Date.now();
+    var started = Date.now();
     progressElapsed.textContent = "0s";
     progressTimer = setInterval(function () {
       progressElapsed.textContent = Math.floor((Date.now() - started) / 1000) + "s";
-      if (Date.now() - stageStarted > 20000) {
-        progressHint.textContent = "This step is taking a little longer. You can start a new search anytime.";
-      }
     }, 1000);
   }
 
@@ -902,15 +959,23 @@
     requestStatus.textContent = "";
     requestError.textContent = "";
     replyPanel.hidden = true;
-    originalRequest.textContent = "";
     requestContext.open = false;
     result.className = "result";
     result.innerHTML = "";
     input.value = "";
     setActionsDisabled(false);
-    syncComposer();
+    syncConversation();
     input.focus({ preventScroll: true });
     window.scrollTo({ top: 0 });
+  }
+
+  // Unlike New search, this keeps the draft and the conversation: the request
+  // aborts, submitCurrentAsk's catch recognizes the reason as a user cancel
+  // rather than an error, and its finally restores the composer.
+  function cancelRecipeRequest() {
+    if (!activeRecipeController) return;
+    activeRecipeController.abort(CANCELLED);
+    input.focus({ preventScroll: true });
   }
 
   // ------- one composer, two request types -------
@@ -955,7 +1020,6 @@
         recommendation: replacement,
         exchanges: []
       };
-      originalRequest.textContent = message;
       clearPhotoState();
     }
 
@@ -970,7 +1034,7 @@
       updateRecommendationLabel();
     }
     if (conversation) input.value = "";
-    syncComposer();
+    syncConversation();
     return replacement ? result : replyPanel;
   }
 
@@ -1018,7 +1082,7 @@
       }
       responseTarget = acceptResponse(parsed.body, message, isFollowup);
     } catch (error) {
-      if (run !== recipeRun) return;
+      if (run !== recipeRun || controller.signal.reason === CANCELLED) return;
       requestError.textContent = error.name === "AbortError"
         ? "That took too long. Your request is kept here so you can try again."
         : "I couldn't reach the kitchen. Your request is kept here so you can try again.";
@@ -1567,6 +1631,7 @@
     if (e.metaKey || e.ctrlKey || enterSubmits()) { e.preventDefault(); submitCurrentAsk(); }
   });
   document.getElementById("newSearchBtn").addEventListener("click", startNewSearch);
+  cancelBtn.addEventListener("click", cancelRecipeRequest);
 
   form.addEventListener("submit", function (e) { e.preventDefault(); submitCurrentAsk(); });
   chips.addEventListener("click", function (e) {
@@ -1579,7 +1644,7 @@
   // A reload can hand back a query the browser kept, before any event has
   // fired to size the box around it.
   new ResizeObserver(updateComposerOffset).observe(composer);
-  syncComposer();
+  syncConversation();
 })();
 </script>
 </body>

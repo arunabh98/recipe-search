@@ -536,6 +536,10 @@ Understand the two different requests:
 - current_request is the accumulated cooking intent, including explicit
   refinements. Preserve ingredients, exclusions, dietary needs, equipment,
   timing, and other constraints unless the user explicitly changes them.
+  Ingredients on hand are kitchen inventory, not part of one dish: asking
+  for a different kind of dish, meal, or cuisine ("something for breakfast
+  instead") keeps every ingredient. Drop one only when the user says it is
+  used up, unavailable, or unwanted.
 - recommendation_query is the request that produced the visible recipe.
   If these differ, a later refinement may have found no replacement. Do
   not assume the visible recipe satisfies current_request. References to
@@ -1198,10 +1202,13 @@ run its cleanup. Nothing is saved as a partial conversation turn.
 network chunks, falls back to JSON for normal errors or older servers, and
 rejects streams that end without a terminal event. The request generation
 guard applies to both progress and results. The frontend keeps the recipe
-and latest answer visible, with the current stage, elapsed timer, and last
+and latest answer visible, with the simmering pan, the current stage, a
+one-line note in Simmer's voice chosen to be true during that stage
+(“Usually under a minute” opens every search; “Almost there” appears only
+once the recommendation is being written), the elapsed timer, and the last
 two completed stages inside the composer. The timer only measures time;
-it never advances stages. After 20 seconds in one stage, a short note
-acknowledges the longer wait. Request errors use one inline alert and
+it never advances stages, and nothing nags about slow steps. Request errors
+use one inline alert and
 preserve the draft and committed context. An initial search with no matches
 shows a brief reply below the input and retains its query for revision.
 
@@ -1210,10 +1217,11 @@ steps aside and the original composer becomes sticky at the top of the
 page. Its unified card contains the input, reset control, progress, and errors,
 with the same outer edges as the recipe cards. No horizontal separator divides
 input and result, and the recommendation label sits inside the dish card.
-A compact, expandable “Started with” line preserves the original
-request; the placeholder becomes “Ask a question or change your request…”
-and the submit label becomes “Ask”. There is no second input or bottom
-conversation transcript. On mobile the follow-up input and submit button
+A compact, expandable “Your request” line shows the cumulative request
+as the server currently understands it (`current_request`), refreshed on
+every turn; the placeholder becomes “Ask a question or change your
+request…” and the submit label becomes “Ask”. There is no second input or
+chat-style transcript. On mobile the follow-up input and submit button
 share a compact row to leave room for the dish.
 
 A practical answer appears as a plain-text question and reply directly
@@ -1221,9 +1229,12 @@ beneath the composer, above the retained recipe. A successful refinement
 hides the previous answer and replaces the recipe cards; the recommendation
 itself is the response, so its headline is not repeated in a separate
 message. A search with no replacement shows its explanation in the reply
-panel and labels the retained dish “Earlier recommendation”. Recent
-exchanges still travel in the bounded API context even though the UI shows
-only the latest answer. Each successful response scrolls to the relevant
+panel and labels the retained dish “Earlier recommendation”. Every exchange
+before the latest one is listed, collapsed, between the reply panel and the
+recipe (“N earlier questions”); the latest is excluded because its answer is
+already on screen, as the reply or as the recipe it produced. The list is
+built from the same bounded context the API receives, so it shows exactly
+what the model still remembers. Each successful response scrolls to the relevant
 panel and focuses it or the recipe heading. A `ResizeObserver` measures
 the actual sticky composer height for scroll clearance, including wrapped
 input, expanded original requests, and error text. Reduced-motion settings
@@ -1237,8 +1248,12 @@ are never interpreted as markup. The single textarea keeps the existing
 keyboard conventions: desktop Enter or Cmd/Ctrl+Enter submits,
 Shift+Enter adds a newline, and IME composition never submits.
 
-**New search is a secondary reset action.** It sits beside the original
-request and is also available during an initial recipe request. It clears
+**Cancel and New search are different actions.** A small Cancel beside the
+elapsed timer aborts the request in flight with a distinct abort reason,
+so the page treats it as a cancel rather than a timeout: no error is shown,
+and the draft and any conversation stay. New search sits beside the current
+request only once a conversation exists (the row is hidden during a first
+search). It clears
 the conversation, draft, recipe, latest reply, and photo state immediately,
 aborts pending work, and increments the request generation so late
 responses cannot restore old content. The next submission starts a fresh
