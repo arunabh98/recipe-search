@@ -8,7 +8,7 @@ the answer comes back as a source-linked cooking plan — or an honest
 request while keeping the current recommendation in view. This is the
 module-by-module account of the routes, prompts, failures, and test seams.
 
-> **Accurate as of commit `7989cce` (2026-09-12).** This file describes
+> **Accurate as of commit `bb01340` (2026-09-14).** This file describes
 > behavior. When a change alters behavior, update the matching section in
 > the same change — a stale line-by-line account is worse than none.
 
