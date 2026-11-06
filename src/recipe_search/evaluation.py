@@ -44,10 +44,13 @@ logger = logging.getLogger(__name__)
 # highlights run ~2.5-3k chars, so this never truncates normal results.
 _MAX_SNIPPET_CHARS = 10_000
 _MAX_OUTPUT_TOKENS = 16_000
-_PLANNER_MAX_TOKENS = 1000
 _RECOMMENDER_MAX_TOKENS = 8_000
-_PHOTO_MAX_TOKENS = 1000
-_FOLLOW_UP_MAX_TOKENS = 3000
+# The low-effort calls leave `thinking` unset, and Claude Opus 5 and later
+# then think adaptively. Thinking counts toward max_tokens, so each of these
+# budgets is the reply's budget plus about 3,000 tokens of thinking room.
+_PLANNER_MAX_TOKENS = 4_000
+_PHOTO_MAX_TOKENS = 4_000
+_FOLLOW_UP_MAX_TOKENS = 6_000
 _MAX_FOLLOW_UP_CONTEXT_BYTES = 32_768
 _MAX_PLANNED_QUERIES = 3
 _MAX_PRIMARY_SOURCES = 2
@@ -395,7 +398,7 @@ class EvaluationError(Exception):
 
 
 class EvaluationAuthError(EvaluationError):
-    """Anthropic rejected our credentials — a server configuration problem."""
+    """Anthropic credentials are missing or unusable — a server config problem."""
 
 
 class EvaluationRateLimitError(EvaluationError):
@@ -417,7 +420,7 @@ class RecipeEvaluator:
         self,
         *,
         api_key: str | None = None,
-        model: str = "claude-opus-4-8",
+        model: str = "claude-opus-5-5",
         effort: str = "medium",
         timeout_seconds: float = 120.0,
         client: anthropic.AsyncAnthropic | None = None,
@@ -433,6 +436,13 @@ class RecipeEvaluator:
                 timeout=timeout_seconds,
                 max_retries=1,
             )
+            # The SDK only notices a missing credential on the first request,
+            # as a bare TypeError. Fail here so callers can report it clearly.
+            if not (client.api_key or client.auth_token or client.credentials):
+                raise EvaluationAuthError(
+                    "No Anthropic credential found "
+                    "(set ANTHROPIC_API_KEY or run `ant auth login`)"
+                )
         self._client = client
 
     async def aclose(self) -> None:
@@ -612,6 +622,13 @@ class RecipeEvaluator:
         except anthropic.PermissionDeniedError as exc:
             raise EvaluationAuthError(
                 "Anthropic API key lacks permission for this model"
+            ) from exc
+        except (anthropic.CredentialsError, anthropic.WorkloadIdentityError) as exc:
+            # An `ant auth` profile or federation token that can't be loaded or
+            # refreshed. The reason reaches the server log; clients get a fixed
+            # message.
+            raise EvaluationAuthError(
+                f"Anthropic credential could not be used: {exc}"
             ) from exc
         except anthropic.RateLimitError as exc:
             raise EvaluationRateLimitError("Anthropic rate limit exceeded") from exc

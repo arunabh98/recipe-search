@@ -8,10 +8,10 @@ and the user-facing recommendation, with mechanical guardrail checks
 prose, primary/alternative hygiene).
 
 Usage:
-    uv run python scripts/eval_recipes.py           # all queries (~15 min)
+    uv run python scripts/eval_recipes.py           # all queries (~10 min)
     uv run python scripts/eval_recipes.py 1 2 3     # a subset, 1-based
 
-Each query costs roughly $0.15-0.30 in Claude + Exa usage.
+Each query costs roughly $0.15-0.19 in Claude + Exa usage (claude-opus-5-5).
 """
 
 import asyncio
@@ -54,7 +54,7 @@ QUERIES = [
     "Kimchi, leftover rice, and eggs. Something fast",
     "Chicken thighs and a jar of peanut butter?",
     "Two brown bananas and a bag of oats. Something sweet?",
-    "Broccoli, some cashews, and a bunch of mint. Some Indian dish?",
+    "Broccoli, some cashews, and a bunch of mint. Some Indian starter?",
 ]
 
 REVIEW_CHECKLIST = """\

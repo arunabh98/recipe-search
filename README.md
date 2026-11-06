@@ -101,7 +101,7 @@ candidates** via an adaptive pipeline (`src/recipe_search/pipeline.py`):
    enforces them).
 2. **Search** — query variants run concurrently; results are interleaved,
    deduped by URL, capped at 12.
-3. **Evaluate** — one Claude call (default `claude-opus-4-8`) judges every
+3. **Evaluate** — one Claude call (default `claude-opus-5-5`) judges every
    result against the user's *original* words — usable recipe page or not,
    dish, ingredient overlap, every stated constraint, spam signals — and
    ranks them.
@@ -143,15 +143,16 @@ or unusable pages stay in the list as `ignore` so
 you can see *why* they were rejected. Titles/URLs/sources always come from the
 search results — the model only returns judgments keyed by result index.
 
-Latency is dominated by the Claude calls (typically 25–60s with the default
-model; up to ~2× when the retry fires). Cost is roughly $0.10–0.25 per
-request on `claude-opus-4-8`; set
-`EVALUATION_MODEL=claude-sonnet-5` in `.env` for a ~2× cheaper drop-in.
+Latency is dominated by the Claude calls (typically 20–30s; up to ~2× when
+the retry fires). Cost is roughly $0.13–0.16 per request. Both figures were
+measured on `claude-opus-5-5`. Set `EVALUATION_MODEL=claude-sonnet-5-5` in
+`.env` for a drop-in at half the per-token price.
 Evaluation errors use the same `{"detail": ...}` shape: `500` bad/missing
 Anthropic key, `429` Anthropic rate limit, `504` evaluation timeout
 (`EVALUATION_TIMEOUT_SECONDS`, default 120), `502` other failures. If no
 Anthropic credential is configured at all, `/search` keeps working and this
-endpoint returns `500` with a clear message.
+endpoint, like every route that needs Claude, returns `500` with a clear
+message.
 
 ### `POST /recipes/recommend`
 
@@ -169,7 +170,8 @@ candidates are never offered as sources, and the text points at the
 original pages rather than retelling their steps. If nothing usable was
 found, `recommendation` is `null` and the honest candidate list is still
 returned. Response shape: `{"recommendation": {...} | null, "candidates":
-[...]}`. Expect ~40–60s and ~$0.15–0.30 per request on the default model.
+[...]}`. Expect ~25–40s and ~$0.15–0.19 per request (measured on
+`claude-opus-5-5`).
 
 ### `POST /recipes/follow-up`
 
@@ -372,9 +374,9 @@ Covers every endpoint's request/response behavior (including demo limits,
 contextual follow-ups, off-topic refusals, photo-ingredient identification,
 and `/stats` auth),
 Exa request shape, normalization, and error mapping, Claude
-structured-output parsing and merging, pipeline retry and fallback
-behavior, and usage recording — all against in-process fakes, no network
-required.
+structured-output parsing and merging (including through the real Anthropic
+SDK over a mock transport), pipeline retry and fallback behavior, and usage
+recording — all against in-process fakes, no network required.
 
 Follow-up tests cover direct answers without retrieval, replacement and
 no-match searches, bounded context, retained preferences and earlier
@@ -439,7 +441,7 @@ nonexistent to probes. Raw IPs are never stored anywhere.
 ## Recommendation eval
 
 ```bash
-uv run python scripts/eval_recipes.py        # 18 queries, ~15 min, ~$3–5
+uv run python scripts/eval_recipes.py        # 18 queries, ~10 min, ~$3
 uv run python scripts/eval_recipes.py 1 2 3  # subset (1-based)
 ```
 

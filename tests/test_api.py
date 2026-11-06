@@ -593,27 +593,103 @@ def test_demo_budget_exhaustion(client, fake_exa):
     assert second.json()["code"] == "budget"
 
 
+NOT_CONFIGURED = {
+    "detail": "Recipe evaluation is not configured (set ANTHROPIC_API_KEY)."
+}
+
+
+@pytest.fixture
+def client_without_credential(
+    fake_exa, no_anthropic_credentials, monkeypatch, tmp_path
+):
+    """The real startup path, with no Anthropic credential anywhere."""
+    monkeypatch.setenv("EXA_API_KEY", "test-key")
+    monkeypatch.chdir(tmp_path)  # Settings reads .env from the working directory
+    app.dependency_overrides[get_search_client] = lambda: fake_exa
+    try:
+        with TestClient(app) as test_client:
+            yield test_client
+    finally:
+        app.dependency_overrides.clear()
+
+
 @pytest.mark.parametrize(
     ("path", "body"),
     [
         ("/recipes/search", {"query": "quick dinner"}),
+        ("/recipes/recommend", {"query": "quick dinner"}),
         ("/ingredients/from-photo", {"images": [{"image_base64": PHOTO_B64}]}),
     ],
 )
-def test_evaluation_endpoints_without_configured_evaluator(
-    fake_exa, monkeypatch, path, body
+def test_evaluation_endpoints_without_a_credential(
+    client_without_credential, path, body
+):
+    response = client_without_credential.post(path, json=body)
+
+    assert response.status_code == 500
+    assert response.json() == NOT_CONFIGURED
+
+
+def test_follow_up_without_a_credential(client_without_credential, follow_up_body):
+    response = client_without_credential.post("/recipes/follow-up", json=follow_up_body)
+
+    assert response.status_code == 500
+    assert response.json() == NOT_CONFIGURED
+
+
+def test_streaming_request_without_a_credential_gets_plain_json(
+    client_without_credential,
+):
+    response = client_without_credential.post(
+        "/recipes/recommend",
+        json={"query": "quick dinner"},
+        headers={"Accept": "application/x-ndjson"},
+    )
+
+    assert response.status_code == 500
+    assert response.json() == NOT_CONFIGURED
+
+
+def test_search_keeps_working_without_a_credential(client_without_credential):
+    assert app.state.evaluator is None
+    assert client_without_credential.get("/healthz").status_code == 200
+    response = client_without_credential.post("/search", json={"query": "eggs"})
+    assert response.status_code == 200
+
+
+@pytest.mark.parametrize(
+    ("profile", "reason"),
+    [(None, "set ANTHROPIC_API_KEY"), ("missing", "Config file not found")],
+)
+def test_startup_logs_why_evaluation_is_disabled(
+    no_anthropic_credentials, monkeypatch, tmp_path, caplog, profile, reason
 ):
     monkeypatch.setenv("EXA_API_KEY", "test-key")
-    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
-    app.dependency_overrides[get_search_client] = lambda: fake_exa
-    try:
-        with TestClient(app) as test_client:
-            app.state.evaluator = None
-            response = test_client.post(path, json=body)
-    finally:
-        app.dependency_overrides.clear()
-    assert response.status_code == 500
-    assert "not configured" in response.json()["detail"]
+    monkeypatch.chdir(tmp_path)  # Settings reads .env from the working directory
+    if profile:
+        monkeypatch.setenv("ANTHROPIC_PROFILE", profile)
+
+    with caplog.at_level("WARNING", logger="recipe_search.main"), TestClient(app):
+        assert app.state.evaluator is None
+
+    assert "Recipe evaluation disabled" in caplog.text
+    assert reason in caplog.text
+
+
+@pytest.mark.parametrize("headers", [{}, {"Accept": "application/x-ndjson"}])
+def test_auth_error_reason_is_logged_but_not_returned(
+    client, fake_evaluator, follow_up_body, caplog, headers
+):
+    fake_evaluator.error = EvaluationAuthError("Credentials file at /home/me/creds")
+
+    with caplog.at_level("ERROR", logger="recipe_search.main"):
+        response = client.post(
+            "/recipes/follow-up", json=follow_up_body, headers=headers
+        )
+
+    assert "Recipe evaluation is misconfigured." in response.text
+    assert "/home/me/creds" not in response.text
+    assert "/home/me/creds" in caplog.text
 
 
 # --- usage recording -------------------------------------------------------

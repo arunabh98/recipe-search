@@ -1,10 +1,11 @@
-"""Unit tests for the recipe-candidate evaluator, with the Anthropic client faked."""
+"""Unit tests for the recipe-candidate evaluator, using a fake Anthropic client or
+the real SDK over a mock transport. Nothing here touches the network."""
 
 import json
 from types import SimpleNamespace
 
 import anthropic
-import httpx
+import httpx2
 import pytest
 from pydantic import ValidationError
 
@@ -130,7 +131,7 @@ async def test_evaluate_sends_query_and_indexed_results(evaluator, fake_anthropi
     await evaluator.evaluate("  something quick  ", results)
 
     call = fake_anthropic.calls[0]
-    assert call["model"] == "claude-opus-4-8"
+    assert call["model"] == "claude-opus-5-5"
     assert call["thinking"] == {"type": "adaptive"}
     assert call["output_config"] == {"effort": "medium"}
     assert call["output_format"] is _EvaluationOutput
@@ -246,7 +247,7 @@ async def test_plan_searches_cleans_and_caps_queries(evaluator, fake_anthropic):
     assert call["output_format"] is SearchPlan
     assert call["system"] is _PLANNER_PROMPT
     assert call["output_config"] == {"effort": "low"}
-    assert "thinking" not in call  # planner runs without thinking for speed
+    assert "thinking" not in call  # omitted: low effort keeps this call quick
     assert 'User request: "find dinner"' in call["messages"][0]["content"]
     assert "Feedback" not in call["messages"][0]["content"]
 
@@ -283,8 +284,8 @@ async def test_plan_searches_rejects_empty_plan(evaluator, fake_anthropic):
 
 
 async def test_plan_searches_maps_errors_via_shared_path(evaluator, fake_anthropic):
-    response = httpx.Response(
-        429, request=httpx.Request("POST", "https://api.anthropic.com")
+    response = httpx2.Response(
+        429, request=httpx2.Request("POST", "https://api.anthropic.com")
     )
     fake_anthropic.error = anthropic.RateLimitError("slow", response=response, body=None)
     with pytest.raises(EvaluationRateLimitError):
@@ -468,11 +469,11 @@ async def test_follow_up_sends_bounded_context_without_source_urls(
 
     assert len(fake_anthropic.calls) == 1
     call = fake_anthropic.calls[0]
-    assert call["model"] == "claude-opus-4-8"
+    assert call["model"] == "claude-opus-5-5"
     assert call["output_format"] is FollowUpDecision
     assert call["system"] is _FOLLOW_UP_PROMPT
     assert call["output_config"] == {"effort": "low"}
-    assert call["max_tokens"] == 3000
+    assert call["max_tokens"] == 6000
     assert "thinking" not in call
     assert [message["role"] for message in call["messages"]] == ["user"]
     prompt = call["messages"][0]["content"]
@@ -652,8 +653,8 @@ async def test_follow_up_invalid_structured_output_maps_to_evaluation_error(
 
 
 async def test_follow_up_maps_provider_error_via_shared_path(evaluator, fake_anthropic):
-    response = httpx.Response(
-        429, request=httpx.Request("POST", "https://api.anthropic.com")
+    response = httpx2.Response(
+        429, request=httpx2.Request("POST", "https://api.anthropic.com")
     )
     fake_anthropic.error = anthropic.RateLimitError("slow", response=response, body=None)
     with pytest.raises(EvaluationRateLimitError):
@@ -753,8 +754,8 @@ async def test_identify_ingredients_empty_image_raises(evaluator):
 
 
 def _status_error(cls, status: int):
-    response = httpx.Response(
-        status, request=httpx.Request("POST", "https://api.anthropic.com")
+    response = httpx2.Response(
+        status, request=httpx2.Request("POST", "https://api.anthropic.com")
     )
     return cls("boom", response=response, body=None)
 
@@ -768,13 +769,13 @@ def _status_error(cls, status: int):
         (_status_error(anthropic.InternalServerError, 500), EvaluationAPIError),
         (
             anthropic.APITimeoutError(
-                request=httpx.Request("POST", "https://api.anthropic.com")
+                request=httpx2.Request("POST", "https://api.anthropic.com")
             ),
             EvaluationTimeoutError,
         ),
         (
             anthropic.APIConnectionError(
-                request=httpx.Request("POST", "https://api.anthropic.com")
+                request=httpx2.Request("POST", "https://api.anthropic.com")
             ),
             EvaluationAPIError,
         ),
@@ -802,3 +803,322 @@ async def test_missing_parsed_output_raises(evaluator, fake_anthropic):
     )
     with pytest.raises(EvaluationAPIError):
         await evaluator.evaluate("eggs", [make_result(0)])
+
+
+# --- credentials ------------------------------------------------------------
+
+
+async def test_evaluator_without_a_credential_fails_at_construction(
+    no_anthropic_credentials,
+):
+    with pytest.raises(EvaluationAuthError, match="ANTHROPIC_API_KEY"):
+        RecipeEvaluator()
+
+
+async def test_evaluator_treats_a_blank_key_as_missing(
+    no_anthropic_credentials, monkeypatch
+):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "")
+    with pytest.raises(EvaluationAuthError):
+        RecipeEvaluator()
+
+
+@pytest.mark.parametrize("source", ["argument", "env_key", "env_token", "profile"])
+async def test_evaluator_accepts_each_credential_source(
+    no_anthropic_credentials, monkeypatch, tmp_path, source
+):
+    kwargs = {}
+    if source == "argument":
+        kwargs["api_key"] = "sk-test"
+    elif source == "env_key":
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test")
+    elif source == "env_token":
+        monkeypatch.setenv("ANTHROPIC_AUTH_TOKEN", "token")
+    else:  # what `ant auth login` leaves on disk
+        configs = tmp_path / ".config" / "anthropic" / "configs"
+        configs.mkdir(parents=True)
+        (configs / "default.json").write_text(
+            json.dumps({"authentication": {"type": "user_oauth"}})
+        )
+
+    evaluator = RecipeEvaluator(**kwargs)
+
+    await evaluator.aclose()
+
+
+async def test_evaluator_builds_its_client_with_one_retry_and_the_timeout():
+    evaluator = RecipeEvaluator(api_key="sk-test", timeout_seconds=42.0)
+
+    assert evaluator._client.max_retries == 1
+    assert evaluator._client.timeout == 42.0
+
+    await evaluator.aclose()
+
+
+# --- the real Anthropic SDK -------------------------------------------------
+# FakeAnthropicClient accepts any keyword, so it can't notice an SDK change.
+# These run the SDK's real signature, schema conversion, response parsing, and
+# status mapping. The mock transport keeps every request in this process.
+
+THINKING_BLOCK = {"type": "thinking", "thinking": "", "signature": "sig"}
+CUT_OFF_TEXT = {"type": "text", "text": '{"on_topic": tr'}
+
+SDK_CALLS = {
+    "plan_searches": {
+        "call": lambda evaluator: evaluator.plan_searches("eggs"),
+        "reply": {"on_topic": True, "queries": ["q one"]},
+        "max_tokens": 4_000,
+        "effort": "low",
+        "thinking": None,
+        "check": lambda result: result.queries == ["q one"],
+    },
+    "evaluate": {
+        "call": lambda evaluator: evaluator.evaluate("eggs", [make_result(0)]),
+        "reply": {"evaluations": [make_evaluation(0).model_dump()]},
+        "max_tokens": 16_000,
+        "effort": "medium",
+        "thinking": {"type": "adaptive"},
+        "check": lambda result: result[0].url == "https://example0.com/recipe",
+    },
+    "recommend": {
+        "call": lambda evaluator: evaluator.recommend("eggs", [make_candidate(0)]),
+        "reply": make_recommendation_output().model_dump(),
+        "max_tokens": 8_000,
+        "effort": "medium",
+        "thinking": {"type": "adaptive"},
+        "check": lambda result: (
+            result.primary_sources[0].url == "https://example0.com/recipe"
+        ),
+    },
+    "follow_up": {
+        "call": lambda evaluator: evaluator.follow_up(
+            "Can I skip the cheese?", make_follow_up_context()
+        ),
+        "reply": {
+            "on_topic": True,
+            "action": "answer",
+            "current_request": "Dinner with eggs.",
+            "reply": "You can skip it.",
+        },
+        "max_tokens": 6_000,
+        "effort": "low",
+        "thinking": None,
+        "check": lambda result: result.reply == "You can skip it.",
+    },
+    "identify_ingredients": {
+        "call": lambda evaluator: evaluator.identify_ingredients(
+            [(PHOTO_B64, "image/png")]
+        ),
+        "reply": {"food_visible": True, "ingredients": ["eggs"]},
+        "max_tokens": 4_000,
+        "effort": "low",
+        "thinking": None,
+        "check": lambda result: result.ingredients == ["eggs"],
+    },
+}
+
+
+def sdk_message(content, *, stop_reason="end_turn", model="claude-opus-5-5"):
+    return {
+        "id": "msg_test",
+        "type": "message",
+        "role": "assistant",
+        "model": model,
+        "content": content,
+        "stop_reason": stop_reason,
+        "stop_sequence": None,
+        "usage": {"input_tokens": 10, "output_tokens": 10},
+    }
+
+
+def sdk_client(handler, **credential):
+    return anthropic.AsyncAnthropic(
+        max_retries=0,
+        timeout=5.0,
+        http_client=httpx2.AsyncClient(transport=httpx2.MockTransport(handler)),
+        **(credential or {"api_key": "sk-test"}),
+    )
+
+
+@pytest.fixture
+async def sdk_evaluator(no_anthropic_credentials):
+    evaluators = []
+
+    def build(handler):
+        evaluators.append(RecipeEvaluator(client=sdk_client(handler)))
+        return evaluators[-1]
+
+    yield build
+    for evaluator in evaluators:
+        await evaluator.aclose()
+
+
+@pytest.mark.parametrize("name", SDK_CALLS)
+async def test_real_sdk_sends_and_parses_every_call(sdk_evaluator, name):
+    case = SDK_CALLS[name]
+    requests = []
+
+    def handler(request):
+        requests.append(request)
+        reply = {"type": "text", "text": json.dumps(case["reply"])}
+        return httpx2.Response(200, json=sdk_message([THINKING_BLOCK, reply]))
+
+    result = await case["call"](sdk_evaluator(handler))
+
+    assert case["check"](result)
+    assert len(requests) == 1
+    request = requests[0]
+    assert request.url.path == "/v1/messages"
+    assert request.url.query == b""  # the standard API, not ?beta=true
+    assert "anthropic-beta" not in request.headers
+    assert "sk-test" in request.headers["authorization"]
+    body = json.loads(request.content)
+    assert body["model"] == "claude-opus-5-5"
+    assert "fallbacks" not in body  # deliberate: see ARCHITECTURE.md §6
+    assert body["max_tokens"] == case["max_tokens"]
+    assert body["output_config"]["effort"] == case["effort"]
+    assert body["output_config"]["format"]["type"] == "json_schema"
+    assert body.get("thinking") == case["thinking"]
+    assert "output_format" not in body
+    # API version 2026-10-21 rejects sampling parameters on every model.
+    assert not {"temperature", "top_p", "top_k"} & body.keys()
+
+
+@pytest.mark.parametrize(
+    ("content", "stop_reason", "message"),
+    [
+        ([], "refusal", "stop_reason=refusal"),
+        ([CUT_OFF_TEXT], "refusal", "does not match the schema"),
+        ([THINKING_BLOCK, CUT_OFF_TEXT], "max_tokens", "does not match the schema"),
+        ([THINKING_BLOCK], "max_tokens", "truncated"),
+        ([{"type": "text", "text": "Sorry."}], "end_turn", "does not match the schema"),
+    ],
+)
+async def test_real_sdk_unusable_responses_raise_evaluation_errors(
+    sdk_evaluator, content, stop_reason, message
+):
+    response = sdk_message(content, stop_reason=stop_reason)
+    evaluator = sdk_evaluator(lambda request: httpx2.Response(200, json=response))
+
+    with pytest.raises(EvaluationAPIError, match=message):
+        await evaluator.plan_searches("eggs")
+
+
+@pytest.mark.parametrize(
+    ("status", "expected"),
+    [
+        (400, EvaluationAPIError),
+        (401, EvaluationAuthError),
+        (403, EvaluationAuthError),
+        (404, EvaluationAPIError),
+        (429, EvaluationRateLimitError),
+        (500, EvaluationAPIError),
+        (529, EvaluationAPIError),
+    ],
+)
+async def test_real_sdk_maps_http_statuses(sdk_evaluator, status, expected):
+    body = {"type": "error", "error": {"type": "api_error", "message": "boom"}}
+    evaluator = sdk_evaluator(lambda request: httpx2.Response(status, json=body))
+
+    with pytest.raises(expected):
+        await evaluator.plan_searches("eggs")
+
+
+@pytest.mark.parametrize(
+    ("failure", "expected"),
+    [
+        (httpx2.ReadTimeout("slow"), EvaluationTimeoutError),
+        (httpx2.ConnectError("down"), EvaluationAPIError),
+    ],
+)
+async def test_real_sdk_maps_transport_failures(sdk_evaluator, failure, expected):
+    def handler(request):
+        raise failure
+
+    with pytest.raises(expected):
+        await sdk_evaluator(handler).plan_searches("eggs")
+
+
+def expired_oauth_profile(home, token_endpoint, *, with_credentials_file=True):
+    """A real `ant auth login` profile whose access token has expired."""
+    config = home / ".config" / "anthropic"
+    (config / "configs").mkdir(parents=True)
+    (config / "configs" / "default.json").write_text(
+        json.dumps({"authentication": {"type": "user_oauth", "client_id": "cid"}})
+    )
+    if with_credentials_file:
+        (config / "credentials").mkdir()
+        credentials = config / "credentials" / "default.json"
+        credentials.write_text(
+            json.dumps(
+                {
+                    "version": "1.0",
+                    "type": "oauth_token",
+                    "access_token": "old-token",
+                    "refresh_token": "secret-refresh-token",
+                    "expires_at": 1,
+                }
+            )
+        )
+        credentials.chmod(0o600)
+    return anthropic.CredentialsFile(
+        profile="default",
+        http_client=httpx2.Client(transport=httpx2.MockTransport(token_endpoint)),
+    )
+
+
+def token_endpoint_rejects(request):
+    # Echoes the secret: the reason is logged, so it must not survive into it.
+    body = {"error": "invalid_grant", "refresh_token": "secret-refresh-token"}
+    return httpx2.Response(400, json=body)
+
+
+def token_endpoint_unreachable(request):
+    raise httpx2.ConnectError("down")
+
+
+@pytest.mark.parametrize(
+    ("token_endpoint", "with_credentials_file", "sdk_error", "reason"),
+    [
+        (token_endpoint_rejects, True, anthropic.WorkloadIdentityError, "invalid_grant"),
+        (
+            token_endpoint_unreachable,
+            True,
+            anthropic.WorkloadIdentityError,
+            "failed to reach token endpoint",
+        ),
+        (
+            token_endpoint_rejects,
+            False,
+            anthropic.CredentialsError,
+            "Credentials file not found",
+        ),
+    ],
+)
+async def test_real_sdk_unusable_profile_is_an_auth_error(
+    no_anthropic_credentials,
+    tmp_path,
+    token_endpoint,
+    with_credentials_file,
+    sdk_error,
+    reason,
+):
+    api_calls = []
+
+    def api(request):
+        api_calls.append(request)
+        return httpx2.Response(500, json={})
+
+    profile = expired_oauth_profile(
+        tmp_path, token_endpoint, with_credentials_file=with_credentials_file
+    )
+    evaluator = RecipeEvaluator(client=sdk_client(api, credentials=profile))
+
+    with pytest.raises(EvaluationAuthError, match=reason) as error:
+        await evaluator.plan_searches("eggs")
+
+    assert isinstance(error.value.__cause__, sdk_error)
+    assert "secret-refresh-token" not in str(error.value)
+    assert api_calls == []
+
+    await evaluator.aclose()

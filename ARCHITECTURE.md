@@ -17,7 +17,7 @@ module-by-module account of the routes, prompts, failures, and test seams.
 | | |
 |---|---|
 | Language | Python 3.12+ (`.python-version` pins 3.12) |
-| Framework | FastAPI 0.139.0 on uvicorn 0.49.0, fully async |
+| Framework | FastAPI 0.162.0 on uvicorn 0.54.0, fully async |
 | HTTP routes | 8 — `GET /`, `POST /search`, `POST /recipes/search`, `POST /recipes/recommend`, `POST /recipes/follow-up`, `POST /ingredients/from-photo`, `GET /stats`, `GET /healthz` |
 | External services | 2 — Exa (retrieval), Anthropic Claude (judgment + photo vision). The browser UI additionally fetches favicons from Google's public favicon service. |
 | Source | 9 Python modules + 1 self-contained static page (`static/index.html`) |
@@ -143,6 +143,7 @@ recipe-search/
 │   └── static/
 │       └── index.html           # the Simmer UI — one file, no build step
 └── tests/
+    ├── conftest.py              # shared no-credential fixture
     ├── test_api.py              # routes, validation, limits, usage
     ├── test_evaluation.py       # structured model calls and cleanup
     ├── test_exa_search.py       # retrieval integration
@@ -179,7 +180,7 @@ field maps to the same-name env var, upper-cased.
 | `exa_base_url` | `EXA_BASE_URL` | `https://api.exa.ai` | |
 | `exa_timeout_seconds` | `EXA_TIMEOUT_SECONDS` | `20.0` | |
 | `anthropic_api_key` | `ANTHROPIC_API_KEY` | `null` | optional — the SDK falls back to the env var or an `ant auth login` profile |
-| `evaluation_model` | `EVALUATION_MODEL` | `claude-opus-4-8` | `claude-sonnet-5` is a documented ~2× cheaper drop-in |
+| `evaluation_model` | `EVALUATION_MODEL` | `claude-opus-5-5` | `claude-sonnet-5-5` is a documented drop-in at half the per-token price |
 | `evaluation_effort` | `EVALUATION_EFFORT` | `medium` | passed to the API's `output_config.effort`; valid values per the installed SDK are `low`/`medium`/`high`/`xhigh`/`max`, not validated at startup |
 | `evaluation_timeout_seconds` | `EVALUATION_TIMEOUT_SECONDS` | `120.0` | |
 | `demo_mode` | `DEMO_MODE` | `false` | turns on request limits and hides `/docs` + `/openapi.json` |
@@ -204,9 +205,12 @@ before uvicorn binds the port.
 
 Everything else is additive by design:
 
-- **Evaluation** — no resolvable Anthropic credential logs a warning and
-  sets `app.state.evaluator = None`; `/search` and `/healthz` keep working,
-  and the two `/recipes/*` endpoints return a clear per-request `500`.
+- **Evaluation** — the SDK only notices a missing credential on the first
+  request, so `RecipeEvaluator` checks for one at construction. With none, or
+  with a selected profile the SDK can't load, startup logs the reason as a
+  warning and sets `app.state.evaluator = None`; `/search` and `/healthz` keep
+  working, and the four routes that need Claude return a clear per-request
+  `500`.
 - **Usage recording** — off unless `USAGE_DB_PATH` is set; a recorder that
   cannot open its file degrades to a no-op (§11).
 - **Stats** — `GET /stats` behaves like a nonexistent route unless
@@ -252,7 +256,7 @@ instances back out:
   configured (set ANTHROPIC_API_KEY).")` when the evaluator is `None` —
   inside dependency resolution, so the route body (and any Exa spend)
   never happens.
-- `enforce_limits` is a dependency on all four POST endpoints; it's a
+- `enforce_limits` is a dependency on all five POST endpoints; it's a
   no-op when the limiter is `None` and raises `RateLimited` otherwise
   refused (§10).
 
@@ -340,7 +344,7 @@ client. The original four calls are:
 | | `plan_searches()` | `evaluate()` | `recommend()` | `identify_ingredients()` |
 |---|---|---|---|---|
 | Job | user request → 1–3 Exa queries, plus the on-topic verdict | judge all results comparatively, rank them | ranked candidates → user-facing recommendation | one to five user photos → the food visible across them, as one ingredient list |
-| `max_tokens` | 1,000 | 16,000 | 8,000 | 1,000 |
+| `max_tokens` | 4,000 | 16,000 | 8,000 | 4,000 |
 | `thinking` | omitted entirely | `{"type": "adaptive"}` | `{"type": "adaptive"}` | omitted entirely |
 | `output_config.effort` | `"low"` (hardcoded) | settings, default `medium` | settings, default `medium` | `"low"` (hardcoded) |
 | `output_format` | `SearchPlan` | `_EvaluationOutput` | `_RecommendationOutput` | `PhotoIngredients` |
@@ -349,10 +353,10 @@ client. The original four calls are:
 `identify_ingredients()` takes a list of `(base64, media_type)` photos, sends
 every one as an `image` block in a single call followed by a short text
 instruction, and gets back one merged inventory. Like the planner, it uses
-low effort and no thinking.
+low effort and omits `thinking`.
 
-`follow_up(message, context)` is the fifth: a low-effort call with no
-thinking returns a `FollowUpDecision` containing the topic verdict,
+`follow_up(message, context)` is the fifth: a low-effort call (`max_tokens`
+6,000) that omits `thinking` and returns a `FollowUpDecision` with the topic verdict,
 `answer`/`search` action, concise reply, and cumulative request. It receives
 the current dish and ordered alternatives without their URLs, both the
 current request and the request that produced that dish, and recent
@@ -366,12 +370,23 @@ linked source pages. Hypothetical questions leave the cumulative request
 unchanged; explicit facts such as “I don't have cheese” can update it even
 when no new search is needed.
 
+On `claude-opus-5-5` thinking can't be turned off. Leaving `thinking` out
+means adaptive thinking: the model decides how much to think, and at low
+effort it may not think at all. Thinking counts toward `max_tokens`, so the
+planner, photo, and follow-up budgets each include 3,000 tokens of headroom
+for it.
+
 All five go through Claude's native structured-output mechanism —
 `messages.parse(..., output_format=SomePydanticModel)` — so the response is
 a schema-validated Pydantic instance by the time this code sees it; nothing
-hand-parses model JSON. The client is built with `max_retries=1`: the
-pipeline layer above owns the real retry strategy (§7), and stacking a
-second aggressive retry policy under it would quietly compound timeouts.
+hand-parses model JSON. If Claude's safety classifiers decline a request, it
+becomes an `EvaluationAPIError` (error mapping below). There is deliberately
+no fallback to another model: cooking questions, even about botulism or food
+toxins, didn't trigger the classifiers in testing, and a rare decline stays a
+visible error rather than an answer from a model the eval never ran. The
+client is built with `max_retries=1`: the pipeline layer above owns the real
+retry strategy (§7), and stacking a second aggressive retry policy under it
+would quietly compound timeouts.
 
 ### The five system prompts, verbatim
 
@@ -650,13 +665,14 @@ failure to this module's typed hierarchy (mirroring `exa_search.py`'s):
 |---|---|
 | `anthropic.AuthenticationError` | `EvaluationAuthError` |
 | `anthropic.PermissionDeniedError` | `EvaluationAuthError` (key valid, lacks model access) |
+| `anthropic.CredentialsError`, `anthropic.WorkloadIdentityError` | `EvaluationAuthError` (an `ant auth` profile or federation credential couldn't be loaded or refreshed, including an unreachable token endpoint; the SDK's reason goes to the server log and clients get the fixed message) |
 | `anthropic.RateLimitError` | `EvaluationRateLimitError` |
 | `anthropic.APITimeoutError` | `EvaluationTimeoutError` |
 | `anthropic.APIConnectionError` | `EvaluationAPIError` |
 | `anthropic.APIStatusError` (other non-2xx) | `EvaluationAPIError` (logged with status + message) |
-| `pydantic.ValidationError` | `EvaluationAPIError` (output didn't match the schema) |
-| `stop_reason == "max_tokens"` | `EvaluationAPIError` (truncated mid-generation) |
-| `parsed_output is None` | `EvaluationAPIError` (e.g. a refusal stop reason) |
+| `pydantic.ValidationError` | `EvaluationAPIError` (output didn't match the schema; the SDK validates first, so a reply cut off mid-JSON or a safety decline after partial text lands here too) |
+| `stop_reason == "max_tokens"` | `EvaluationAPIError` (mainly when no reply text came back, e.g. every token went to thinking) |
+| `parsed_output is None` | `EvaluationAPIError` (e.g. a safety decline before any output: the message says `stop_reason=refusal`) |
 
 ---
 
@@ -670,7 +686,7 @@ failures degrade instead of cascading.
 
 | Stage | What happens | Notes |
 |---|---|---|
-| 1. Plan | Claude turns the raw request into 1–3 Exa queries — or judges it off-topic. | 1 call · effort low · no thinking · a first-attempt planner *failure* propagates; a retry planner failure falls back to a static template · off-topic *verdict* raises `OffTopicQuery` before any search spend |
+| 1. Plan | Claude turns the raw request into 1–3 Exa queries — or judges it off-topic. | 1 call · effort low · `thinking` omitted · a first-attempt planner *failure* propagates; a retry planner failure falls back to a static template · off-topic *verdict* raises `OffTopicQuery` before any search spend |
 | 2. Search | Every planned query runs against Exa concurrently; pools interleave round-robin, dedupe by URL, cap at 12. | N parallel calls · one failed variant tolerated · zero successes → the first failure propagates |
 | 3. Evaluate | One Claude call judges the merged pool against the user's *original* words. | 1 call · effort configurable · thinking adaptive · empty pool → skipped |
 | 4. Adapt | Nothing usable? Retry once — stages 1–3 again, seeded with the evaluator's own reasons and excluding URLs already seen. | 0 or 1 retry, never more |
@@ -894,9 +910,10 @@ Additional statuses: `422` with `code: "off_topic"` for non-food requests;
 `EVALUATION_TIMEOUT_SECONDS`, 120s default); `500` when no Anthropic
 credential is configured at all.
 
-Latency is dominated by the Claude calls: typically 25–60s on the default
-model, up to ~2× when the retry fires; roughly $0.10–0.25 per request on
-`claude-opus-4-8` (about half that on `claude-sonnet-5`).
+Latency is dominated by the Claude calls: typically 20–30s and roughly
+$0.13–0.16 per request (about 2 cents of it Exa), both up to ~2× when the
+retry fires. Measured on `claude-opus-5-5`; `claude-sonnet-5-5` costs half
+as much per token.
 
 ### `POST /recipes/recommend`
 
@@ -913,8 +930,8 @@ Same request body. `200` →
 | `alternatives` | ≤ 3 `{recipe, reason}` — when you'd prefer them |
 
 `recommendation: null` (with the honest candidate list) when nothing
-usable was found. Status codes as `/recipes/search`. Expect ~40–60s and
-~$0.15–0.30 per request on the default model.
+usable was found. Status codes as `/recipes/search`. Expect ~25–40s and
+~$0.15–0.19 per request (measured on `claude-opus-5-5`).
 
 ### `POST /recipes/follow-up`
 
@@ -1269,16 +1286,15 @@ its own commit (`1ed8b17`).
 ## 13. Test suite
 
 Run `uv run pytest -q` for the current case count; all tests run with zero
-network. (The warning — Starlette deprecating `httpx`-based
-`TestClient` in favor of `httpx2` — comes from FastAPI's testclient
-shim, not this codebase.) Every boundary is faked through a seam the
-production code also uses, never mocked-at-a-distance:
+network and no warnings (`httpx2` in the dev group gives Starlette's
+`TestClient` the HTTP client it expects). Every boundary is faked through
+a seam the production code also uses, never mocked-at-a-distance:
 
 | File | Seam | What it proves |
 |---|---|---|
-| `test_api.py` | `app.dependency_overrides` + `app.state` monkeypatching, `TestClient` | Route shapes, validation and error mapping, declared/chunked request-body caps, demo limits, usage recording, `/stats` auth, multi-photo batching and privacy, plus follow-up answer/search responses, context limits, off-topic handling, and exactly one limit/usage event. |
+| `test_api.py` | `app.dependency_overrides` + `app.state` monkeypatching, `TestClient` | Route shapes, validation and error mapping, declared/chunked request-body caps, demo limits, usage recording, `/stats` auth, multi-photo batching and privacy, plus follow-up answer/search responses, context limits, off-topic handling, exactly one limit/usage event, and the missing-credential and broken-profile paths through real startup. |
 | `test_streaming.py` | asynchronous operation and completion gates | Progress arrives before work finishes, disconnects cancel work and clean up once, terminal error handling. |
-| `test_evaluation.py` | hand-written fake Anthropic client via `RecipeEvaluator(client=...)` | Structured prompts and output cleanup, ranking/source invariants, SDK error mapping, photo normalization, and follow-up context serialization, reference/constraint/substitution prompt rules, and bounded output. |
+| `test_evaluation.py` | `RecipeEvaluator(client=...)` with a hand-written fake Anthropic client (only `messages.parse`), or the real SDK over `httpx2.MockTransport` | Structured prompts and output cleanup, ranking/source invariants, SDK error mapping, the missing-credential check, photo normalization, and follow-up context serialization, reference/constraint/substitution prompt rules, and bounded output. Through the real SDK: the request each call sends, response parsing, status mapping, and failures from a real expired `ant auth` profile. |
 | `test_exa_search.py` | `httpx.MockTransport` via the client's `transport=` parameter | Request shape, normalization, empty results, status/error mapping, malformed-body rejection, and argument validation without HTTP calls. |
 | `test_pipeline.py` | scripted stub exa/evaluator objects | Fan-out/interleave/dedupe, result cap, planner/search fallbacks, retry feedback and stopping behavior, source eligibility, and follow-up direct answers, replacements, no-match context retention, later turns, six-exchange history, and failure immutability. |
 | `test_limits.py` | injected fake clock | Hourly and daily rolling windows, per-IP independence, the UTC-day budget reset, and rejected requests consuming nothing. |
@@ -1315,10 +1331,10 @@ and Claude, using the `.env` credentials.
   summary table (dish, top fit, retry?, checks, time), then per-query
   detail: planned queries per attempt, retry feedback, the full
   recommendation, and every candidate with its judgment — plus a raw
-  `.json` twin. Reports are committed to git (and excluded from Railway
-  uploads).
-- **Cost:** roughly $0.15–0.30 per query (~$3–5 and ~15 minutes for the
-  full set).
+  `.json` twin. Reports stay local: `evals/` is gitignored and excluded from
+  Railway uploads.
+- **Cost:** roughly $0.15–0.19 per query (about $3 and ~10 minutes for the
+  full set), measured on `claude-opus-5-5`.
 
 ---
 
@@ -1331,18 +1347,20 @@ for this checkout, not just the floors pinned in `pyproject.toml`.
 
 | Package | Resolved | Role |
 |---|---|---|
-| `anthropic` | 0.116.0 | Claude client — structured outputs (`messages.parse`), adaptive thinking, typed errors |
-| `fastapi` | 0.139.0 | HTTP layer, DI, validation (pydantic 2.13.4 underneath) |
+| `anthropic` | 2.3.0 | Claude client — structured outputs (`messages.parse`), typed errors; uses API version `2026-10-21`, Bearer-token auth, and `httpx2` |
+| `fastapi` | 0.162.0 | HTTP layer, DI, validation (pydantic 2.14.2 underneath) |
 | `httpx` | 0.28.1 | async HTTP client for the hand-rolled Exa integration |
-| `pydantic-settings` | 2.14.2 | typed env/.env configuration |
-| `uvicorn[standard]` | 0.49.0 | ASGI server |
+| `pydantic-settings` | 2.16.2 | typed env/.env configuration |
+| `python-dotenv` | 1.2.4 | `load_dotenv()` for the import-time `DEMO_MODE` flag (§3) |
+| `uvicorn[standard]` | 0.54.0 | ASGI server |
 
 **Dev** (`[dependency-groups]`)
 
 | Package | Resolved | Role |
 |---|---|---|
-| `pytest` | 9.1.1 | test runner |
-| `pytest-asyncio` | 1.4.0 | auto-mode coroutine tests |
+| `httpx2` | 2.16.0 | the SDK's HTTP types and mock transport for the SDK tests; Starlette's `TestClient` transport |
+| `pytest` | 9.2.0 | test runner |
+| `pytest-asyncio` | 1.4.1 | auto-mode coroutine tests |
 
 The package builds with `uv_build`, targets `requires-python >= 3.12`, and
 `.python-version` pins local tooling to 3.12. The `recipe-search` console
@@ -1390,10 +1408,12 @@ The choices that show up as behavior, gathered in one place.
    always merged back from trusted search results server-side. Prompt
    injection on a recipe page has no schema field through which to
    redirect anyone.
-3. **Planning and follow-up decisions skip thinking; judging doesn't.**
-   The planner and follow-up decision omit the `thinking` parameter for
-   latency; evaluate/recommend use
-   `thinking: adaptive` so Claude sizes its own reasoning to the request.
+3. **Quick calls use low effort; judging uses more.** The planner,
+   photo, and follow-up calls use low effort for speed and leave `thinking`
+   out; evaluate/recommend use the configured effort with
+   `thinking: adaptive`. On `claude-opus-5-5` every call thinks adaptively,
+   so effort is the real difference; the explicit `adaptive` matters on
+   Opus 4.8, where leaving `thinking` out means no thinking.
 4. **`max_retries=1` on the Anthropic client.** The pipeline owns the real
    retry strategy; stacked retry policies would compound under the 120s
    evaluation timeout.

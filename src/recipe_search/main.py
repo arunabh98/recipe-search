@@ -118,7 +118,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         timeout_seconds=settings.exa_timeout_seconds,
     )
     # Evaluation is additive: if no Anthropic credential can be resolved,
-    # /search keeps working and /recipes/search reports it's not configured.
+    # /search keeps working and the routes that need Claude report it's not
+    # configured.
     try:
         app.state.evaluator = RecipeEvaluator(
             api_key=(
@@ -130,11 +131,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             effort=settings.evaluation_effort,
             timeout_seconds=settings.evaluation_timeout_seconds,
         )
-    except Exception:
-        logger.warning(
-            "Recipe evaluation disabled: no Anthropic credentials found "
-            "(set ANTHROPIC_API_KEY)"
-        )
+    except Exception as exc:
+        logger.warning("Recipe evaluation disabled: %s: %s", type(exc).__name__, exc)
         app.state.evaluator = None
     app.state.trust_proxy_headers = settings.trust_proxy_headers
     app.state.limiter = (

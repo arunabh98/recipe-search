@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     # If unset, the Anthropic SDK falls back to the ANTHROPIC_API_KEY env
     # var or an `ant auth login` profile.
     anthropic_api_key: SecretStr | None = None
-    evaluation_model: str = "claude-opus-4-8"
+    evaluation_model: str = "claude-opus-5-5"
     evaluation_effort: str = "medium"
     evaluation_timeout_seconds: float = 120.0
 
